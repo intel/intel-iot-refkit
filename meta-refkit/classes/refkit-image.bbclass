@@ -436,7 +436,11 @@ ROOTFS_POSTPROCESS_COMMAND += "refkit_image_patch_os_release; "
 # Instead we pre-configure some defaults in the image and can remove
 # the useless service.
 refkit_image_disable_firstboot () {
-    for i in /etc/systemd /lib/systemd /usr/lib/systemd /bin /usr/bin; do
+    SEARCH_DIRS='/etc/systemd /usr/lib/systemd /usr/bin'
+    if [ "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', '1', '0', d)}" = "0" ]; then
+        SEARCH_DIRS=$SEARCH_DIRS' /lib/systemd /bin'
+    fi
+    for i in ${SEARCH_DIRS}; do
         d="${IMAGE_ROOTFS}$i"
         if [ -d "$d" ] && [ ! -h "$d" ]; then
             for e in $(find "$d" -name systemd-firstboot.service -o -name systemd-firstboot.service.d -o -name systemd-firstboot); do
