@@ -17,6 +17,7 @@ REFKIT_LAYERS = " \
   ##OEROOT##/../meta-security-isafw \
   ##OEROOT##/../meta-intel-realsense \
   ##OEROOT##/../meta-clang \
+  ##OEROOT##/../meta-flatpak \
   "
 
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-efl"
