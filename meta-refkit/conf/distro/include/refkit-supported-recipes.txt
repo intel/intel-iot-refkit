@@ -71,6 +71,7 @@ dbus-glib@core
 dbus-test@core
 dbus@core
 diffutils@core
+dosfstools@core
 dri2proto@core
 e2fsprogs@core
 efi-combo-trigger@refkit
@@ -144,6 +145,7 @@ keymaps@core
 keyutils@security-framework
 kmod@core
 krb5@openembedded-layer
+libaio@core
 libarchive@core
 libatomic-ops@core
 libcap@core
@@ -196,6 +198,7 @@ linux-yocto@core
 lms8@intel
 lowpan-tools@networking-layer
 lttng-ust@core
+lvm2@openembedded-layer
 m4@core
 make@core
 mesa@core
@@ -203,6 +206,7 @@ mmap-smack-test@security-smack
 mpfr@core
 mraa-test@iotqa
 mraa@refkit
+multipath-tools@openembedded-layer
 ncurses@core
 netbase@core
 nettle@core
@@ -270,6 +274,7 @@ systemd@core
 taglib@core
 tbb@openembedded-layer
 tcp-smack-test@security-smack
+thin-provisioning-tools@openembedded-layer
 tiff@core
 thermald@intel
 tpm-tools@security
