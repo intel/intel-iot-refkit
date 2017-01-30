@@ -185,6 +185,7 @@ libwebp@core
 libxml2@core
 libxslt@core
 linux-firmware@core
+linux-intel@intel
 linux-libc-headers@core
 linux-yocto@core
 lowpan-tools@networking-layer
