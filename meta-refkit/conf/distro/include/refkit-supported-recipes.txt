@@ -61,6 +61,7 @@ connman@core
 coreutils@core
 cracklib@core
 cryptodev-linux@core
+cryptsetup@openembedded-layer
 curl@core
 dash@openembedded-layer
 db@core
@@ -123,6 +124,7 @@ icu@core
 iftop@networking-layer
 ima-evm-utils@integrity
 initramfs-framework-ima@integrity
+initramfs-framework-refkit-luks@refkit
 initramfs-framework@core
 initscripts@core
 intel-microcode@intel
