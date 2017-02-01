@@ -23,10 +23,14 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         rootfs=$4
         output_mounted=
         output_mountpoint=
+        output_luks=
+        LUKS_NAME=rootfs
+        LUKS_PASSWORD=refkit
 
         cleanup_populate () {
             [ "$output_mounted" ] && umount "$output_mountpoint"
             [ "$output_mountpoint" ] && rmdir "$output_mountpoint"
+            [ "$output_luks" ] && cryptsetup close "$output_luks"
             remove_cleanup cleanup_populate
         }
         add_cleanup cleanup_populate
@@ -48,10 +52,20 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             fi
         done
         if [ ! "$partition" ]; then
-            fatal "could not identify partition #$gdisk_pnum in $output"
+            fatal "could not identify parition #$gdisk_pnum in $output"
         fi
 
         if [ "$uuid" ]; then
+            if ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'true', 'false', d) }; then
+                if ! echo "$LUKS_PASSWORD" | execute cryptsetup luksFormat "$partition" --key-file -; then
+                    fatal "formatting $partition as LUKS contained failed"
+                fi
+                if ! echo "$LUKS_PASSWORD" | execute cryptsetup open --type luks "$partition" "$LUKS_NAME" --key-file -; then
+                    fatal "opening $partition as LUKS container failed"
+                fi
+                output_luks=$LUKS_NAME
+                partition=/dev/mapper/$LUKS_NAME
+            fi
             # Assume that there's only one ext4 partition and it contains root fs (/)
             if ! execute mkfs.ext4 -q -v -F -U "$uuid" "$partition"; then
                 fatal "formatting target rootfs partition $gdisk_pnum failed"
@@ -176,7 +190,9 @@ INSTALLER_RDEPENDS_append = " \
     gptfdisk \
     kpartx \
     rsync \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'cryptsetup', '', d) } \
 "
+
 
 inherit image-installer
 
