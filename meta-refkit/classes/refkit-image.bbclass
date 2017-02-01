@@ -274,7 +274,11 @@ IMAGE_FSTYPES_remove = "live"
 # Activate "dsk" image type.
 IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
 
+# By default, the full image is going to use roughly 4GB, independent
+# of the actual roofs size.
 WKS_FILE = "refkit-directdisk.wks.in"
+REFKIT_VFAT_MB ??= "30"
+REFKIT_IMAGE_SIZE ??= "--fixed-size 3700M"
 WIC_CREATE_EXTRA_ARGS += " -D"
 
 # Inherit after setting variables that get evaluated when importing
