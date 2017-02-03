@@ -1,0 +1,8 @@
+oeqa.runtime.sanity.baseos
+oeqa.runtime.sanity.comm_managerdaemon
+oeqa.runtime.sanity.comm_ssh
+oeqa.runtime.sanity.apprt_python
+oeqa.runtime.sanity.mraa_hello
+oeqa.runtime.sanity.iotivity
+oeqa.runtime.alsa.alsa
+oeqa.runtime.sanity.upm

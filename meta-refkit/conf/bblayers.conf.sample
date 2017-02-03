@@ -1,0 +1,41 @@
+# LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
+# changes incompatibly
+LCONF_VERSION = "1"
+
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+REFKIT_LAYERS = " \
+  ##OEROOT##/meta \
+  ##OEROOT##/meta-selftest \
+  ##OEROOT##/../meta-intel \
+  ##OEROOT##/../meta-refkit \
+  ##OEROOT##/../meta-oic \
+  ##OEROOT##/../meta-iot-web \
+  ##OEROOT##/../meta-iotqa \
+  ##OEROOT##/../meta-security-isafw \
+  "
+
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-efl"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-filesystems"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-gnome"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-gpe"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-initramfs"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-multimedia"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-networking"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-oe"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-perl"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-python"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-ruby"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-systemd"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-webserver"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-xfce"
+# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/toolchain-layer"
+
+BBLAYERS ?= "${REFKIT_LAYERS}"
+
+# toaster uses this hint to decide whether it let's the user
+# remove a layer from BBLAYERS. All layers which provide something
+# that is required to build refkit-image should be listed here.
+# We do not really track that, so add all layers also here.
+BBLAYERS_NON_REMOVABLE ?= "${REFKIT_LAYERS}"

@@ -1,0 +1,27 @@
+[submodule "openembedded-core"]
+	path = openembedded-core
+	url = http://git.openembedded.org/openembedded-core
+	branch = master
+[submodule "bitbake"]
+	path = bitbake
+	url = http://git.openembedded.org/bitbake
+	branch = master
+[submodule "meta-intel"]
+	path = meta-intel
+	url = https://git.yoctoproject.org/git/meta-intel
+	branch = master
+[submodule "meta-oic"]
+	path = meta-oic
+	url = https://git.yoctoproject.org/git/meta-oic
+	branch = master
+[submodule "meta-iot-web"]
+	path = meta-iot-web
+	url = https://github.com/ostroproject/meta-iot-web.git
+	branch = master
+[submodule "meta-openembedded"]
+	path = meta-openembedded
+	url = http://git.openembedded.org/meta-openembedded
+	branch = master
+[submodule "meta-security-isafw"]
+	path = meta-security-isafw
+	url = https://github.com/01org/meta-security-isafw.git
