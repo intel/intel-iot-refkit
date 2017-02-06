@@ -13,6 +13,8 @@ INSTALLER_SOURCE_IMAGES ?= " \
 # Allow wic to resize the image as needed by overriding the default fixes size.
 REFKIT_IMAGE_SIZE ?= ""
 
+require refkit-boot-settings.inc
+
 # The refkit specific part is derived from the Ostro OS XT installer.
 REFKIT_INSTALLER_UEFI_COMBO[shellcheck] = "sh"
 REFKIT_INSTALLER_UEFI_COMBO () {
@@ -24,18 +26,23 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         output_mounted=
         output_mountpoint=
         output_luks=
-        LUKS_NAME=rootfs
-        LUKS_PASSWORD=refkit
+        LUKS_NAME=installerrootfs
+        LUKS_PASSWORD="${REFKIT_DISK_ENCRYPTION_PASSWORD}"
+        # Use something which is guaranteed to not be persistent.
+        keydir=$(TMPDIR=/dev/shm mktemp -dt keydir.XXXXXX)
+        keyfile="$keydir/keyfile"
+        keyfile_offset=
 
         cleanup_populate () {
-            [ "$output_mounted" ] && umount "$output_mountpoint"
+            [ "$keydir" ] && (dd if=/dev/zero of="$keyfile" count=1 bs="${REFKIT_DISK_ENCRYPTION_KEY_SIZE}"; rm -rf "$keydir" )
+            [ "$output_mounted" ] && execute umount "$output_mountpoint"
             [ "$output_mountpoint" ] && rmdir "$output_mountpoint"
-            [ "$output_luks" ] && cryptsetup close "$output_luks"
+            [ "$output_luks" ] && execute cryptsetup close "$output_luks"
             remove_cleanup cleanup_populate
         }
         add_cleanup cleanup_populate
 
-        if ! output_mountpoint=$(mktemp -d); then
+        if ! output_mountpoint=$(mktemp -dt output-partition.XXXXXX); then
             fatal "could not create mount point"
         fi
 
@@ -56,11 +63,46 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         fi
 
         if [ "$uuid" ]; then
+            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) }; then
+                # This uses the well-known (all zero) owner and SRK secrets,
+                # thus granting any process running on the device access to the
+                # TPM.
+                # TODO: lock down access to system processes?
+                if ! execute tpm_takeownership -y -z; then
+                    fatal "taking ownership of TPM failed - needs to be reset?"
+                fi
+                # We store a random key in the TPM NVRAM where it is accessible
+                # to the initramfs. The initramfs will turn off read-access
+                # after it has retrieved the key, so nothing else that gets started
+                # later will have access to the key.
+                if ! execute tpm_nvdefine -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -s "$( expr "${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}" + "${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" )" -p 'AUTHREAD|AUTHWRITE|READ_STCLEAR' -y -z; then
+                    fatal "creating NVRAM area failed"
+                fi
+                if ! (printf "%s" "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" &&
+                      dd if=/dev/urandom bs="${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" count=1) >"$keyfile"; then
+                    fatal "key creation failed"
+                fi
+                keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
+                if ! execute tpm_nvwrite -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -f "$keyfile"; then
+                    fatal "storing key in NVRAM failed"
+                fi
+                # Lock access until reboot.
+                if ! execute tpm_nvread -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -s 0; then
+                    fatal "locking key in NVRAM failed"
+                fi
+            fi
+
+            # Unsafe fallback without TPM: well-known password.
+            # TODO: detect when this ends up getting used in production.
+            if [ ! -s "$keyfile" ]; then
+                printf "%s" "$LUKS_PASSWORD" >"$keyfile"
+                keyfile_offset=0
+            fi
             if ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'true', 'false', d) }; then
-                if ! echo "$LUKS_PASSWORD" | execute cryptsetup luksFormat "$partition" --key-file -; then
+                if ! execute cryptsetup luksFormat "$partition" --batch-mode --key-file "$keyfile" --keyfile-offset "$keyfile_offset"; then
                     fatal "formatting $partition as LUKS contained failed"
                 fi
-                if ! echo "$LUKS_PASSWORD" | execute cryptsetup open --type luks "$partition" "$LUKS_NAME" --key-file -; then
+                if ! execute cryptsetup open --type luks "$partition" "$LUKS_NAME" --key-file "$keyfile" --keyfile-offset "$keyfile_offset"; then
                     fatal "opening $partition as LUKS container failed"
                 fi
                 output_luks=$LUKS_NAME
@@ -108,9 +150,9 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         input_mounted=
 
         cleanup_install_image () {
-            [ "$input_mounted" ] && umount "$input_mountpoint"
+            [ "$input_mounted" ] && execute umount "$input_mountpoint"
             [ "$input_mountpoint" ] && rmdir "$input_mountpoint"
-            [ "$input" ] && kpartx -d "$input"
+            [ "$input" ] && execute kpartx -d "$input"
             remove_cleanup cleanup_install_image
         }
         add_cleanup cleanup_install_image
@@ -121,7 +163,7 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         if [ ! "$loopdev" ]; then
             fatal "kpartx failed for $input"
         fi
-        if ! input_mountpoint=$(mktemp -d); then
+        if ! input_mountpoint=$(mktemp -dt input-rootfs.XXXXXX); then
             fatal "could not create mount point"
         fi
         if ! execute mount "/dev/mapper/$loopdev" "$input_mountpoint"; then
@@ -191,6 +233,7 @@ INSTALLER_RDEPENDS_append = " \
     kpartx \
     rsync \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'cryptsetup', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'trousers tpm-tools', '', d) } \
 "
 
 
