@@ -173,6 +173,7 @@ libunistring@core
 libunwind@core
 liburcu@core
 libusb1@core
+libva-intel-driver@intel
 libva@core
 libvorbis@core
 libwebp@core

@@ -6,4 +6,5 @@ inherit packagegroup
 RDEPENDS_${PN} = " \
     opencv \
     gstreamer1.0-vaapi \
+    libva-intel-driver \
 "
