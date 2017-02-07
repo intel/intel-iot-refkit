@@ -340,12 +340,7 @@ ima_evm_sign_rootfs_prepend () {
 # for that machine.
 APPEND_append = "${@bb.utils.contains('IMAGE_FEATURES', 'smack', '', ' security=none', d)}"
 
-# FIXME: Get rid of the Intel(r) 500 series vs intel-corei7-64 inconsistency
-# settings for current BXT platforms.
-APPEND_append_intel-corei7-64 = " console=ttyS2,115200 video=efifb maxcpus=4 noxsave reboot=efi kmemleak=off"
-SERIAL_CONSOLE_intel-corei7-64 = "115200 ttyS2"
-# We get console=ttyS0,115200 from meta-intel/conf/machine/intel-corei7-64.conf and
-# need to get rid of it.
+# Use what RMC gives, not the defaults in meta-intel machine configs
 APPEND_remove_intel-corei7-64 = "console=ttyS0,115200"
 
 # In addition, when Smack is disabled in the image but enabled in the
