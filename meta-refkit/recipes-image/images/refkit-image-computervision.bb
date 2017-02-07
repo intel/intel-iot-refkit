@@ -6,7 +6,10 @@ REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL ?= "${REFKIT_IMAGE_INSTALL_COMMON}"
 REFKIT_IMAGE_EXTRA_FEATURES += "${REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES}"
 REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL}"
 
-REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL_append = " opencv gstreamer1.0-vaapi"
+REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES += "computervision"
+
+# Feature "computervision-test" is included if "development" version of the
+# image is compiled.
 
 # Example for customization in local.conf when building
 # refkit-image-computervision.bb:
@@ -15,4 +18,3 @@ REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL_append = " opencv gstreamer1.0-vaapi"
 # REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES_append = "dev-pkgs"
 
 inherit refkit-image
-

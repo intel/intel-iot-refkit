@@ -222,6 +222,14 @@ FEATURE_PACKAGES_tools-interactive = "packagegroup-tools-interactive bash"
 # All our platforms support it, so this can be unconditional.
 FEATURE_PACKAGES_tools-debug_append = " valgrind"
 
+# Computer vision profile has package groups. The packages in
+# packagegroup-computervision are used in both "production" and
+# "development" configurations, but packages in
+# packagegroup-computervision-test are used only in "development"
+# configuration.
+FEATURE_PACKAGES_computervision = "packagegroup-computervision"
+FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
+
 # We could make bash the login shell for interactive accounts as shown
 # below, but that would have to be done also in the os-core and thus
 # tools-interactive would have to be set in all swupd images.

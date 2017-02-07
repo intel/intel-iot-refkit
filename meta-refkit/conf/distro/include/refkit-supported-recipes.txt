@@ -86,10 +86,12 @@ gcc-runtime@core
 gcc@core
 gdb@core
 gdbm@core
+gdk-pixbuf@core
 gettext@core
 gflags@openembedded-layer
 git@core
 glib-2.0@core
+glib-networking@core
 glibc-locale@core
 glibc-mtrace@core
 glibc@core
@@ -104,6 +106,7 @@ gptfdisk@core
 grep@core
 gstreamer1.0-plugins-bad@core
 gstreamer1.0-plugins-base@core
+gstreamer1.0-plugins-good@core
 gstreamer1.0-vaapi@core
 gstreamer1.0@core
 gzip@core
@@ -151,6 +154,7 @@ libgcc@core
 libgcrypt@core
 libgpg-error@core
 libgphoto2@openembedded-layer
+libgudev@core
 libical@core
 libidn@core
 libjpeg-turbo@core
@@ -167,12 +171,14 @@ libpthread-stubs@core
 libsamplerate0@core
 libsndfile1@core
 libsocketcan@openembedded-layer
+libsoup-2.4@core
 libtheora@core
 libtool@core
 libunistring@core
 libunwind@core
 liburcu@core
 libusb1@core
+libva-intel-driver@intel
 libva@core
 libvorbis@core
 libwebp@core
@@ -238,6 +244,8 @@ shared-mime-info@core
 shm-util@iotqa
 smack-userspace@security-smack
 soletta@soletta
+speex@core
+speexdsp@core
 spi-minnowmax-board@quark-bsp
 spi-quark-board@quark-bsp
 sqlite3@core
@@ -248,6 +256,7 @@ systemd-boot@core
 systemd-compat-units@core
 systemd-watchdog@quark-bsp
 systemd@core
+taglib@core
 tbb@openembedded-layer
 tcp-smack-test@security-smack
 tiff@core

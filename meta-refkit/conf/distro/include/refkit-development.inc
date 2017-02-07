@@ -17,3 +17,4 @@ REFKIT_EXTRA_MOTD () {
 # Everything ready, avoid initial sanity check.
 REFKIT_IMAGE_BUILD_MODE_SELECTED = "1"
 
+REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES_append = " computervision-test"
