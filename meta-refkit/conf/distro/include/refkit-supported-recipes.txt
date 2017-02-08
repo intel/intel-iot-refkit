@@ -125,6 +125,7 @@ iftop@networking-layer
 ima-evm-utils@integrity
 init-ifupdown@core
 initramfs-framework-ima@integrity
+initramfs-framework-refkit-dm-verity@refkit
 initramfs-framework-refkit-luks@refkit
 initramfs-framework@core
 initscripts@core
