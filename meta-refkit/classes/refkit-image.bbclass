@@ -105,8 +105,8 @@ IMAGE_INSTALL_append = "${@ ' efi-combo-trigger' if ${REFKIT_USE_DSK_IMAGES} and
 # Setting a label explicitly on the directory prevents it
 # from inheriting other undesired attributes like security.SMACK64TRANSMUTE
 # from upper folders (see xattr-images.bbclass for details).
-DEPENDS_${PN}_append = " \
-    ${@ bb.utils.contains('IMAGE_FEATURES', 'swupd', 'xattr-native', '', d)} \
+DEPENDS_append = " \
+    ${@ bb.utils.contains('IMAGE_FEATURES', 'swupd', 'attr-native', '', d)} \
 "
 fix_var_lib_swupd () {
     if ${@bb.utils.contains('IMAGE_FEATURES', 'smack', 'true', 'false', d)} &&
