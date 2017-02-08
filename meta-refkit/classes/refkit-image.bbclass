@@ -173,6 +173,10 @@ IMAGE_INSTALL += "util-linux"
 export ALTERNATIVE_PRIORITY_SHADOW ?= "305"
 IMAGE_INSTALL += "shadow"
 
+# Common profile has "packagegroup-common-test" that has packages that are
+# used only in "development" configuration.
+FEATURE_PACKAGES_common-test = "packagegroup-common-test"
+
 # Additional features and packages used by all profile images
 # and the refkit-image-common.bb. Not essential for booting
 # and thus not included in refkit-image-minimal.bb. Product
