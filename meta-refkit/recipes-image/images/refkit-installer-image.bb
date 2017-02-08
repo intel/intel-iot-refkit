@@ -239,7 +239,15 @@ INSTALLER_RDEPENDS_append = " \
 
 inherit image-installer
 
-REFKIT_INSTALLER_IMAGE_EXTRA_FEATURES ?= "${REFKIT_IMAGE_FEATURES_COMMON}"
+# When dm-verity support is enabled in the distro, the installer image
+# by default uses a read-only partition with dm-verity used for integrity
+# protection. This has the useful effect that corrupted data on a USB
+# stick gets detected instead of silently writing a broken image to
+# internal storage.
+REFKIT_INSTALLER_IMAGE_EXTRA_FEATURES ?= " \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'read-only-rootfs dm-verity', '', d) } \
+    ${REFKIT_IMAGE_FEATURES_COMMON} \
+"
 REFKIT_INSTALLER_IMAGE_EXTRA_INSTALL ?= "${REFKIT_IMAGE_INSTALL_COMMON}"
 REFKIT_IMAGE_EXTRA_FEATURES += "${REFKIT_INSTALLER_IMAGE_EXTRA_FEATURES}"
 REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_INSTALLER_IMAGE_EXTRA_INSTALL}"

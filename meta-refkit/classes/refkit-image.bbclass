@@ -62,6 +62,7 @@ IMAGE_FEATURES[validitems] += " \
     ima \
     smack \
     swupd \
+    dm-verity \
     ${REFKIT_IMAGE_PKG_FEATURES} \
 "
 
@@ -99,6 +100,34 @@ def refkit_swupd_image_class(d):
         return ''
 # Here we optionally inherit refkit-swupd-image.bbclass, which configures and activates swupd.
 inherit ${@refkit_swupd_image_class(d)}
+
+# When using dm-verity, the rootfs has to be read-only.
+# An extra partition gets created by wic which holds the
+# hash data for the rootfs partition, including a signed
+# root hash.
+#
+# A suitable initramfs (like refkit-initramfs with the dm-verity
+# image feature enabled) then validates the signed root
+# hash and activates the rootfs. refkit-initramfs checks the
+# "dmverity" boot parameter for that. If not present or
+# the refkit-initramfs was built without dm-verity support,
+# booting proceeds without integrity protection.
+WKS_FILE_DEPENDS_append = " \
+    ${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', 'cryptsetup-native openssl-native', '', d)} \
+"
+REFKIT_DM_VERITY_PARTUUID = "12345678-9abc-def0-0fed-cba987654322"
+REFKIT_DM_VERITY_PARTITION () {
+part --source dm-verity --uuid ${REFKIT_DM_VERITY_PARTUUID} --label rootfs
+}
+REFKIT_EXTRA_PARTITION .= "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', d.getVar('REFKIT_DM_VERITY_PARTITION'), '', d) }"
+APPEND_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' dmverity=PARTUUID=${REFKIT_DM_VERITY_PARTUUID}', '', d) }"
+WICVARS_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' \
+    REFKIT_DMVERITY_PRIVATE_KEY \
+    REFKIT_DMVERITY_PRIVATE_KEY_HASH \
+    REFKIT_DMVERITY_PASSWORD \
+    ', '', d) } \
+"
+inherit refkit-hash-dm-verity-key
 
 # Common profile has "packagegroup-common-test" that has packages that are
 # used only in "development" configuration.

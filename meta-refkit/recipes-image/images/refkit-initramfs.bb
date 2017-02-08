@@ -31,6 +31,7 @@ IMAGE_FEATURES = ""
 IMAGE_FEATURES[validitems] += " \
     ima \
     luks \
+    dm-verity \
 "
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'ima', 'ima', '', d)} \
@@ -40,6 +41,10 @@ IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'luks', 'luks', '', d)} \
 "
 FEATURE_PACKAGES_luks = "initramfs-framework-refkit-luks"
+IMAGE_FEATURES += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'dm-verity', '', d)} \
+"
+FEATURE_PACKAGES_dm-verity = "initramfs-framework-refkit-dm-verity"
 
 IMAGE_LINGUAS = ""
 
