@@ -279,6 +279,7 @@ IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
 WKS_FILE = "refkit-directdisk.wks.in"
 REFKIT_VFAT_MB ??= "30"
 REFKIT_IMAGE_SIZE ??= "--fixed-size 3700M"
+REFKIT_EXTRA_PARTITION ??= ""
 WIC_CREATE_EXTRA_ARGS += " -D"
 
 # Inherit after setting variables that get evaluated when importing
