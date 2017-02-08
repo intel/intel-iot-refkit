@@ -63,7 +63,7 @@ REFKIT_CI_SDK_TARGETS=""
 # as possible.
 REFKIT_CI_ESDK_TARGETS=""
 # Following targets would be executed with do_test_iot_export task
-REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common"
+REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway"
 # Execute automatic tests for following images with corresponding
 # test suite and test files.
 # Space separated list of tuples, each should in format:

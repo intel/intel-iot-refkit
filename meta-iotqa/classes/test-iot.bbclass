@@ -24,7 +24,7 @@
 # TEST_QEMUBOOT_TIMEOUT can be used to set the maximum time in seconds the launch code will wait for the login prompt.
 
 inherit testimage
-DEPLOY_DIR_TESTSUITE ?= "${DEPLOY_DIR}/testsuite"
+DEPLOY_DIR_TESTSUITE ?= "${DEPLOY_DIR}/testsuite/${IMAGE_BASENAME}"
 
 # Extra target binaries not installed in the target image, required for image testing.
 IOTQA_TESTIMAGEDEPENDS += "mraa-test read-map shm-util gdb upm-test"
@@ -180,6 +180,19 @@ def copy_manifest(d, tdir):
     import shutil
     shutil.copytree(srcpath, tdir)
 
+def make_manifest(d, tdir):
+    common_testfile = "refkit-image-common.manifest"
+    profile_testfile = d.getVar("IMAGE_BASENAME", True) + ".manifest"
+    manifest_name = "image-testplan.manifest"
+    with open(os.path.join(tdir, common_testfile), "r") as f:
+      common_tests = f.read()
+    profile_tests = ""
+    if not profile_testfile == "refkit-image-common.manifest":
+      with open(os.path.join(tdir, profile_testfile), "r") as f:
+        profile_tests = f.read()
+    with open(os.path.join(tdir, manifest_name), "w") as f:
+      f.write(common_tests + profile_tests)
+
 def re_creat_dir(path):
     bb.utils.remove(path, recurse=True)
     bb.utils.mkdirhier(path)
@@ -206,6 +219,7 @@ python do_test_iot_export() {
     export_testsuite(d, exportdir)
     plandir = os.path.join(exportdir, "testplan")
     copy_manifest(d, plandir)
+    make_manifest(d, plandir)
     outdir = d.getVar("DEPLOY_DIR_TESTSUITE", True)
     bb.utils.mkdirhier(outdir)
     fname = os.path.join(outdir, "iot-testsuite.tar.gz")
