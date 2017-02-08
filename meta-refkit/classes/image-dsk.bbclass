@@ -33,6 +33,7 @@ IMAGE_NAME_SUFFIX = ""
 
 do_uefiapp[depends] += " \
                          systemd-boot:do_deploy \
+                         rmc-db:do_deploy \
                          virtual/kernel:do_deploy \
                          initramfs-framework:do_populate_sysroot \
                          intel-microcode:do_deploy \
@@ -209,6 +210,11 @@ export PART_%(pnum)d_FS=%(filesystem)s
     with open(d.expand('${B}/emmc-partitions-data'), 'w') as emmc_part_data:
         emmc_part_data.write(partition_data)
     shutil.copyfile(d.expand('${B}/emmc-partitions-data'), d.expand('${DEPLOYDIR}/emmc-partitions-data'))
+
+    # The RMC database is deployed unconditionally but not read if the BIOS is in SecureBoot mode.
+    # XXX: However, the check for SecureBoot is not present. The bug is tracked in
+    # https://bugzilla.yoctoproject.org/show_bug.cgi?id=11030
+    shutil.copyfile(d.expand('${DEPLOY_DIR_IMAGE}/rmc.db'), d.expand('${DEPLOYDIR}/rmc.db'))
 }
 
 DEPLOYDIR = "${WORKDIR}/uefiapp-${PN}"
