@@ -112,7 +112,8 @@ class BaseOsTest(oeRuntimeTest):
             "Direct firmware load for i915/bxt_dmc_ver1_07.bin failed",
             "Direct firmware load for iwlwifi-8000C",
             "ACPI Error: Could not enable RealTimeClock event",
-            "hci_intel: probe of INT33E1:00 failed with error -2"
+            "hci_intel: probe of INT33E1:00 failed with error -2",
+            "Error changing net interface name 'usb0' to"
             ]
         self.longMessage = True
         cmd = "journalctl -ab"
