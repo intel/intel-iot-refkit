@@ -177,6 +177,7 @@ libtool@core
 libunistring@core
 libunwind@core
 liburcu@core
+libusb-compat@core
 libusb1@core
 libva-intel-driver@intel
 libva@core
@@ -269,6 +270,7 @@ udp-smack-test@security-smack
 update-rc.d@core
 upm-test@iotqa
 upm@refkit
+usbutils@core
 util-linux@core
 util-macros@core
 v4l-utils@openembedded-layer
