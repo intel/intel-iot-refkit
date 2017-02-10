@@ -19,6 +19,8 @@ REFKIT_IMAGE_COMMON_EXTRA_INSTALL ?= "${REFKIT_IMAGE_INSTALL_COMMON}"
 REFKIT_IMAGE_EXTRA_FEATURES += "${REFKIT_IMAGE_COMMON_EXTRA_FEATURES}"
 REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_IMAGE_COMMON_EXTRA_INSTALL}"
 
+REFKIT_IMAGE_EXTRA_INSTALL += "clang"
+
 # If the default "refkit-image-common" name is
 # undesirable, write a custom image recipe similar to this one here (although
 # refkit-image-minimal.bb might be a better starting point), or customize the
