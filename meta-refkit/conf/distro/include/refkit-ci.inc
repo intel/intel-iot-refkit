@@ -55,7 +55,7 @@ REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 # Any other symbols would be skipped in parser.
 #
 # Following targets would be used to perform default build task:
-REFKIT_CI_BUILD_TARGETS="refkit-image-minimal refkit-image-common refkit-image-computervision refkit-image-gateway"
+REFKIT_CI_BUILD_TARGETS="refkit-image-common"
 # Following targets would be executed with do_populate_sdk task
 REFKIT_CI_SDK_TARGETS=""
 # Following targets would be executed with do_populate_sdk_ext task.
@@ -70,8 +70,6 @@ REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common"
 # <image_name>,<testsuite_name>,<testfiles_name>,$MACHINE
 REFKIT_CI_TEST_RUNS=" \
   refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
-  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
-  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
 "
 
 # Dont use disk space monitor in CI builds, to avoid frequent
