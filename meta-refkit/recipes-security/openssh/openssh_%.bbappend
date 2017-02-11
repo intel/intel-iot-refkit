@@ -1,6 +1,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-RDEPENDS_${PN} += "iptables"
+RDEPENDS_${PN}-sshd += "iptables"
 
 SRC_URI_append = "\
     file://${PN}-ipv4.conf \
