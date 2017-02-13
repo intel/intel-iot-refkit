@@ -118,8 +118,8 @@ try {
                         export GIT_PROXY_COMMAND=oe-git-proxy
                         export CI_BUILD_ID=${ci_build_id}
                         export TARGET_MACHINE=${target_machine}
-                        export GIT_COMMITTER_NAME="Ostro Project CI"
-                        export GIT_COMMITTER_EMAIL='ci@ostroproject.org'
+                        export GIT_COMMITTER_NAME="IOT Refkit CI"
+                        export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
                     """
                     timestamps {
                         sshagent(['github-auth-ssh']) {
