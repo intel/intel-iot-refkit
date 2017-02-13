@@ -256,10 +256,6 @@ try {
     } else {
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
-            global_sum_log += "\nJob: ${env.BUILD_URL}\n"
-            // note, env.BUILD_URL has terminating slash
-            global_sum_log += "Console output: ${env.BUILD_URL}console\n"
-            global_sum_log += "Images: ${ci_build_url}/\n"
             def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
             echo "${global_sum_log}"
             node('rk-mailer') {
