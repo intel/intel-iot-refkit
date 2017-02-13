@@ -1,3 +1,5 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
 DEPENDS = "libusb1 ${@bb.utils.contains('DISTRO_FEATURES', 'x11 opengl', 'libpng libglu glfw', '', d)}"
 
 EXTRA_OECMAKE = " \
@@ -7,3 +9,8 @@ EXTRA_OECMAKE = " \
  
 PACKAGES = "${PN} ${PN}-dbg ${PN}-dev ${@bb.utils.contains('DISTRO_FEATURES', 'x11 opengl', '${PN}-examples ${PN}-graphical-examples', '', d)}"
 
+SRC_URI_append = " \
+    file://0001-scripts-removed-bashisms.patch \
+"
+
+RDEPENDS_${PN}_remove = "bash"
