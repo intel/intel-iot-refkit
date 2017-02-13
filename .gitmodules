@@ -25,3 +25,6 @@
 [submodule "meta-security-isafw"]
 	path = meta-security-isafw
 	url = https://github.com/01org/meta-security-isafw.git
+[submodule "meta-clang"]
+	path = meta-clang
+	url = https://github.com/kraj/meta-clang.git
