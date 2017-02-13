@@ -47,6 +47,7 @@ def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def ci_build_url = "${env.COORD_BASE_URL}/builds/${env.JOB_NAME}/${ci_build_id}"
 def testing_script = ""
 def testinfo_data = [:]
+def ci_git_commit = ""
 def global_sum_log = ""
 
 try {
@@ -147,6 +148,7 @@ try {
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
                     testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
+                    ci_git_commit = readFile("ci_git_commit").trim()
                 } // ws
             } // node
         } // build_runs =
@@ -256,6 +258,7 @@ try {
     } else {
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
+            global_sum_log += "\nGit commit hash: ${ci_git_commit}"
             def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
             echo "${global_sum_log}"
             node('rk-mailer') {
