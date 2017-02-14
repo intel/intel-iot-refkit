@@ -8,4 +8,5 @@ RDEPENDS_${PN} = " \
     gstreamer1.0-vaapi \
     gstreamer1.0-plugins-good \
     libva-intel-driver \
+    librealsense \
 "

@@ -1,0 +1,58 @@
+From e23c5f6c42f020a1356e870776869becafcf67c4 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Thu, 9 Feb 2017 13:19:26 +0200
+Subject: [PATCH] scripts: removed bashisms.
+
+The udev configuration files might be used on systems which don't have
+bash installed. Convert the scripts to use "any shell" instead of bash.
+Also fix a few issues found by shellcheck.
+
+Upstream-status: Submitted [https://github.com/IntelRealSense/librealsense/pull/434]
+
+---
+ config/usb-R200-in      | 10 +++++-----
+ config/usb-R200-in_udev |  4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/config/usb-R200-in b/config/usb-R200-in
+index 6eed625..7e88886 100644
+--- a/config/usb-R200-in
++++ b/config/usb-R200-in
+@@ -1,12 +1,12 @@
+-#!/bin/bash
++#!/bin/sh
+ lockdir="/dswork.lock"
+ if mkdir "$lockdir" 
+     then 
+         # Successfully acquired lock
+         for i in $(ls /sys/bus/usb/drivers/uvcvideo/|grep :) ; do
+-             echo $i >/sys/bus/usb/drivers/uvcvideo/unbind
+-            echo $i >/sys/bus/usb/drivers/uvcvideo/bind
+-            echo "Reseting" $i
++            echo "$i" >/sys/bus/usb/drivers/uvcvideo/unbind
++            echo "$i" >/sys/bus/usb/drivers/uvcvideo/bind
++            echo "Reseting" "$i"
+         done    
+ 
+         sleep 2
+@@ -14,4 +14,4 @@ if mkdir "$lockdir"
+     else
+         # Cannot acquire lock. Aborting.
+         exit 0
+-fi
+\ No newline at end of file
++fi
+diff --git a/config/usb-R200-in_udev b/config/usb-R200-in_udev
+index 093d1b1..299d30e 100644
+--- a/config/usb-R200-in_udev
++++ b/config/usb-R200-in_udev
+@@ -1,3 +1,3 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+-/usr/local/bin/usb-R200-in &
+\ No newline at end of file
++/usr/local/bin/usb-R200-in &
+-- 
+2.9.3
+

@@ -168,6 +168,7 @@ libpciaccess@core
 libpcre@core
 libpng@core
 libpthread-stubs@core
+librealsense@librealsense
 libsamplerate0@core
 libsndfile1@core
 libsocketcan@openembedded-layer
