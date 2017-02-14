@@ -23,6 +23,7 @@ export LC_ALL=en_US.UTF-8
 cd $WORKSPACE
 # get git commit ID of the project for using in buildhistory tagging
 CI_GIT_COMMIT=$(git rev-parse HEAD)
+echo ${CI_GIT_COMMIT} > ci_git_commit
 
 # document env.vars in build log
 env |sort
