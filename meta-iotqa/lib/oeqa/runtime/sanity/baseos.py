@@ -134,5 +134,5 @@ class BaseOsTest(oeRuntimeTest):
                 if flag == 0 :
                     errors.append(line)
 
-        self.assertEqual(len(errors), 0, msg="\nErrors in boot log:\n" +
-                                             "\n".join(errors))
+        self.assertEqual(len(errors), 0, "Errors in boot log:\n %s, \nFull log:\n %s"
+                                  % ("\n".join(errors), journal))
