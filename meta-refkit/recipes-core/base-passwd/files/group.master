@@ -1,4 +1,5 @@
 root:*:0:
+audio:*:29:
 rfkill:*:50:
 nobody:*:65533:
 nogroup:*:65534:

@@ -31,6 +31,7 @@
 
 acl@core
 alsa-lib@core
+alsa-plugins@core
 alsa-state@core
 alsa-utils@core
 appfw-test-app@iotqa
@@ -221,6 +222,7 @@ ppp@core
 procps@core
 protobuf@openembedded-layer
 ptest-runner@core
+pulseaudio@core
 python-dbus@core
 python-nose@core
 python-numpy@core
@@ -239,6 +241,7 @@ rmc-db@intel
 rmc@intel
 rsync@core
 run-postinsts@core
+sbc@core
 sed@core
 shadow-securetty@core
 shadow@core
