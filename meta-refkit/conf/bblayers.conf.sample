@@ -1,6 +1,6 @@
 # LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
 # changes incompatibly
-LCONF_VERSION = "2"
+LCONF_VERSION = "3"
 
 BBPATH = "${TOPDIR}"
 BBFILES ?= ""
@@ -13,20 +13,21 @@ REFKIT_LAYERS = " \
   ##OEROOT##/../meta-oic \
   ##OEROOT##/../meta-iot-web \
   ##OEROOT##/../meta-iotqa \
+  ##OEROOT##/../meta-security \
   ##OEROOT##/../meta-security-isafw \
   ##OEROOT##/../meta-intel-realsense \
   ##OEROOT##/../meta-clang \
   "
 
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-efl"
-# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-filesystems"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-filesystems"
 REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-gnome"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-gpe"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-initramfs"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-multimedia"
 REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-networking"
 REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-oe"
-# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-perl"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-perl"
 REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-python"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-ruby"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-systemd"
