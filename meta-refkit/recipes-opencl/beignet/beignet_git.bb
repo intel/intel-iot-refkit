@@ -4,14 +4,14 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=6b566c5b4da35d474758324899cb4562"
 SRC_URI = "git://anongit.freedesktop.org/beignet;nobranch=1 \
            file://fix-llvm-paths.patch \
            "
-SRC_URI_append_class-native = " file://0001-reduced-native-for-1.2.1.patch"
+SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.0.patch"
 SRC_URI_append_class-target = " file://0001-Run-native-gbe_bin_generater-to-compile-built-in-ker.patch"
 
 BBCLASSEXTEND = "native"
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
-PV = "1.2.1.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "097365ed1a79cd03dc689b37b03552e455eb3854"
+PV = "1.3.0.${@ 'git${SRCPV}'.replace('+', '.')}"
+SRCREV = "c8b47b1737402ff78151daec65c774d437f0b546"
 S = "${WORKDIR}/git"
 
 PROVIDES += "virtual/opencl-headers virtual/opencl-headers-cxx"
