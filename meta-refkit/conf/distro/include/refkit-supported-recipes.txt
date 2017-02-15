@@ -45,6 +45,7 @@ base-passwd@core
 bash-completion@core
 bash@core
 bc@core
+beignet@refkit
 binutils@core
 bison@core
 bluez5@core
@@ -56,6 +57,7 @@ ca-certificates@core
 cairo@core
 cantarell-fonts@core
 chrpath@core
+clang@clang-layer
 connman-conf@core
 connman@core
 coreutils@core
@@ -203,6 +205,7 @@ ncurses@core
 netbase@core
 nettle@core
 nodejs@iotweb
+ocl-icd@refkit
 oe-swupd-helpers@meta-swupd
 opencv@openembedded-layer
 openjdk-8@meta-java

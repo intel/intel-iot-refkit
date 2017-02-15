@@ -9,4 +9,5 @@ RDEPENDS_${PN} = " \
     gstreamer1.0-plugins-good \
     libva-intel-driver \
     librealsense \
+    packagegroup-opencl \
 "
