@@ -28,3 +28,7 @@
 [submodule "meta-intel-realsense"]
 	path = meta-intel-realsense
 	url = https://github.com/IntelRealSense/meta-intel-realsense.git
+[submodule "meta-security"]
+	path = meta-security
+	url = https://github.com/pohly/meta-security.git
+	branch = swtpm
