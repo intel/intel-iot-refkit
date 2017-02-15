@@ -28,3 +28,7 @@
 [submodule "meta-intel-realsense"]
 	path = meta-intel-realsense
 	url = https://github.com/IntelRealSense/meta-intel-realsense.git
+[submodule "meta-clang"]
+	path = meta-clang
+	url = https://github.com/kraj/meta-clang.git
+	branch = krogoth
