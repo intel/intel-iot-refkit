@@ -4,6 +4,7 @@ foodine-pythontest:x:1002:1002::/home/foodine-pythontest:/sbin/nologin
 iodine-nodetest:x:1001:1001::/home/iodine-nodetest:/sbin/nologin
 messagebus:x:998:998::/var/lib/dbus:/bin/false
 nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
+pulse:x:1122:1122::/var/run/pulse:/sbin/nologin
 restful:x:991:991::/home/restful:/bin/false
 root:x:0:0:root:/home/root:/bin/sh
 sshd:x:992:992::/var/run/sshd:/bin/false
