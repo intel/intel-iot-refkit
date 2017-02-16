@@ -10,3 +10,5 @@ inherit autotools
 DEPENDS += "ruby-native"
 
 BBCLASSEXTEND = "native"
+
+PROVIDES = "virtual/opencl-icd"
