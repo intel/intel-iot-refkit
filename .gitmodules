@@ -1,6 +1,6 @@
 [submodule "openembedded-core"]
 	path = openembedded-core
-	url = http://git.openembedded.org/openembedded-core
+	url = https://github.com/pohly/openembedded-core.git
 	branch = master
 [submodule "bitbake"]
 	path = bitbake
