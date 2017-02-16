@@ -282,6 +282,7 @@ util-macros@core
 v4l-utils@openembedded-layer
 v86d@core
 valgrind@core
+viennacl@refkit
 vim@openembedded-layer
 volatile-binds@core
 wget@core

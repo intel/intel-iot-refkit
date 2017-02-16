@@ -1,0 +1,81 @@
+From f07abb1771586b21de27ae76b11aa148dd95b92b Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Thu, 16 Feb 2017 16:16:36 +0200
+Subject: [PATCH] examples: install also benchmarks and tutorials.
+
+These cannot really be compiled on the target, so package them.
+
+Upstream-status: Inappropriate [test code]
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ examples/benchmarks/CMakeLists.txt | 3 +++
+ examples/tutorial/CMakeLists.txt   | 4 ++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/examples/benchmarks/CMakeLists.txt b/examples/benchmarks/CMakeLists.txt
+index d0d7bf6..e079a8d 100644
+--- a/examples/benchmarks/CMakeLists.txt
++++ b/examples/benchmarks/CMakeLists.txt
+@@ -8,6 +8,7 @@ if (ENABLE_UBLAS)
+     foreach(bench sparse solver direct_solve)
+       add_executable(${bench}-bench-cpu ${bench}.cpp)
+       target_link_libraries(${bench}-bench-cpu ${Boost_LIBRARIES})
++      install(TARGETS ${bench}-bench-cpu DESTINATION bin)
+     endforeach()
+ endif (ENABLE_UBLAS)
+ 
+@@ -19,6 +20,7 @@ if (ENABLE_OPENCL)
+     add_executable(${bench}-bench-opencl ${bench}.cpp)
+     target_link_libraries(${bench}-bench-opencl ${OPENCL_LIBRARIES})
+     set_target_properties(${bench}-bench-opencl PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++    install(TARGETS ${bench}-bench-opencl DESTINATION bin)
+   endforeach()
+ 
+   if (ENABLE_UBLAS)
+@@ -27,6 +29,7 @@ if (ENABLE_OPENCL)
+        add_executable(${bench}-bench-opencl ${bench}.cpp)
+        target_link_libraries(${bench}-bench-opencl ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
+        set_target_properties(${bench}-bench-opencl PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++       install(TARGETS ${bench}-bench-opencl DESTINATION bin)
+      endforeach()
+   endif (ENABLE_UBLAS)
+ 
+diff --git a/examples/tutorial/CMakeLists.txt b/examples/tutorial/CMakeLists.txt
+index 2991b2e..e96c16d 100644
+--- a/examples/tutorial/CMakeLists.txt
++++ b/examples/tutorial/CMakeLists.txt
+@@ -9,6 +9,7 @@ foreach(tut amg bandwidth-reduction blas1 fft iterative-custom matrix-free nmf s
+    if (ENABLE_OPENCL)
+      target_link_libraries(${tut} ${OPENCL_LIBRARIES})
+      set_target_properties(${tut} PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++     install(TARGETS ${tut} DESTINATION bin)
+    endif (ENABLE_OPENCL)
+ endforeach()
+ 
+@@ -20,6 +21,7 @@ if (ENABLE_UBLAS)
+       if (ENABLE_OPENCL)
+         target_link_libraries(${tut} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
+         set_target_properties(${tut} PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++        install(TARGETS ${tut} DESTINATION bin)
+       endif (ENABLE_OPENCL)
+    endforeach()
+ endif ()
+@@ -64,6 +66,7 @@ if (ENABLE_OPENCL)
+     add_executable(${tut} ${tut}.cpp)
+     target_link_libraries(${tut} ${OPENCL_LIBRARIES})
+     set_target_properties(${tut} PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++    install(TARGETS ${tut} DESTINATION bin)
+   endforeach()
+ 
+   if (ENABLE_UBLAS)
+@@ -74,6 +77,7 @@ if (ENABLE_OPENCL)
+         if (ENABLE_OPENCL)
+           target_link_libraries(${tut} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
+           set_target_properties(${tut} PROPERTIES COMPILE_FLAGS "-DVIENNACL_WITH_OPENCL")
++          install(TARGETS ${tut} DESTINATION bin)
+         endif (ENABLE_OPENCL)
+     endforeach()
+   endif ()
+-- 
+2.9.3
+
