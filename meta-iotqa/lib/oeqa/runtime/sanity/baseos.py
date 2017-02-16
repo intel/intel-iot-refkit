@@ -113,7 +113,8 @@ class BaseOsTest(oeRuntimeTest):
             "Direct firmware load for iwlwifi-8000C",
             "ACPI Error: Could not enable RealTimeClock event",
             "hci_intel: probe of INT33E1:00 failed with error -2",
-            "Error changing net interface name 'usb0' to"
+            "Error changing net interface name 'usb0' to",
+            "*ERROR* dp aux hw did not signal timeout"
             ]
         self.longMessage = True
         cmd = "journalctl -ab"
