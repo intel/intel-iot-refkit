@@ -381,7 +381,9 @@ ima_evm_sign_rootfs_prepend () {
 APPEND_append = "${@bb.utils.contains('IMAGE_FEATURES', 'smack', '', ' security=none', d)}"
 
 # Use what RMC gives, not the defaults in meta-intel machine configs
-APPEND_remove_intel-corei7-64 = "console=ttyS0,115200"
+# TODO: only use this once qemu also gets a serial console in RMC.
+# See https://bugzilla.yoctoproject.org/show_bug.cgi?id=11061
+# APPEND_remove_intel-corei7-64 = "console=ttyS0,115200"
 
 # In addition, when Smack is disabled in the image but enabled in the
 # distro, we strip all Smack xattrs from the rootfs. Otherwise we still
