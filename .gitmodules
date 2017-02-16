@@ -25,6 +25,7 @@
 [submodule "meta-security-isafw"]
 	path = meta-security-isafw
 	url = https://github.com/01org/meta-security-isafw.git
+	branch = devel
 [submodule "meta-intel-realsense"]
 	path = meta-intel-realsense
 	url = https://github.com/IntelRealSense/meta-intel-realsense.git
