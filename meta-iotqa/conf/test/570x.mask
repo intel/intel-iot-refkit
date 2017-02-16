@@ -1,0 +1,2 @@
+# This file contains tests that can't be run on Joule 570x
+# /docker/tester-exec.sh will use this file to remove tests from a manifest
