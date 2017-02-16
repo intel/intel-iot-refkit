@@ -60,6 +60,7 @@ IMAGE_FEATURES[validitems] += " \
     ima \
     smack \
     swupd \
+    dm-verity \
     ${REFKIT_IMAGE_PKG_FEATURES} \
 "
 
@@ -105,7 +106,7 @@ IMAGE_INSTALL_append = "${@ ' efi-combo-trigger' if ${REFKIT_USE_DSK_IMAGES} and
 # Setting a label explicitly on the directory prevents it
 # from inheriting other undesired attributes like security.SMACK64TRANSMUTE
 # from upper folders (see xattr-images.bbclass for details).
-DEPENDS_${PN}_append = " \
+DEPENDS_append = " \
     ${@ bb.utils.contains('IMAGE_FEATURES', 'swupd', 'xattr-native', '', d)} \
 "
 fix_var_lib_swupd () {
@@ -116,6 +117,36 @@ fix_var_lib_swupd () {
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND_append = " fix_var_lib_swupd;"
+
+# When using dm-verity, the rootfs has to be read-only.
+# An extra partition gets created by wic which holds the
+# hash data for the rootfs partition, including a signed
+# root hash.
+#
+# A suitable initramfs (like refkit-initramfs with the dm-verity
+# image feature enabled) then validates the signed root
+# hash and activates the rootfs. refkit-initramfs checks the
+# "dmverity" boot parameter for that. If not present or
+# the refkit-initramfs was built without dm-verity support,
+# booting proceeds without integrity protection.
+#
+# TODO: WKS_FILE_DEPENDS currently unused (see https://bugzilla.yoctoproject.org/show_bug.cgi?id=11017),
+# one has to set instead:
+# DEPENDS_append_pn-wic-tools = " cryptsetup-native openssl-native"
+WKS_FILE_DEPENDS_append = " \
+    ${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', 'cryptsetup-native openssl-native', '', d)} \
+"
+REFKIT_DM_VERITY_PARTUUID = "12345678-9abc-def0-0fed-cba987654322"
+REFKIT_DM_VERITY_PARTITION () {
+part --source dm-verity --uuid ${REFKIT_DM_VERITY_PARTUUID} --label rootfs
+}
+REFKIT_EXTRA_PARTITION .= "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', d.getVar('REFKIT_DM_VERITY_PARTITION'), '', d) }"
+APPEND_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' dmverity=PARTUUID=${REFKIT_DM_VERITY_PARTUUID}', '', d) }"
+WICVARS_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' \
+    REFKIT_DMVERITY_PRIVATE_KEY \
+    REFKIT_DMVERITY_PASSWORD \
+    ', '', d) } \
+"
 
 # Make progress messages from do_swupd_update visible as normal command
 # line output, instead of just recording it to the logs. Useful
@@ -274,7 +305,12 @@ IMAGE_FSTYPES_remove = "live"
 # Activate "dsk" image type.
 IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
 
+# By default, the full image is going to use roughly 4GB, independent
+# of the actual roofs size.
 WKS_FILE = "refkit-directdisk.wks.in"
+REFKIT_VFAT_MB ??= "40"
+REFKIT_IMAGE_SIZE ??= "--fixed-size 3700M"
+REFKIT_EXTRA_PARTITION ??= ""
 WIC_CREATE_EXTRA_ARGS += " -D"
 
 # Inherit after setting variables that get evaluated when importing

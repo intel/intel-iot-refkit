@@ -1,6 +1,13 @@
 # Use the pre-generated keys for IMA signing.
 IMA_EVM_KEY_DIR = "${IMA_EVM_BASE}/data/debug-keys"
 
+# Use the pre-generated OpenSSL keys for dm-verity signing with
+# well-known password "refkit" passed directly via the command line.
+# Other openssl -passin variants (for example, file:<path to password file>)
+# also work.
+REFKIT_DMVERITY_PRIVATE_KEY = "${META_REFKIT_BASE}/files/dm-verity/private.pem"
+REFKIT_DMVERITY_PASSWORD = "pass:refkit"
+
 # Enable local root access. Always use _append, to
 # avoid getting this change overwritten by a
 # REFKIT_IMAGE_EXTRA_FEATURES = "foo" in local.conf.

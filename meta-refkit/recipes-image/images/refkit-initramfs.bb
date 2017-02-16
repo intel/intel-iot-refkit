@@ -30,11 +30,21 @@ IMAGE_FEATURES = ""
 # Instead we have additional image feature(s).
 IMAGE_FEATURES[validitems] += " \
     ima \
+    luks \
+    dm-verity \
 "
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'ima', 'ima', '', d)} \
 "
 FEATURE_PACKAGES_ima = "initramfs-framework-ima"
+IMAGE_FEATURES += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'luks', 'luks', '', d)} \
+"
+FEATURE_PACKAGES_luks = "initramfs-framework-refkit-luks"
+IMAGE_FEATURES += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'dm-verity', '', d)} \
+"
+FEATURE_PACKAGES_dm-verity = "initramfs-framework-refkit-dm-verity"
 
 IMAGE_LINGUAS = ""
 
