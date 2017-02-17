@@ -93,28 +93,7 @@ class BaseOsTest(oeRuntimeTest):
     def test_baseos_systemd_boot_error(self):
         ''' check systemd boot journal error'''
         known_issues_list = [
-            "GPT: Use GNU Parted to correct GPT errors",
-            # IOTOS-1575 [Edison] wpa_supplicant error during system booting
-            "Failed to open config file '/etc/wpa_supplicant/wpa_supplicant-wlan0.conf'",
-            # ignore kernel errors
-            "^\w{3,} \d{,2} \d{2}:\d{2}:\d{2} \S+ kernel:",
-            # IOTOS-1691 Ethernet relevant errors at system startup
-            "Error changing net interface name \S+ to \S+: Device or resource busy",
-            "open error Permission denied for /var/lib/connman/ethernet_\S+_cable/data",
-            # Error from Beaglebone Black USB keyboard or ethernet emulation
-            "0003:8086:BEEF.0001",
-            # Harmless error
-            "[drm] parse error at position 4 in video mode 'efifb'",
-            # Errors from bad Intel(r) 500 series support
-            "ACPI Error: Could not enable PowerButton event",
-            "button: probe of LNXPWRBN:00 failed with error -22",
-            "probe of LNXPWRBN:00 failed",
-            "Direct firmware load for i915/bxt_dmc_ver1_07.bin failed",
-            "Direct firmware load for iwlwifi-8000C",
-            "ACPI Error: Could not enable RealTimeClock event",
-            "hci_intel: probe of INT33E1:00 failed with error -2",
-            "Error changing net interface name 'usb0' to",
-            "*ERROR* dp aux hw did not signal timeout"
+
             ]
         self.longMessage = True
         cmd = "journalctl -ab"
@@ -127,13 +106,7 @@ class BaseOsTest(oeRuntimeTest):
         errors = []
         for line in output.split('\n'):
             if 'error' in line.lower():
-                flag = 0
-                for issue in known_issues_list:
-                    if issue in line:
-                        flag = 1
-                        break
-                if flag == 0 :
-                    errors.append(line)
+                errors.append(line)
 
         self.assertEqual(len(errors), 0, "Errors in boot log:\n %s, \nFull log:\n %s"
                                   % ("\n".join(errors), journal))
