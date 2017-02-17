@@ -7,7 +7,7 @@ Iot Reference OS Kit for Intel(r) Architecture project.
 Installing Docker on Linux
 ==========================
 
-You’ll need Docker installed to build locally. Using Docker provides
+It's possible to build the project in a Docker container. Using Docker provides
 a packaged and controlled environment for building an
 image, eliminating development environment issues that
 can occur with differing Linux OS distros and versions, different host
