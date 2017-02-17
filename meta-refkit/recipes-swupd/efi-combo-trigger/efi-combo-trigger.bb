@@ -1,6 +1,7 @@
 DESCRIPTION = "swupd plugin for updating the kernel+initramfs combo in the EFI system partition"
 PV = "1.0"
 LICENSE = "MIT"
+DEPENDS = "glib-2.0"
 
 SRC_URI = " \
     file://efi_combo_updater.c \
