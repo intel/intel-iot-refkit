@@ -1,0 +1,7 @@
+#!/bin/sh -ex
+
+IMAGE_DIR=tmp-glibc/deploy/images/intel-corei7-64
+truncate -s 4G $IMAGE_DIR/my-installed-image-intel-corei7-64.wic
+cp $IMAGE_DIR/refkit-installer-image-intel-corei7-64.qemuboot.conf $IMAGE_DIR/my-installed-image-intel-corei7-64.qemuboot.conf
+SWTPM=$(ls tmp-glibc/work/*/swtpm-wrappers/1.0-r0/swtpm_oe.sh)
+runqemu serial nographic refkit-installer-image wic intel-corei7-64 "qemuparams=-drive if=virtio,file=$IMAGE_DIR/my-installed-image-intel-corei7-64.wic,format=raw -tpmdev emulator,id=tpm0,tpmstatedir=$IMAGE_DIR/my-tpm,logfile=$IMAGE_DIR/my-tpm/swtpm.log,path=$SWTPM -device tpm-tis,tpmdev=tpm0" ovmf
