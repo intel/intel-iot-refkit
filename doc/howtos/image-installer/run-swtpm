@@ -1,0 +1,10 @@
+#!/bin/sh -ex
+
+IMAGE_DIR=tmp-glibc/deploy/images/intel-corei7-64
+# LOGFILE=tmp-glibc/log/swtpm_cuse.log
+# rm -f $LOGFILE
+# touch $LOGFILE
+# Beware, need absolute paths!
+# --log file=$(realpath $LOGFILE),level=20
+sudo tmp-glibc/work/*/swtpm-wrappers/1.0-r0/swtpm_cuse_oe.sh -n vtpm0 --tpmstate dir=$(realpath $IMAGE_DIR/my-tpm)
+sudo chown $(id -u) /dev/vtpm0

@@ -1,0 +1,4 @@
+#!/bin/sh -ex
+
+IMAGE_DIR=tmp-glibc/deploy/images/intel-corei7-64
+runqemu serial nographic my-installed-image wic intel-corei7-64 "qemuparams=-tpmdev cuse-tpm,id=tpm0,path=/dev/vtpm0 -device tpm-tis,tpmdev=tpm0" ovmf

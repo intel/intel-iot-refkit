@@ -1,0 +1,6 @@
+#!/bin/sh -ex
+
+IMAGE_DIR=tmp-glibc/deploy/images/intel-corei7-64
+truncate -s 4G $IMAGE_DIR/my-installed-image-intel-corei7-64.wic
+cp $IMAGE_DIR/refkit-installer-image-intel-corei7-64.qemuboot.conf $IMAGE_DIR/my-installed-image-intel-corei7-64.qemuboot.conf
+runqemu serial nographic refkit-installer-image wic intel-corei7-64 "qemuparams=-drive if=virtio,file=$IMAGE_DIR/my-installed-image-intel-corei7-64.wic,format=raw -tpmdev cuse-tpm,id=tpm0,path=/dev/vtpm0 -device tpm-tis,tpmdev=tpm0" ovmf

@@ -1,0 +1,6 @@
+#!/bin/sh -ex
+
+IMAGE_DIR=tmp-glibc/deploy/images/intel-corei7-64
+rm -rf $IMAGE_DIR/my-tpm
+mkdir $IMAGE_DIR/my-tpm
+tmp-glibc/work/*/swtpm-wrappers/1.0-r0/swtpm_setup_oe.sh --tpm-state $IMAGE_DIR/my-tpm --createek
