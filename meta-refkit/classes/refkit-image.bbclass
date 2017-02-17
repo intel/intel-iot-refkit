@@ -44,6 +44,7 @@ REFKIT_IMAGE_PKG_FEATURES = " \
     tools-debug \
     tools-develop \
     alsa \
+    bluetooth-audio \
 "
 
 REFKIT_IMAGE_PKG_FEATURES += " \
@@ -209,6 +210,8 @@ FEATURE_PACKAGES_nodejs-runtime-tools = "packagegroup-nodejs-runtime-tools"
 FEATURE_PACKAGES_python-runtime = "packagegroup-python-runtime"
 
 FEATURE_PACKAGES_alsa = "alsa-utils alsa-state"
+
+FEATURE_PACKAGES_bluetooth-audio = "packagegroup-bluetooth-audio"
 
 # git is not essential for compiling software, but include it anyway
 # because it is the most common source code management tool.
