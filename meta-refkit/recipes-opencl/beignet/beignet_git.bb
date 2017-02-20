@@ -16,7 +16,8 @@ S = "${WORKDIR}/git"
 
 PROVIDES += "virtual/opencl-headers virtual/opencl-headers-cxx"
 
-DEPENDS = "beignet-native clang libdrm mesa"
+# we need to depend on ocl-icd, so that the exported symbols go right
+DEPENDS = "beignet-native clang libdrm mesa ocl-icd"
 DEPENDS_class-native = "clang-native"
 
 # built-in kernels depend on libocl's headers (e.g. ocl_as.h) yet there is no
