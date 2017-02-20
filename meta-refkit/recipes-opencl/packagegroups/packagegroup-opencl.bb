@@ -4,6 +4,7 @@ LICENSE = "MIT"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    beignet \
+    beignet-minnowmax \
+    beignet-570x \
     ocl-icd \
 "

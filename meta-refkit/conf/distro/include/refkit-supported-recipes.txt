@@ -45,7 +45,8 @@ base-passwd@core
 bash-completion@core
 bash@core
 bc@core
-beignet@refkit
+beignet-570x@refkit
+beignet-minnowmax@refkit
 binutils@core
 bison@core
 bluez5@core
@@ -207,6 +208,7 @@ nettle@core
 nodejs@iotweb
 ocl-icd@refkit
 oe-swupd-helpers@meta-swupd
+opencl-headers@refkit
 opencv@openembedded-layer
 openjdk-8@meta-java
 openssh@core
