@@ -187,7 +187,8 @@ def make_manifest(d, tdir):
     with open(os.path.join(tdir, common_testfile), "r") as f:
       common_tests = f.read()
     profile_tests = ""
-    if not profile_testfile == "refkit-image-common.manifest":
+    if os.path.exists(os.path.join(tdir, profile_testfile)) \
+    and profile_testfile != common_testfile:
       with open(os.path.join(tdir, profile_testfile), "r") as f:
         profile_tests = f.read()
     with open(os.path.join(tdir, manifest_name), "w") as f:
