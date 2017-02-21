@@ -36,6 +36,16 @@ IOTQA_TASK_DEPENDS = "${@ ' '.join([x + ':do_build' for x in '${IOTQA_TESTIMAGED
 # (see testimage.bbclass) but not when merely building an image.
 TESTIMAGEDEPENDS_append = " ${IOTQA_TASK_DEPENDS}"
 
+# You can include extra test cases in a testplan by appending test case
+# declarations to this variable. A test case declaration is of the
+# format
+#
+#     tc1[,tc2[,...,tcN]]:profile1[,profile2[,...,profileN]]
+#
+# where each tcn is a fully qualified test case name, and each profilen
+# is a profile (IOW currently image base-) name.
+IOTQA_EXTRA_TESTS ?= ""
+
 #get layer dir
 def get_layer_dir(d, layer):
     bbpath = d.getVar("BBPATH", True).split(':')
@@ -180,9 +190,21 @@ def copy_manifest(d, tdir):
     import shutil
     shutil.copytree(srcpath, tdir)
 
+def get_extra_tests(d, profile):
+    extra_tests = []
+    for extra in (d.getVar("IOTQA_EXTRA_TESTS") or '').split():
+        extra = extra.split(':')
+        names = extra.pop(0).split(',')
+        profiles = extra.pop(0).split(',') if extra else [profile]
+        if profile in profiles or '*' in profiles:
+           extra_tests += names
+    return '\n'.join(set(extra_tests))
+
 def make_manifest(d, tdir):
+    profile = d.getVar("IMAGE_BASENAME")
     common_testfile = "refkit-image-common.manifest"
-    profile_testfile = d.getVar("IMAGE_BASENAME", True) + ".manifest"
+    profile_testfile = profile + ".manifest"
+    extra_tests = get_extra_tests(d, profile)
     manifest_name = "image-testplan.manifest"
     with open(os.path.join(tdir, common_testfile), "r") as f:
       common_tests = f.read()
@@ -192,7 +214,7 @@ def make_manifest(d, tdir):
       with open(os.path.join(tdir, profile_testfile), "r") as f:
         profile_tests = f.read()
     with open(os.path.join(tdir, manifest_name), "w") as f:
-      f.write(common_tests + profile_tests)
+      f.write(common_tests + profile_tests + extra_tests)
 
 def re_creat_dir(path):
     bb.utils.remove(path, recurse=True)
