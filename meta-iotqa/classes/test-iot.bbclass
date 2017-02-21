@@ -46,6 +46,15 @@ TESTIMAGEDEPENDS_append = " ${IOTQA_TASK_DEPENDS}"
 # is a profile (IOW currently image base-) name.
 IOTQA_EXTRA_TESTS ?= ""
 
+# You can include extra bitbake variables in builddata.json by
+# adding (appending) the variable name to this variable. The
+# value of extra variable 'var' will be made available as
+#
+#     <builddata.json>['extra']['var']
+#
+# IOW it should be available as TextContext.d.extra.var.
+IOTQA_EXTRA_BUILDDATA ?= ""
+
 #get layer dir
 def get_layer_dir(d, layer):
     bbpath = d.getVar("BBPATH", True).split(':')
@@ -155,6 +164,13 @@ def export_testsuite(d, exportdir):
             f.write(code)
 
 #dump build data to external file
+def get_extra_savedata(d, savedata):
+    extra = {}
+    for var in (d.getVar("IOTQA_EXTRA_BUILDDATA") or '').split():
+        val = d.getVar(var) or ''
+        extra[var] = val
+    savedata["extra"] = extra
+
 def dump_builddata(d, tdir):
     import json
 
@@ -168,6 +184,8 @@ def dump_builddata(d, tdir):
             savedata["pkgmanifest"] = [ pkg.strip() for pkg in pkgs ]
     except IOError as e:
         bb.fatal("No package manifest file found: %s" % e)
+
+    get_extra_savedata(d, savedata)
 
     bdpath = os.path.join(tdir, "builddata.json")
     with open(bdpath, "w+") as f:
