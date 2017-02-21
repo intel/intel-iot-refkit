@@ -75,7 +75,7 @@ DSK_IMAGE_LAYOUT ??= ' \
     "partition_01_primary_uefi_boot": { \
         "name": "primary_uefi", \
         "uuid": 0, \
-        "size_mb": 15, \
+        "size_mb": 32, \
         "source": "${IMAGE_ROOTFS}/boot/", \
         "filesystem": "vfat", \
         "type": "${PARTITION_TYPE_EFI}" \
@@ -83,7 +83,7 @@ DSK_IMAGE_LAYOUT ??= ' \
     "partition_02_secondary_uefi_boot": { \
         "name": "secondary_uefi", \
         "uuid": 0, \
-        "size_mb": 15, \
+        "size_mb": 32, \
         "source": "${IMAGE_ROOTFS}/boot/", \
         "filesystem": "vfat", \
         "type": "${PARTITION_TYPE_EFI_BACKUP}" \
@@ -91,7 +91,7 @@ DSK_IMAGE_LAYOUT ??= ' \
     "partition_03_rootfs": { \
         "name": "rootfs", \
         "uuid": "${REMOVABLE_MEDIA_ROOTFS_PARTUUID_VALUE}", \
-        "size_mb": 3700, \
+        "size_mb": 3968, \
         "source": "${IMAGE_ROOTFS}", \
         "filesystem": "ext4", \
         "type": "8300" \
