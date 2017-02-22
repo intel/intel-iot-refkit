@@ -1,3 +1,4 @@
 # This file contains tests that can't be run on Minnowboard Turbot
 # /docker/tester-exec.sh will use this file to remove tests from a manifest
 oeqa.runtime.sanity.comm_btcheck
+oeqa.runtime.sanity.comm_wifi_connect
