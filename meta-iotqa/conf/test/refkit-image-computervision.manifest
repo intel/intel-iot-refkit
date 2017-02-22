@@ -1,1 +1,2 @@
 # Tests for computervision profile
+oeqa.runtime.computervision.realsense_headless
