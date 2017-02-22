@@ -93,6 +93,14 @@ testimg() {
     RECORD_ARG=""
   fi
 
+  # Remove incompatible tests for the DUT from image-testplan.manifest
+  MASKFILE=./iottest/testplan/${DEVICE}.mask
+  MANIFEST=./iottest/testplan/image-testplan.manifest
+  set +e # 'grep -cFwf' exit code isn't 0 if no tests get masked so ignore it
+  num_masked=$(grep -cFwf ${MASKFILE} ${MANIFEST})
+  set -e
+  grep -Fvxf ${MASKFILE} ${MANIFEST} > tmp && mv tmp ${MANIFEST}
+
   # Execute with +e to make sure that possibly created log files get
   # renamed, archived, published even when AFT or some of renaming fails
   set +e
@@ -108,7 +116,7 @@ testimg() {
   # create summary file to be used in email notification sending
   _reports=`ls TEST-${DEVICE}.${_IMG_NAME}.*.xml`
   num_total=0
-  num_skipped=0
+  num_skipped=$((0+num_masked))
   num_failed=0
   num_error=0
   for _r in $_reports; do

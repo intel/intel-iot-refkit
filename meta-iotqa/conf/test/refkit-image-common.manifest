@@ -1,7 +1,8 @@
 # Tests for common profile
+oeqa.runtime.sanity.baseos
 oeqa.runtime.sanity.comm_ssh
 oeqa.runtime.sanity.comm_managerdaemon
-oeqa.runtime.sanity.baseos
+oeqa.runtime.sanity.comm_btcheck
 oeqa.runtime.sanity.apprt_python
 oeqa.runtime.sanity.mraa_hello
 oeqa.runtime.sanity.iotivity
