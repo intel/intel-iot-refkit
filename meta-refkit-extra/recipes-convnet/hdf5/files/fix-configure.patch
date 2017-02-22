@@ -1,0 +1,65 @@
+--- configure	2015-10-17 14:26:17.833073633 -0600
++++ configure	2015-10-17 14:25:35.569071000 -0600
+@@ -425,7 +425,7 @@
+     $as_echo "$as_me:${as_lineno-$LINENO}: error: $2" >&$4
+   fi
+   $as_echo "$as_me: error: $2" >&2
+-  as_fn_exit $as_status
++  #as_fn_exit $as_status
+ } # as_fn_error
+ 
+ if expr a : '\(a\)' >/dev/null 2>&1 &&
+@@ -4358,7 +4358,7 @@
+ $as_echo "$as_me:${as_lineno-$LINENO}: checking for C compiler version" >&5
+ set X $ac_compile
+ ac_compiler=$2
+-for ac_option in --version -v -V -qversion; do
++for ac_option in --version -v; do
+   { { ac_try="$ac_compiler $ac_option >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+@@ -5294,7 +5294,7 @@
+ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Fortran compiler version" >&5
+ set X $ac_compile
+ ac_compiler=$2
+-for ac_option in --version -v -V -qversion; do
++for ac_option in --version -v; do
+   { { ac_try="$ac_compiler $ac_option >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+@@ -5567,7 +5567,7 @@
+ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Fortran compiler version" >&5
+ set X $ac_compile
+ ac_compiler=$2
+-for ac_option in --version -v -V -qversion; do
++for ac_option in --version -v; do
+   { { ac_try="$ac_compiler $ac_option >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+@@ -6790,7 +6790,7 @@
+ $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++ compiler version" >&5
+ set X $ac_compile
+ ac_compiler=$2
+-for ac_option in --version -v -V -qversion; do
++for ac_option in --version -v; do
+   { { ac_try="$ac_compiler $ac_option >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+@@ -28589,7 +28589,7 @@
+     $as_echo "$as_me:${as_lineno-$LINENO}: error: $2" >&$4
+   fi
+   $as_echo "$as_me: error: $2" >&2
+-  as_fn_exit $as_status
++  #as_fn_exit $as_status
+ } # as_fn_error
+ 
+ 
+@@ -30725,7 +30725,7 @@
+     $as_echo "$as_me:${as_lineno-$LINENO}: error: $2" >&$4
+   fi
+   $as_echo "$as_me: error: $2" >&2
+-  as_fn_exit $as_status
++  #as_fn_exit $as_status
+ } # as_fn_error
+ 
+ 
