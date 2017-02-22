@@ -1,0 +1,27 @@
+From ea825ebc2ec47db4d3e794fef85de698c0f955a2 Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Tue, 14 Jun 2016 12:33:40 +0300
+Subject: [PATCH] Run native gbe_bin_generater to compile built-in kernels
+
+Upstream-Status: Inappropriate [libgbe.so isn't supposed to be cross-compiled]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ backend/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/backend/CMakeLists.txt b/backend/CMakeLists.txt
+index 915d60f..c3041bc 100644
+--- a/backend/CMakeLists.txt
++++ b/backend/CMakeLists.txt
+@@ -58,6 +58,6 @@ set (GBE_BIN_GENERATER
+      PARENT_SCOPE)
+ else (USE_STANDALONE_GBE_COMPILER STREQUAL "true")
+ set (GBE_BIN_GENERATER
+-     ${GBE_BIN_GENERATER} LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/gbe_bin_generater
++     ${GBE_BIN_GENERATER} ${STANDALONE_GBE_COMPILER_DIR}/gbe_bin_generater
+      PARENT_SCOPE)
+ endif (USE_STANDALONE_GBE_COMPILER STREQUAL "true")
+-- 
+2.5.5
+

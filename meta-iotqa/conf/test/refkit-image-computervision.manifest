@@ -1,2 +1,3 @@
 # Tests for computervision profile
 oeqa.runtime.computervision.realsense_headless
+oeqa.runtime.computervision.opencl_viennacl_1

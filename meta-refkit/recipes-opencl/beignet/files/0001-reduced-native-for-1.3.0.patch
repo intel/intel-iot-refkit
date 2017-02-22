@@ -1,0 +1,160 @@
+From ce4ccd76905c48c9267c44f0b2af97456c9e638e Mon Sep 17 00:00:00 2001
+From: Tuomas Katila <tuomas.katila@intel.com>
+Date: Wed, 9 Nov 2016 11:16:40 +0200
+Subject: [PATCH] reduced native for 1.3.0
+
+Signed-off-by: Tuomas Katila <tuomas.katila@intel.com>
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ CMakeLists.txt | 116 ---------------------------------------------------------
+ 1 file changed, 116 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 02b5d88..051d808 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,7 +28,6 @@ set (NOT_BUILD_STAND_ALONE_UTEST 1)
+ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
+ 
+-
+ INCLUDE (FindPkgConfig)
+ 
+ SET(CMAKE_VERBOSE_MAKEFILE "false")
+@@ -111,119 +110,11 @@ ELSE(X11_FOUND)
+   MESSAGE(STATUS "Looking for XLib - not found")
+ ENDIF(X11_FOUND)
+ 
+-# DRM
+-pkg_check_modules(DRM REQUIRED libdrm)
+-IF(DRM_FOUND)
+-  MESSAGE(STATUS "Looking for DRM - found at ${DRM_PREFIX} ${DRM_VERSION}")
+-  INCLUDE_DIRECTORIES(${DRM_INCLUDE_DIRS})
+-ELSE(DRM_FOUND)
+-  MESSAGE(STATUS "Looking for DRM - not found")
+-ENDIF(DRM_FOUND)
+-
+ include(CheckLibraryExists)
+-# DRM Intel
+-pkg_check_modules(DRM_INTEL libdrm_intel>=2.4.52)
+-IF(DRM_INTEL_FOUND)
+-  INCLUDE_DIRECTORIES(${DRM_INTEL_INCLUDE_DIRS})
+-  MESSAGE(STATUS "Looking for DRM Intel - found at ${DRM_INTEL_PREFIX} ${DRM_INTEL_VERSION}")
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_bo_alloc_userptr" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_USERPTR)
+-  IF(HAVE_DRM_INTEL_USERPTR)
+-    MESSAGE(STATUS "Enable userptr support")
+-  ELSE(HAVE_DRM_INTEL_USERPTR)
+-    MESSAGE(STATUS "Disable userptr support")
+-  ENDIF(HAVE_DRM_INTEL_USERPTR)
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_get_eu_total" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_EU_TOTAL)
+-  IF(HAVE_DRM_INTEL_EU_TOTAL)
+-    MESSAGE(STATUS "Enable EU total query support")
+-  ELSE(HAVE_DRM_INTEL_EU_TOTAL)
+-    MESSAGE(STATUS "Disable EU total query support")
+-  ENDIF(HAVE_DRM_INTEL_EU_TOTAL)
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_get_subslice_total" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_SUBSLICE_TOTAL)
+-  IF(HAVE_DRM_INTEL_SUBSLICE_TOTAL)
+-    MESSAGE(STATUS "Enable subslice total query support")
+-  ELSE(HAVE_DRM_INTEL_SUBSLICE_TOTAL)
+-    MESSAGE(STATUS "Disable subslice total query support")
+-  ENDIF(HAVE_DRM_INTEL_SUBSLICE_TOTAL)
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_get_pooled_eu" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_POOLED_EU)
+-  IF(HAVE_DRM_INTEL_POOLED_EU)
+-    MESSAGE(STATUS "Enable pooled eu query support")
+-  ELSE(HAVE_DRM_INTEL_POOLED_EU)
+-    MESSAGE(STATUS "Disable pooled eu query support")
+-  ENDIF(HAVE_DRM_INTEL_POOLED_EU)
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_get_min_eu_in_pool" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_MIN_EU_IN_POOL)
+-  IF(HAVE_DRM_INTEL_MIN_EU_IN_POOL)
+-    MESSAGE(STATUS "Enable min eu in pool query support")
+-  ELSE(HAVE_DRM_INTEL_MIN_EU_IN_POOL)
+-    MESSAGE(STATUS "Disable min eu in pool query support")
+-  ENDIF(HAVE_DRM_INTEL_MIN_EU_IN_POOL)
+-  CHECK_LIBRARY_EXISTS(drm_intel "drm_intel_bo_set_softpin_offset" ${DRM_INTEL_LIBDIR} HAVE_DRM_INTEL_BO_SET_SOFTPIN)
+-ELSE(DRM_INTEL_FOUND)
+-  MESSAGE(FATAL_ERROR "Looking for DRM Intel (>= 2.4.52) - not found")
+-ENDIF(DRM_INTEL_FOUND)
+-
+-# CMRT
+-#disable CMRT as default, since we do not see real case,
+-#but see build issue of this feature
+-OPTION(INVOKE_CMRT "Enable CMRT" OFF)
+-IF(INVOKE_CMRT)
+-pkg_check_modules(CMRT libcmrt)
+-IF(CMRT_FOUND)
+-INCLUDE_DIRECTORIES(${CMRT_INCLUDE_DIRS})
+-ENDIF(CMRT_FOUND)
+-ENDIF(INVOKE_CMRT)
+ 
+ # Threads
+ Find_Package(Threads)
+ 
+-IF(X11_FOUND)
+-# Xext
+-pkg_check_modules(XEXT REQUIRED xext)
+-IF(XEXT_FOUND)
+-  INCLUDE_DIRECTORIES(${XEXT_INCLUDE_DIRS})
+-  MESSAGE(STATUS "Looking for Xext - found at ${XEXT_PREFIX}")
+-ELSE(XEXT_FOUND)
+-  MESSAGE(STATUS "Looking for Xext - not found")
+-ENDIF(XEXT_FOUND)
+-
+-# Xfixes
+-pkg_check_modules(XFIXES REQUIRED xfixes)
+-IF(XFIXES_FOUND)
+-  INCLUDE_DIRECTORIES(${XFIXES_INCLUDE_DIRS})
+-  MESSAGE(STATUS "Looking for Xfixes - found at ${XFIXES_PREFIX}")
+-ELSE(XFIXES_FOUND)
+-  MESSAGE(STATUS "Looking for Xfixes - not found")
+-ENDIF(XFIXES_FOUND)
+-ENDIF(X11_FOUND)
+-
+-OPTION(ENABLE_GL_SHARING "cl_khr_gl_sharing" OFF)
+-
+-IF(ENABLE_GL_SHARING)
+-  pkg_check_modules(OPENGL REQUIRED gl)
+-  IF(OPENGL_FOUND)
+-    MESSAGE(STATUS "Looking for OpenGL - found at ${OPENGL_PREFIX}")
+-  ELSE(OPENGL_FOUND)
+-    MESSAGE(STATUS "Looking for OpenGL - not found")
+-  ENDIF(OPENGL_FOUND)
+-  pkg_check_modules(EGL REQUIRED egl>=11.0.0)
+-  IF(EGL_FOUND)
+-    MESSAGE(STATUS "Looking for EGL - found at ${EGL_PREFIX}")
+-  ELSE(EGL_FOUND)
+-    MESSAGE(STATUS "Looking for EGL - not found")
+-  ENDIF(EGL_FOUND)
+-ENDIF(ENABLE_GL_SHARING)
+-
+-Find_Package(OCLIcd)
+-IF(OCLIcd_FOUND)
+-  MESSAGE(STATUS "Looking for OCL ICD header file - found")
+-  configure_file (
+-    "intel-beignet.icd.in"
+-    "${ICD_FILE_NAME}"
+-  )
+-  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME} DESTINATION /etc/OpenCL/vendors)
+-ELSE(OCLIcd_FOUND)
+-  MESSAGE(STATUS "Looking for OCL ICD header file - not found")
+-ENDIF(OCLIcd_FOUND)
+-
+ Find_Package(PythonInterp)
+ 
+ OPTION(EXPERIMENTAL_DOUBLE "Enable experimental double support" OFF)
+@@ -306,13 +197,6 @@ ENDIF(BUILD_EXAMPLES)
+ 
+ ADD_SUBDIRECTORY(include)
+ ADD_SUBDIRECTORY(backend)
+-ADD_SUBDIRECTORY(src)
+-ADD_SUBDIRECTORY(utests EXCLUDE_FROM_ALL)
+-
+-# compile benchmark only if standalone compiler is not provided
+-IF (NOT (USE_STANDALONE_GBE_COMPILER STREQUAL "true"))
+-  ADD_SUBDIRECTORY(benchmark EXCLUDE_FROM_ALL)
+-ENDIF (NOT (USE_STANDALONE_GBE_COMPILER STREQUAL "true"))
+ 
+ IF(BUILD_EXAMPLES)
+ ADD_SUBDIRECTORY(examples)
+-- 
+2.9.3
+

@@ -1,0 +1,30 @@
+From dd07cf878a84662b684c0d59e6fd8effb341174e Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Tue, 21 Feb 2017 15:13:59 +0200
+Subject: [PATCH] opencv: link dynamically against OpenCL library.
+
+This removes the need for runtime /usr/lib/libOpenCL.so symlink.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ cmake/OpenCVDetectOpenCL.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/OpenCVDetectOpenCL.cmake b/cmake/OpenCVDetectOpenCL.cmake
+index 433f244..5858945 100644
+--- a/cmake/OpenCVDetectOpenCL.cmake
++++ b/cmake/OpenCVDetectOpenCL.cmake
+@@ -3,7 +3,7 @@ if(APPLE)
+   set(OPENCL_LIBRARY "-framework OpenCL" CACHE STRING "OpenCL library")
+   set(OPENCL_INCLUDE_DIR "" CACHE PATH "OpenCL include directory")
+ else(APPLE)
+-  set(OPENCL_LIBRARY "" CACHE STRING "OpenCL library")
++  set(OPENCL_LIBRARY "-lOpenCL" CACHE STRING "OpenCL library")
+   set(OPENCL_INCLUDE_DIR "${OpenCV_SOURCE_DIR}/3rdparty/include/opencl/1.2" CACHE PATH "OpenCL include directory")
+ endif(APPLE)
+ mark_as_advanced(OPENCL_INCLUDE_DIR OPENCL_LIBRARY)
+-- 
+2.9.3
+

@@ -7,4 +7,5 @@ RDEPENDS_${PN} = " \
     opencv-samples \
     python3-opencv \
     librealsense-examples \
+    viennacl-examples \
 "
