@@ -1,0 +1,192 @@
+From 0c1d8f099dda91b2887eeb281329ddec6fcf3667 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Tue, 28 Feb 2017 16:38:26 +0200
+Subject: [PATCH 6/6] classify-demo: added a demo app for classifying images.
+
+This is a modification of the existing classify.py script in the same
+folder. The modified script is meant to be suitable for interactive use,
+which means that the results are presented on the screen in a
+human-readable format instead of saving them into a file.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ python/classify-demo.py | 165 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 165 insertions(+)
+ create mode 100755 python/classify-demo.py
+
+diff --git a/python/classify-demo.py b/python/classify-demo.py
+new file mode 100755
+index 0000000..1dd5f52
+--- /dev/null
++++ b/python/classify-demo.py
+@@ -0,0 +1,165 @@
++#!/usr/bin/env python
++"""
++classify-demo.py is a modification of classify.py meant for interactive
++demo use.
++"""
++import numpy as np
++import os
++import sys
++import argparse
++import glob
++import time
++
++import caffe
++
++
++def main(argv):
++    pycaffe_dir = os.path.dirname(__file__)
++
++    parser = argparse.ArgumentParser()
++    # Required arguments: input files.
++    parser.add_argument(
++        "input_file",
++        help="Input image, directory, or npy."
++    )
++    # Optional arguments.
++    parser.add_argument(
++        "--model_def",
++        default=os.path.join(pycaffe_dir,
++                "/usr/share/Caffe/models/bvlc_reference_caffenet/deploy.prototxt"),
++        help="Model definition file."
++    )
++    parser.add_argument(
++        "--pretrained_model",
++        default=os.path.join(pycaffe_dir,
++                "/usr/share/Caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel"),
++        help="Trained model weights file."
++    )
++    parser.add_argument(
++        "--gpu",
++        action='store_true',
++        help="Switch for gpu computation."
++    )
++    parser.add_argument(
++        "--center_only",
++        action='store_true',
++        help="Switch for prediction from center crop alone instead of " +
++             "averaging predictions across crops (default)."
++    )
++    parser.add_argument(
++        "--images_dim",
++        default='256,256',
++        help="Canonical 'height,width' dimensions of input images."
++    )
++    parser.add_argument(
++        "--mean_file",
++        default=os.path.join(pycaffe_dir,
++                             'ilsvrc_2012_mean.npy'),
++        help="Data set image mean of [Channels x Height x Width] dimensions " +
++             "(numpy array). Set to '' for no mean subtraction."
++    )
++    parser.add_argument(
++        "--input_scale",
++        type=float,
++        help="Multiply input features by this scale to finish preprocessing."
++    )
++    parser.add_argument(
++        "--raw_scale",
++        type=float,
++        default=255.0,
++        help="Multiply raw input by this scale before preprocessing."
++    )
++    parser.add_argument(
++        "--channel_swap",
++        default='2,1,0',
++        help="Order to permute input channels. The default converts " +
++             "RGB -> BGR since BGR is the Caffe default by way of OpenCV."
++    )
++    parser.add_argument(
++        "--ext",
++        default='jpg',
++        help="Image file extension to take as input when a directory " +
++             "is given as the input file."
++    )
++    parser.add_argument(
++        "--labels",
++        default='/usr/share/Caffe/data/ilsvrc12/synset_words.txt',
++        help="Image file extension to take as input when a directory " +
++             "is given as the input file."
++    )
++    args = parser.parse_args()
++
++    image_dims = [int(s) for s in args.images_dim.split(',')]
++
++    mean, channel_swap = None, None
++    if args.mean_file:
++        mean = np.load(args.mean_file)
++    if args.channel_swap:
++        channel_swap = [int(s) for s in args.channel_swap.split(',')]
++
++    if args.gpu:
++        caffe.set_mode_gpu()
++        caffe.set_devices((0,))
++        caffe.select_device(0, True)
++        print("GPU mode")
++    else:
++        caffe.set_mode_cpu()
++        print("CPU mode")
++
++    labels = []
++
++    with open(args.labels, "r") as f:
++        lines = f.readlines()
++        for line in lines:
++            labels.append(line[10:].strip())
++
++    # Make classifier.
++    classifier = caffe.Classifier(args.model_def, args.pretrained_model,
++            image_dims=image_dims, mean=mean,
++            input_scale=args.input_scale, raw_scale=args.raw_scale,
++            channel_swap=channel_swap)
++
++    # Load numpy array (.npy), directory glob (*.jpg), or image file.
++    args.input_file = os.path.expanduser(args.input_file)
++    if args.input_file.endswith('npy'):
++        print("Loading file: %s" % args.input_file)
++        inputs = np.load(args.input_file)
++    elif os.path.isdir(args.input_file):
++        print("Loading folder: %s" % args.input_file)
++        inputs =[caffe.io.load_image(im_f)
++                 for im_f in glob.glob(args.input_file + '/*.' + args.ext)]
++    else:
++        print("Loading file: %s" % args.input_file)
++        inputs = [caffe.io.load_image(args.input_file)]
++
++    print("Classifying %d inputs." % len(inputs))
++
++    # Classify.
++    start = time.time()
++    predictions = classifier.predict(inputs, not args.center_only)
++    print("Done in %.2f s." % (time.time() - start))
++
++    for prediction in predictions:
++
++        # Find three best matches.
++        first = -1
++        second = -1
++        third = -1
++
++        for x in range(len(prediction)):
++            if first == -1 or prediction[x] > prediction[first]:
++                third = second
++                second = first
++                first = x
++            elif second == -1 or prediction[x] > prediction[second]:
++                third = second
++                second = x
++            elif third == -1 or prediction[x] > prediction[third]:
++                third = x
++
++        print("First match: '%s' (%.1f %%)" % (labels[first], prediction[first]*100))
++        print("Second match: '%s' (%.1f %%)" % (labels[second], prediction[second]*100))
++        print("Third match: '%s' (%.1f %%)" % (labels[third], prediction[third]*100))
++
++if __name__ == '__main__':
++    main(sys.argv)
+-- 
+2.9.3
+

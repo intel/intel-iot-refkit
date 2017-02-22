@@ -1,0 +1,28 @@
+From a2e6ed1a11500896453c346c82713dd1869368b2 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Thu, 23 Feb 2017 18:01:09 +0200
+Subject: [PATCH 4/6] config: use Python 3.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c6f9ca6..aceb1e8 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -68,7 +68,7 @@ else()
+   caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+ endif()
+ caffe_option(BUILD_python "Build Python wrapper" ON)
+-set(python_version "2" CACHE STRING "Specify which Python version to use")
++set(python_version "3" CACHE STRING "Specify which Python version to use")
+ caffe_option(BUILD_matlab "Build Matlab wrapper" OFF)
+ caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
+ caffe_option(BUILD_python_layer "Build the Caffe Python layer" ON)
+-- 
+2.9.3
+
