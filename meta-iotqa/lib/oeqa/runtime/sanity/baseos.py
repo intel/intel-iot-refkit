@@ -106,7 +106,9 @@ class BaseOsTest(oeRuntimeTest):
             "ACPI Error: Could not enable RealTimeClock event",
             "hci_intel: probe of INT33E1:00 failed with error -2",
             "Error changing net interface name 'usb0' to",
-            "*ERROR* dp aux hw did not signal timeout"
+            "*ERROR* dp aux hw did not signal timeout",
+            # Bug 11105, in Refkit bugzilla
+            "file /var/lib/alsa/asound.state lock error"
             ]
         self.longMessage = True
         cmd = "journalctl -ab"
