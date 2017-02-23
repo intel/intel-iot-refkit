@@ -7,7 +7,7 @@ Iot Reference OS Kit for Intel(r) Architecture project.
 Installing Docker on Linux
 ==========================
 
-You’ll need Docker installed to build locally. Using Docker provides
+It's possible to build the project in a Docker container. Using Docker provides
 a packaged and controlled environment for building an
 image, eliminating development environment issues that
 can occur with differing Linux OS distros and versions, different host
@@ -110,3 +110,34 @@ Installing the Images
 =====================
 
 See detailed instructions in doc/howtos/image-install.rst.
+
+Mailing Lists
+=============
+
+The project has a mailing list for all project development related discussions.
+
+The mailing list info/subscription page can be found `here`_
+
+.. _here: https://lists.yoctoproject.org/listinfo/intel-iot-refkit
+
+Bug Tracking
+============
+
+The project uses the `Yocto Project Bugzilla`_ for feature/enhancement and bug tracking.
+
+If you've found a bug or wish to file an enhancement request, go to Bugzilla
+and submit the tickets against Yocto Project Subprojects | `IoT Reference OS Kit component`_.
+
+.. _Yocto Project Bugzilla: https://bugzilla.yoctoproject.org/
+.. _IoT Reference OS Kit component: https://bugzilla.yoctoproject.org/enter_bug.cgi?product=IoT%20Reference%20OS%20Kit
+
+Submitting Patches
+==================
+
+The project is open to patches and bug fixes. The patches can be submitted as Github
+Pull requests in https://github.com/intel/intel-iot-refkit or to the project
+mailing list.
+
+Please follow the common Yocto Project/OpenEmbedded Core `Patch Submission Guidelines`_.
+
+.. _Patch Submission Guidelines: http://www.openembedded.org/wiki/How_to_submit_a_patch_to_OpenEmbedded
