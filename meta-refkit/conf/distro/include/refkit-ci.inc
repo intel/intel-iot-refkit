@@ -47,6 +47,9 @@ require conf/distro/include/refkit-development.inc
 # If we can access /dev/kvm, then let's use it.
 QEMU_USE_KVM = "${@ 'intel-corei7-64 intel-core2-32 qemux86 qemux86-64' if os.access('/dev/kvm', os.R_OK|os.W_OK) else '' }"
 
+# Enable flatpak application support.
+require conf/distro/include/flatpak-applications.inc
+
 REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 
 #
@@ -72,6 +75,17 @@ REFKIT_CI_SDK_TARGETS=""
 # Uses the fully-populated image to ensure that the eSDK is as complete
 # as possible.
 REFKIT_CI_ESDK_TARGETS=""
+# We'll automatically enable flatpak runtime/SDK support for the
+# following targets if flatpak support is enabled (by commenting out
+# the corresponding require above.
+REFKIT_CI_FLATPAK_RUNTIME_TARGETS = " \
+  ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+     'refkit-image-minimal', '', d)} \
+"
+REFKIT_CI_FLATPAK_SDK_TARGETS = " \
+  ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+     'refkit-image-minimal', '', d)} \
+"
 # Following targets would be executed with do_test_iot_export task
 REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway"
 # Execute automatic tests for following images with corresponding
