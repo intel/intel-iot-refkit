@@ -44,7 +44,9 @@ def populate_rawcopy(src, dst):
 def populate_vfat(src, dst):
     """Create and populate a FAT partition, out of a root directory <src>."""
     check_call(['mkdosfs', dst])
-    check_call(['mcopy', '-i', dst, '-s', src + '/EFI', '::/'])
+    """this requires shell expansion for wildcard
+    check_call(['mcopy', '-i', dst, '-s', src + '/*', '::/'])"""
+    os.system('mcopy -i ' + dst + ' -s ' + src + '/* ::/')
 
 
 def populate_ext4(src, dst):
