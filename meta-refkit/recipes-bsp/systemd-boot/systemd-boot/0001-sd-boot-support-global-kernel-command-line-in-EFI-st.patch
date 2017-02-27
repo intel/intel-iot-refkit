@@ -1,0 +1,80 @@
+From eaa8431c41a3a2379d789f0974588ed54d702f0a Mon Sep 17 00:00:00 2001
+From: Mikko Ylinen <mikko.ylinen@linux.intel.com>
+Date: Mon, 27 Feb 2017 13:38:35 +0200
+Subject: [PATCH] sd-boot: support global kernel command line in EFI stub
+
+This change integrates rmc into EFI stub and supports a
+global fragment (RMC KBOOTPARAM) that is appended to the
+cmdline at boot.
+
+The fragment is board-specific and read from the database.
+
+Implements [YOCTO #10924].
+Fixes [YOCTO #11030].
+
+Upstream-status: Pending
+
+Signed-off-by: Mikko Ylinen <mikko.ylinen@linux.intel.com>
+---
+ src/boot/efi/stub.c | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+diff --git a/src/boot/efi/stub.c b/src/boot/efi/stub.c
+index 1e250f34f..a17e2ab66 100644
+--- a/src/boot/efi/stub.c
++++ b/src/boot/efi/stub.c
+@@ -13,6 +13,7 @@
+ 
+ #include <efi.h>
+ #include <efilib.h>
++#include <rmc_api.h>
+ 
+ #include "disk.h"
+ #include "graphics.h"
+@@ -39,6 +40,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table) {
+                 (UINT8 *)".linux",
+                 (UINT8 *)".initrd",
+                 (UINT8 *)".splash",
++                (UINT8 *)".rmc",
+                 NULL
+         };
+         UINTN addrs[ELEMENTSOF(sections)-1] = {};
+@@ -112,6 +114,35 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table) {
+ #endif
+         }
+ 
++        if (szs[4] > 0) {
++                CHAR8 *rmc_db = NULL;
++                rmc_file_t rmc_file;
++
++                rmc_db = (CHAR8 *)(loaded_image->ImageBase + addrs[4]);
++
++                if (!rmc_gimme_file(sys_table, rmc_db, "KBOOTPARAM", &rmc_file)) {
++                        CHAR8 *line;
++                        UINTN i = 0;
++                        UINTN j;
++
++                        line = AllocatePool(rmc_file.blob_len + cmdline_len + 2);
++
++                        while (i < cmdline_len && cmdline[i] != '\0') {
++                                line[i] = cmdline[i];
++                                i++;
++                        }
++
++                        line[i++] = ' ';
++
++                        for (j=0; j < rmc_file.blob_len; j++)
++                                line[i+j] = rmc_file.blob[j];
++                        line[i+j] = '\0';
++
++                        cmdline = line;
++                        cmdline_len = i + j;
++                }
++        }
++
+         /* export the device path this image is started from */
+         if (disk_get_part_uuid(loaded_image->DeviceHandle, uuid) == EFI_SUCCESS)
+                 efivar_set(L"LoaderDevicePartUUID", uuid, FALSE);
+-- 
+2.11.0
+
