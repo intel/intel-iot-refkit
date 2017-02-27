@@ -186,8 +186,10 @@ export PART_%(pnum)d_FS=%(filesystem)s
                               '--change-section-vma  .osrel=0x20000 ' +
                           '--add-section .cmdline=${B}/cmdline' + suffix + '.txt ' +
                               '--change-section-vma .cmdline=0x30000 ' +
+                          '--add-section .rmc=${DEPLOY_DIR_IMAGE}/rmc.db ' +
+                              '--change-section-vma .rmc=0x40000 ' +
                           '--add-section .linux=${DEPLOY_DIR_IMAGE}/bzImage ' +
-                              '--change-section-vma .linux=0x40000 ' +
+                              '--change-section-vma .linux=0x2000000 ' +
                           '--add-section .initrd=${B}/initrd ' +
                               '--change-section-vma .initrd=0x3000000 ' +
                           glob.glob(d.expand('${DEPLOY_DIR_IMAGE}/linux*.efi.stub'))[0] +
@@ -210,11 +212,6 @@ export PART_%(pnum)d_FS=%(filesystem)s
     with open(d.expand('${B}/emmc-partitions-data'), 'w') as emmc_part_data:
         emmc_part_data.write(partition_data)
     shutil.copyfile(d.expand('${B}/emmc-partitions-data'), d.expand('${DEPLOYDIR}/emmc-partitions-data'))
-
-    # The RMC database is deployed unconditionally but not read if the BIOS is in SecureBoot mode.
-    # XXX: However, the check for SecureBoot is not present. The bug is tracked in
-    # https://bugzilla.yoctoproject.org/show_bug.cgi?id=11030
-    shutil.copyfile(d.expand('${DEPLOY_DIR_IMAGE}/rmc.db'), d.expand('${DEPLOYDIR}/rmc.db'))
 }
 
 DEPLOYDIR = "${WORKDIR}/uefiapp-${PN}"
