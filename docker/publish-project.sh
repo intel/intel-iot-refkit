@@ -132,8 +132,10 @@ fi
 # Copy detailed build logs
 # Include symlinks to avoid massive amount of "skipping non-regular file"
 # lines in the rsyncd server system-level log
-create_remote_dirs ${_RSYNC_DEST} detailed-logs/${TARGET_MACHINE}/
-rsync -qzrl --prune-empty-dirs --include "log.*" --include "*/" --exclude "*" ${_BRESULT}/work*/* ${_RSYNC_DEST}/detailed-logs/${TARGET_MACHINE}/
+if [ -d ${_BRESULT}/work ]; then
+    create_remote_dirs ${_RSYNC_DEST} detailed-logs/${TARGET_MACHINE}/
+    rsync -qzrl --prune-empty-dirs --include "log.do_*" --include "*/" --exclude "*" ${_BRESULT}/work*/* ${_RSYNC_DEST}/detailed-logs/${TARGET_MACHINE}/
+fi
 
 # Create latest symlink locally and rsync it to parent dir of publish dir
 ln -vsf ${CI_BUILD_ID} latest

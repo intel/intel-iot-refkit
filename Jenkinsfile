@@ -125,21 +125,27 @@ try {
                     timestamps {
                         sshagent(['github-auth-ssh']) {
                             docker_image.inside(run_args) {
-                                stage('Bitbake Build') {
-                                    if (is_pr) {
-                                        setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Bitbake Build"
+                                try {
+                                    stage('Bitbake Build') {
+                                        if (is_pr) {
+                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Bitbake Build"
+                                        }
+                                        params = ["${script_env}",
+                                        "docker/build-project.sh"].join("\n")
+                                        sh "${params}"
                                     }
-                                    params = ["${script_env}",
-                                    "docker/build-project.sh"].join("\n")
-                                    sh "${params}"
-                                }
-                                stage('Build publishing') {
-                                    if (is_pr) {
-                                        setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Build publishing"
+                                } catch (Exception e) {
+                                    throw e
+                                } finally {
+                                    // publish in finally-block so that detailed logs or any partial results get stored even in case of failed build
+                                    stage('Build publishing') {
+                                        if (is_pr) {
+                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Build publishing"
+                                        }
+                                        params =  ["${script_env}",
+                                        "docker/publish-project.sh"].join("\n")
+                                        sh "${params}"
                                     }
-                                    params =  ["${script_env}",
-                                    "docker/publish-project.sh"].join("\n")
-                                    sh "${params}"
                                 }
                             }
                         } // sshagent
