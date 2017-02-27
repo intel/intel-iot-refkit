@@ -1,47 +1,33 @@
-import time
 import os
 from oeqa.runtime.wifi import wifi
-import string
 try:
- import ConfigParser
+    import ConfigParser
 except:
- import configparser as ConfigParser
+    import configparser as ConfigParser
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
 ssid_config = ConfigParser.ConfigParser()
 config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
 ssid_config.readfp(open(config_path))
 
-@tag(TestType="FVT")
 class CommWiFiConect(oeRuntimeTest):
-    """
-    @class CommWiFiConect
-    """
+
     def setUp(self):
-        ''' initialize wifi class
-        @fn setUp
-        @param self
-        @return
+        '''
+        Initialize wifi class
         '''
         self.wifi = wifi.WiFiFunction(self.target)
 
     def tearDown(self):
-        ''' disable after testing
-        @fn tearDown
-        @param self
-        @return
         '''
-        # disable wifi
+        Disable wifi after testing
+        '''
         self.wifi.disable_wifi()
 
-    @tag(FeatureID="IOTOS-458")
     def test_wifi_connect(self):
-        '''connmanctl to connect WPA2-PSK wifi AP
-        @fn test_wifi_connect
-        @param self
-        @return
+        '''
+        Use connmanctl to connect to wifi. The AP that will be tried to connect
+        to is determined by './files/config.ini'.
         '''
         ap_type = ssid_config.get("Connect","type")
         ssid = ssid_config.get("Connect","ssid")

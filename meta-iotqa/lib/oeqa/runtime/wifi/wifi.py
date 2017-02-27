@@ -1,12 +1,9 @@
 import time
 import os
-import string
 from oeqa.utils.helper import shell_cmd_timeout
 
 class WiFiFunction(object):
-    """
-    @class WiFiFunction
-    """
+
     service = ""
     log = ""
     def __init__(self, target):
@@ -15,45 +12,23 @@ class WiFiFunction(object):
         self.target.run('rfkill unblock all')
 
     def target_collect_info(self, cmd):
-        """
-        @fn target_collect_info
-        @param self
-        @param  cmd
-        @return
-        """
         (status, output) = self.target.run(cmd)
         self.log = self.log + "\n\n[Debug] Command output --- %s: \n" % cmd
         self.log = self.log + output
 
     def enable_wifi(self):
-        """
-        @fn enable_wifi
-        @param self
-        @return
-        """
         # Enable WiFi
         (status, output) = self.target.run('connmanctl enable wifi')
         assert status == 0, "Error messages: %s" % output
         time.sleep(1)
 
     def disable_wifi(self):
-        ''' disable wifi after testing
-        @fn disable_wifi
-        @param self
-        @return
-        '''
         (status, output) = self.target.run('connmanctl disable wifi')
         assert status == 0, "Error messages: %s" % output
         # sleep some seconds to ensure disable is done
         time.sleep(2)
 
     def scan_wifi(self, ap_type, ssid):
-        """
-        @fn scan_wifi
-        @param self
-        @param ap_type: hidden or broadcast
-        @return service string of AP
-        """
         if (ap_type == "hidden"):
             ssid = "hidden_managed_psk"
         elif (ap_type == "hidden-wep"):
@@ -79,10 +54,8 @@ class WiFiFunction(object):
             return output.split("\n")[0].split(" ")[-1]
 
     def connect_wifi(self, ap_type, ssid, pwd):
-        '''connmanctl to connect wifi AP
-        @fn connect_wifi
-        @param self
-        @return
+        '''
+        Connmanctl to connect wifi AP
         '''
         target_ip = self.target.ip
         for i in range(3):
@@ -105,10 +78,8 @@ class WiFiFunction(object):
         assert status == 2, "Error messages: %s" % output
 
     def get_wifi_ipv4(self):
-        ''' Get wifi ipv4 address
-        @fn get_wifi_ipv4
-        @param self
-        @return
+        '''
+        Get wifi ipv4 address
         '''
         time.sleep(3)
         # Check ip address by ifconfig command
@@ -120,10 +91,8 @@ class WiFiFunction(object):
         return output.split()[1].split(':')[1]
 
     def wifi_ip_check(self):
-        '''check if the target gets ip address
-        @fn wifi_ip_check
-        @param self
-        @return
+        '''
+        Check if the target gets ip address
         '''
         time.sleep(3)
         # Check ip address by ifconfig command
@@ -137,11 +106,8 @@ class WiFiFunction(object):
         assert status == 0, "IP check failed" + self.log
 
     def connect_without_password(self, ssid):
-        '''connmanctl to connect wifi AP without password
-        @fn connect_without_password
-        @param self
-        @param ssid: WiFi AP ssid, in the services list already
-        @return
+        '''
+        Connmanctl to connect wifi AP without password
         '''
         self.target.run('connmanctl scan wifi')
         time.sleep(1)
@@ -155,10 +121,8 @@ class WiFiFunction(object):
         self.wifi_ip_check()
 
     def check_internet_connection(self, url):
-        ''' Check if the target is able to connect to internet by wget
-        @fn check_internet_connection
-        @param self
-        @return
+        '''
+        Check if the target is able to connect to internet by wget
         '''
         # wget internet content
         self.target.run("rm -f index.html")
@@ -172,26 +136,16 @@ class WiFiFunction(object):
         assert status == 0, "Error messages: %s" % self.log
 
     def execute_connection(self, ap_type, ssid, pwd):
-        '''do a full round of wifi connection without disable
-        @fn execut_connection
-        @param self
-        @param ap_type: must be broadcast or hidden
-        @param ssid
-        @param pwd
-        @return
+        '''
+        Do a full round of wifi connection without disable
         '''
         self.enable_wifi()
-        # Use sleep because wifi_enable will trigger auto-connect (to last AP)
-        time.sleep(30)
         self.connect_wifi(ap_type, ssid, pwd)
         self.wifi_ip_check()
 
     def ipv4_ssh_to(self, ipv4):
-        ''' On main target, ssh to second
-        @fn ipv4_ssh_to
-        @param self
-        @param ipv4: second target ipv4 address
-        @return
+        '''
+        On main target, ssh to second
         '''
         ssh_key = os.path.join(os.path.dirname(__file__), "../bluetooth/files/refkit_qa_rsa")
         self.target.copy_to(ssh_key, "/tmp/")
@@ -205,12 +159,8 @@ class WiFiFunction(object):
         assert status == 2, "Error messages: %s" % output
 
     def scp_to(self, file_path, ipv4):
-        ''' On main target, scp file to second
-        @fn scp_to
-        @param self
-        @param file_path: the file to be scp to second device
-        @param ipv4: second target ipv4 address
-        @return
+        '''
+        On main target, scp file to second
         '''
         # This function assumes two devices already get ssh-key exchanged.
         scp_cmd = 'scp -i /tmp/refkit_qa_rsa %s root@%s:/home/root/' % (file_path, ipv4)
