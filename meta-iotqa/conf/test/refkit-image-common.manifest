@@ -5,6 +5,7 @@ oeqa.runtime.sanity.comm_managerdaemon
 oeqa.runtime.sanity.comm_btcheck
 oeqa.runtime.sanity.apprt_python
 oeqa.runtime.sanity.mraa_hello
+oeqa.runtime.sanity.mraa_gpio
 oeqa.runtime.sanity.iotivity
 oeqa.runtime.alsa.alsa
 oeqa.runtime.sanity.upm
