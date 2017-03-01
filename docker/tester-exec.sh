@@ -58,21 +58,14 @@ testimg() {
     FILENAME_ZIP=${FILENAME}.zip
 
     set +e
-    TEST_IMG_URL=${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ}
-    wget ${_WGET_OPTS} ${TEST_IMG_URL}
-    TEST_IMG_BMAP_URL=${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
-    wget ${_WGET_OPTS} ${TEST_IMG_BMAP_URL}
-    if [ -f ${FILENAME_XZ} ]; then
-      echo "Extracting ${FILENAME_XZ}"
-      unxz -d ${FILENAME_XZ}
-    else
-      TEST_IMG_URL=${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
-      wget ${_WGET_OPTS} ${TEST_IMG_URL}
-      if [ -f ${FILENAME_ZIP} ]; then
-        echo "Extracting ${FILENAME_ZIP}"
+    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
+    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
+    if [ ! -s ${FILENAME} ]; then
+      wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
+      if [ -s ${FILENAME_ZIP} ]; then
         unzip ${FILENAME_ZIP}
       else
-        echo "No dsk.xz nor dsk.zip image file found, can not continue"
+        echo "ERROR: No file ${FILENAME_XZ} or ${FILENAME_ZIP} found, can not continue."
         exit 1
       fi
     fi
