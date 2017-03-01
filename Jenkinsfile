@@ -59,41 +59,7 @@ try {
                         deleteDir()
                     }
 
-                    stage('Checkout own content') {
-                        //if (binding.variables.get("GITHUB_PR_NUMBER"))
-                        // we can't use binding method any more, rely on is_pr
-                        if (is_pr) {
-                            // we are building pull request
-                            echo "Checkout: checkout in PR case"
-                            checkout([$class: 'GitSCM',
-                                branches: [
-                                    [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
-                                ],
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions: [
-                                    [$class: 'SubmoduleOption',
-                                        disableSubmodules: false,
-                                        recursiveSubmodules: true,
-                                        reference: "${env.PUBLISH_DIR}/bb-cache/.git-mirror",
-                                        trackingSubmodules: false],
-                                    [$class: 'CleanBeforeCheckout']
-                                ],
-                                submoduleCfg: [],
-                                    userRemoteConfigs: [
-                                    [
-                                        credentialsId: "${GITHUB_AUTH}",
-                                        name: 'origin-pull',
-                                        refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
-                                        url: "${GITHUB_PROJECT}"
-                                     ]
-                                ]
-                            ])
-                        } else {
-                            echo "Checkout: checkout in MASTER case"
-                            checkout poll: false, scm: scm
-                        }
-                    } // stage
-
+                    checkout_content(is_pr)
                     build_docker_image(image_name)
                     def docker_image = docker.image(image_name)
                     run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
@@ -308,6 +274,39 @@ def build_user_args() {
         deleteDir()
     }
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
+}
+
+def checkout_content(is_pr) {
+    if (is_pr) {
+        // we are building pull request
+        echo "Checkout: PR case"
+        checkout([$class: 'GitSCM',
+            branches: [
+                [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
+            ],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+                [$class: 'SubmoduleOption',
+                    disableSubmodules: false,
+                    recursiveSubmodules: true,
+                    reference: "${env.PUBLISH_DIR}/bb-cache/.git-mirror",
+                    trackingSubmodules: false],
+                [$class: 'CleanBeforeCheckout']
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: [
+                [
+                credentialsId: "${GITHUB_AUTH}",
+                name: 'origin-pull',
+                refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
+                url: "${GITHUB_PROJECT}"
+                ]
+            ]
+        ])
+    } else {
+        echo "Checkout: MASTER case"
+        checkout poll: false, scm: scm
+    }
 }
 
 def build_docker_image(image_name) {
