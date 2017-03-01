@@ -25,9 +25,6 @@ cd $WORKSPACE
 CI_GIT_COMMIT=$(git rev-parse HEAD)
 echo ${CI_GIT_COMMIT} > ci_git_commit
 
-# document env.vars in build log
-env |sort
-
 # use +u to avoid exit caused by unbound variables use in init scripts
 set +u
 # note, BUILD_DIR is also undef in CI case, but is set in local-build case.
@@ -55,7 +52,7 @@ if [ ! -z ${JOB_NAME+x} ]; then
   popd
 fi
 
-# Take local CI preferences if present
+# Initialize auto.conf from local CI preferences if present
 if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
   cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
 fi
@@ -96,9 +93,14 @@ export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
 if [ -z "$BUILD_TARGET" ]; then
-  # Let's try to fetch build targets from configuration files
-  bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
-  grep -E "^REFKIT_CI" bb_e_out > ${WORKSPACE}/refkit_ci_vars || true
+  # Let's try to fetch build targets from configured variables.
+  # refkit_ci_vars is made in pre-build script in CI run, but
+  # may need to be created in local-build run.
+  if [ ! -f ${WORKSPACE}/refkit_ci_vars ]; then
+    # use bitbake -e for variables parsing, then pick REFKIT_CI part
+    bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
+    grep -E "^REFKIT_CI" bb_e_out > ${WORKSPACE}/refkit_ci_vars || true
+  fi
   _bitbake_targets=""
   for ci_var in `perl -pe "s/^([A-Z_]+)=.+/\1/g" ${WORKSPACE}/refkit_ci_vars`; do
     case "$ci_var" in
@@ -133,7 +135,7 @@ fi
 # Push buildhistory into machine-specific branch in the master buildhistory
 #
 if [ ! -z ${JOB_NAME+x} ]; then
-  cd ${BUILDHISTORY_TMP}
+  pushd ${BUILDHISTORY_TMP}
   BUILDHISTORY_TAG="${JOB_NAME}/${CI_BUILD_ID}/${CI_GIT_COMMIT}/${TARGET_MACHINE}"
   git tag -a -m "Build #${BUILD_NUMBER} (${BUILD_TIMESTAMP}) of ${JOB_NAME} for ${TARGET_MACHINE}" -m "Built from Git revision ${CI_GIT_COMMIT}" ${BUILDHISTORY_TAG} refs/heads/${BUILDHISTORY_BRANCH}
 
@@ -141,6 +143,7 @@ if [ ! -z ${JOB_NAME+x} ]; then
   # push branch might fail if multiple concurent jobs running for this branch.
   # That's ok, as most important part is stored under tag.
   git push origin refs/heads/${BUILDHISTORY_BRANCH}:refs/heads/${BUILDHISTORY_BRANCH} || true
+  popd
 fi
 
 # #############

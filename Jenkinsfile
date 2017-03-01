@@ -79,7 +79,15 @@ try {
                         docker_image.inside(run_args) {
                             try {
                                 params = ["${script_env_global}", "${script_env_local}",
+                                "docker/pre-build.sh"].join("\n")
+                                sh "${params}"
+
+                                params = ["${script_env_global}", "${script_env_local}",
                                 "docker/build-project.sh"].join("\n")
+                                sh "${params}"
+
+                                params = ["${script_env_global}", "${script_env_local}",
+                                "docker/post-build.sh"].join("\n")
                                 sh "${params}"
                             } catch (Exception e) {
                                 throw e
