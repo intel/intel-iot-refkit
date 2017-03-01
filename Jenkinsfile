@@ -45,6 +45,18 @@ def ci_git_commit = ""
 def global_sum_log = ""
 def added_commits = ""
 
+// Define global environment common for all docker sessions
+def script_env_global = """
+    export WORKSPACE=\$PWD
+    export HOME=\$JENKINS_HOME
+    export CURRENT_PROJECT=${current_project}
+    export BUILD_CACHE_DIR=${env.PUBLISH_DIR}/bb-cache
+    export GIT_PROXY_COMMAND=oe-git-proxy
+    export CI_BUILD_ID=${ci_build_id}
+    export GIT_COMMITTER_NAME="IOT Refkit CI"
+    export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
+"""
+
 try {
     def build_runs = [:]
     for(int i=0; i < target_machines.size(); i++) {
@@ -59,34 +71,26 @@ try {
                     run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                                 run_proxy_args()].join(" ")
 
-                    // Prepare environment for calling other scripts.
-                    def script_env = """
-                        export WORKSPACE=\$PWD
-                        export HOME=\$JENKINS_HOME
-                        export CURRENT_PROJECT=${current_project}
-                        export BUILD_CACHE_DIR=${env.PUBLISH_DIR}/bb-cache
-                        export GIT_PROXY_COMMAND=oe-git-proxy
-                        export CI_BUILD_ID=${ci_build_id}
+                    // Add specifics of this build to build.env
+                    def script_env_local = """
                         export TARGET_MACHINE=${target_machine}
-                        export GIT_COMMITTER_NAME="IOT Refkit CI"
-                        export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
                     """
-                        sshagent(['github-auth-ssh']) {
-                            docker_image.inside(run_args) {
-                                try {
-                                        params = ["${script_env}",
-                                        "docker/build-project.sh"].join("\n")
-                                        sh "${params}"
-                                } catch (Exception e) {
-                                    throw e
-                                } finally {
-                                    // publish in finally-block so that detailed logs or any partial results get stored even in case of failed build
-                                        params =  ["${script_env}",
-                                        "docker/publish-project.sh"].join("\n")
-                                        sh "${params}"
-                                    }
+                    sshagent(['github-auth-ssh']) {
+                        docker_image.inside(run_args) {
+                            try {
+                                params = ["${script_env_global}", "${script_env_local}",
+                                "docker/build-project.sh"].join("\n")
+                                sh "${params}"
+                            } catch (Exception e) {
+                                throw e
+                            } finally {
+                                // publish detailed logs, partial results also after failed build
+                                params =  ["${script_env_global}", "${script_env_local}",
+                                "docker/publish-project.sh"].join("\n")
+                                sh "${params}"
                             }
-                        } // sshagent
+                        }
+                    } // sshagent
                     // all good, cleanup image (disabled for now, as also removes caches)
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
