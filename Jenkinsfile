@@ -15,9 +15,6 @@
 //
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
-if (is_pr) {
-    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Run #${env.BUILD_NUMBER} started"
-}
 
 // an example how to build for multiple machines:
 //def target_machines = [ "intel-corei7-64", "intel-quark" ]
@@ -55,10 +52,7 @@ try {
         build_runs["build_${target_machine}"] = {
             node('rk-docker') {
                 ws ("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
-                    stage('Cleanup workspace') {
-                        deleteDir()
-                    }
-
+                    deleteDir()
                     checkout_content(is_pr)
                     build_docker_image(image_name)
                     def docker_image = docker.image(image_name)
@@ -77,34 +71,22 @@ try {
                         export GIT_COMMITTER_NAME="IOT Refkit CI"
                         export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
                     """
-                    timestamps {
                         sshagent(['github-auth-ssh']) {
                             docker_image.inside(run_args) {
                                 try {
-                                    stage('Bitbake Build') {
-                                        if (is_pr) {
-                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Bitbake Build"
-                                        }
                                         params = ["${script_env}",
                                         "docker/build-project.sh"].join("\n")
                                         sh "${params}"
-                                    }
                                 } catch (Exception e) {
                                     throw e
                                 } finally {
                                     // publish in finally-block so that detailed logs or any partial results get stored even in case of failed build
-                                    stage('Build publishing') {
-                                        if (is_pr) {
-                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Build publishing"
-                                        }
                                         params =  ["${script_env}",
                                         "docker/publish-project.sh"].join("\n")
                                         sh "${params}"
                                     }
-                                }
                             }
                         } // sshagent
-                    } // timestamps
                     // all good, cleanup image (disabled for now, as also removes caches)
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
@@ -121,7 +103,14 @@ try {
         } // build_runs =
     } // for
 
-    parallel build_runs
+    stage('Build') {
+        timestamps {
+            if (is_pr) {
+                setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
+            }
+            parallel build_runs
+        }
+    }
 
     // find out combined size of all testinfo files
     int testinfo_sumz = 0
