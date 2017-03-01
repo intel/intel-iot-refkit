@@ -37,9 +37,6 @@ def mapping = [
   'minnowboardturbot' : 'intel-corei7-64'
 ]
 
-// Base container OS to use, see docker configs in docker/
-def build_os = "opensuse-42.2"
-
 // JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
@@ -97,16 +94,7 @@ try {
                         }
                     } // stage
 
-                    stage('Build docker image') {
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building Docker image"
-                        }
-
-                        def build_args = [ build_proxy_args(), build_user_args()].join(" ")
-
-                        sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
-                        dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
-                    }
+                    build_docker_image(image_name)
                     def docker_image = docker.image(image_name)
                     run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                                 run_proxy_args()].join(" ")
@@ -320,4 +308,13 @@ def build_user_args() {
         deleteDir()
     }
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
+}
+
+def build_docker_image(image_name) {
+    // Base container OS to use, see docker configs in docker/
+    def build_os = "opensuse-42.2"
+
+    def build_args = [ build_proxy_args(), build_user_args()].join(" ")
+    sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
+    dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
 }
