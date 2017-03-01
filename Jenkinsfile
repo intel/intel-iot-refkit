@@ -63,7 +63,7 @@ try {
         def target_machine = target_machines[i]
         build_runs["build_${target_machine}"] = {
             node('rk-docker') {
-                ws ("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+                ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
                     deleteDir()
                     checkout_content(is_pr)
                     build_docker_image(image_name)
@@ -89,9 +89,9 @@ try {
                                 "docker/publish-project.sh"].join("\n")
                                 sh "${params}"
                             }
-                        }
+                        } // docker_image
                     } // sshagent
-                    // all good, cleanup image (disabled for now, as also removes caches)
+                    // cleanup image (disabled for now, as would remove caches)
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
                     testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
@@ -108,10 +108,10 @@ try {
     } // for
 
     stage('Build') {
+        if (is_pr) {
+           setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
+        }
         timestamps {
-            if (is_pr) {
-                setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
-            }
             parallel build_runs
         }
     }
