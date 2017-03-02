@@ -55,6 +55,7 @@ bsdiff@meta-swupd
 busybox@core
 bzip2@core
 ca-certificates@core
+caffe@refkit
 cairo@core
 cantarell-fonts@core
 chrpath@core
@@ -115,6 +116,7 @@ gstreamer1.0-vaapi@core
 gstreamer1.0@core
 gzip@core
 harfbuzz@core
+hdf5@refkit
 hello-bundle-a@iotqa
 hello-bundle-b@iotqa
 hello-bundle-s@iotqa
@@ -144,6 +146,7 @@ keymaps@core
 keyutils@security-framework
 kmod@core
 krb5@openembedded-layer
+leveldb@openembedded-layer
 libarchive@core
 libatomic-ops@core
 libcap@core
@@ -193,6 +196,7 @@ linux-firmware@core
 linux-intel@intel
 linux-libc-headers@core
 linux-yocto@core
+lmdb@refkit
 lowpan-tools@networking-layer
 lttng-ust@core
 m4@core
@@ -208,6 +212,7 @@ nettle@core
 nodejs@iotweb
 ocl-icd@refkit
 oe-swupd-helpers@meta-swupd
+openblas@refkit
 opencl-headers@refkit
 opencv@openembedded-layer
 openjdk-8@meta-java
@@ -234,10 +239,14 @@ python-numpy@core
 python-pygobject@core
 python-setuptools@core
 python3-dbus@core
+python3-imageio@refkit
 python3-nose@core
 python3-numpy@core
+python3-pillow@refkit
+python3-protobuf@refkit
 python3-pygobject@core
 python3-setuptools@core
+python3-six@core
 python3@core
 python@core
 read-map@iotqa
@@ -253,6 +262,7 @@ shadow@core
 shared-mime-info@core
 shm-util@iotqa
 smack-userspace@security-smack
+snappy@refkit
 soletta@soletta
 speex@core
 speexdsp@core
