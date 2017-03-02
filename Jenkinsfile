@@ -261,7 +261,7 @@ try {
         } else {
             setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed"
         }
-    } else {
+
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
             global_sum_log += "\nGit commit hash: ${ci_git_commit}"
@@ -269,7 +269,7 @@ try {
             echo "${global_sum_log}"
             node('rk-mailer') {
                 writeFile file: 'msg.txt', text: global_sum_log
-                sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
+                sh "cat msg.txt |mailx -s '${subject}' simo.kuusela@intel.com"
             }
         }
     }
