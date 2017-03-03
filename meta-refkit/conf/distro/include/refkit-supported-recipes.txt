@@ -333,6 +333,7 @@ object-recognition-msgs@ros-layer
 ocl-icd@refkit-computervision
 octomap-msgs@ros-layer
 octomap@ros-layer
+nss-altfiles@refkit-core
 oe-swupd-helpers@meta-swupd
 opencl-headers@refkit-computervision
 opencv@openembedded-layer
