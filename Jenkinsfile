@@ -49,6 +49,11 @@ def testing_script = ""
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
+def added_commits = ""
+def changelog = ""
+
+changelog = readFile("../../intel-iot-refkit_master/builds/130/changelog0.xml")
+echo "${changelog}"
 
 try {
     def build_runs = [:]
@@ -145,6 +150,10 @@ try {
                                         params =  ["${script_env}",
                                         "docker/publish-project.sh"].join("\n")
                                         sh "${params}"
+
+                                        writeFile file: 'changelog.xml', text: changelog
+                                        sh "docker/parse_changelog.py changelog.xml"
+                                        added_commits = readFile("changelog.txt")
                                     }
                                 }
                             }
@@ -264,11 +273,12 @@ try {
 
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
-            global_sum_log += "\nGit commit hash: ${ci_git_commit}"
+            email = "Git commit hash: ${ci_git_commit} \n\n${added_commits}\n"
+            email += "Test results:\n\n${global_sum_log}"
             def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
-            echo "${global_sum_log}"
+            echo "${email}"
             node('rk-mailer') {
-                writeFile file: 'msg.txt', text: global_sum_log
+                writeFile file: 'msg.txt', text: email
                 sh "cat msg.txt |mailx -s '${subject}' simo.kuusela@intel.com"
             }
         }
