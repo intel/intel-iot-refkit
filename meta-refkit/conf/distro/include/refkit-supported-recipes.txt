@@ -269,6 +269,7 @@ systemd@core
 taglib@core
 tbb@openembedded-layer
 tcp-smack-test@security-smack
+thermald@intel
 tiff@core
 tpm-tools@security
 tremor@core

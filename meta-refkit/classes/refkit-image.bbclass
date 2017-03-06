@@ -174,6 +174,10 @@ IMAGE_INSTALL += "util-linux"
 export ALTERNATIVE_PRIORITY_SHADOW ?= "305"
 IMAGE_INSTALL += "shadow"
 
+# Install thermal management daemon by default for
+# handling platform thermal management.
+IMAGE_INSTALL += "thermald"
+
 # Common profile has "packagegroup-common-test" that has packages that are
 # used only in "development" configuration.
 FEATURE_PACKAGES_common-test = "packagegroup-common-test"
