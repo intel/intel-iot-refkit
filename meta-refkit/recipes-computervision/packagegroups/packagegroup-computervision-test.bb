@@ -9,4 +9,5 @@ RDEPENDS_${PN} = " \
     librealsense-examples \
     viennacl-examples \
     caffe-imagenet-model \
+    python3-pyrealsense \
 "
