@@ -2,17 +2,16 @@ intel-iot-refkit
 ################
 
 This README file contains information on setting up, building, and booting
-Iot Reference OS Kit for Intel(r) Architecture project.
+IoT Reference OS Kit for Intel(r) Architecture project.
 
 Installing Docker on Linux
 ==========================
 
-It's possible to build the project in a Docker container. Using Docker provides
+We recommend you build projects in a Docker container. Using Docker provides
 a packaged and controlled environment for building an
-image, eliminating development environment issues that
+image and can eliminate development environment issues that
 can occur with differing Linux OS distros and versions, different host
-compilers, and such. (There are instructions later below for building
-without Docker.)
+compilers, and such. (We also describe `building without docker`_ in the instructions below.)
 
 Instructions for installing Docker for common Linux distros on your
 development machine (including Fedora and Ubuntu) are available at:
@@ -54,7 +53,7 @@ Building with Docker
 ====================
 
 These instructions assume you’ll be working with the sources in a
-`~/work/intel-iot-refkit` directory that you’ll be creating.
+``~/work/intel-iot-refkit`` directory that you’ll be creating.
 
 Start by cloning the GitHub repos. If you have a previous copy of this
 repository without all the submodules, it would be best to remove all
@@ -65,11 +64,14 @@ $ mkdir -p $HOME/work
 $ cd $HOME/work
 $ git clone --recursive https://github.com/intel/intel-iot-refkit.git
 $ cd $WORKSPACE
+
 When Docker is configured properly and all project code is cloned and
 available locally, it's time to trigger a build. To do this run the
 command from within the ``~/work/intel-iot-refkit`` directory::
 
 $ docker/local-build.sh
+
+.. _building without docker:
 
 Building without Docker
 =======================
@@ -79,7 +81,7 @@ While not recommended, you can also use Yocto Project bitbake directly.
 reproducible and debuggable by other developers using a different
 distribution.)
 
-Here are the basic steps, preparation::
+Here are the basic preperation steps::
 
 $ mkdir -p $HOME/work
 $ cd $HOME/work
@@ -88,9 +90,9 @@ $ cd intel-iot-refkit
 $ source refkit-init-build-env
 
 Edit :file:`conf/local.conf` to select whether to build the production or the development image.
-More details about the choices in that file.
+More details about these two build choices are described in that file.
 
-Basic steps, build::
+Basic build steps::
 
 $ bitbake refkit-image-common
 
@@ -109,7 +111,7 @@ https://git-scm.com/docs/git-submodule
 Installing the Images
 =====================
 
-See detailed instructions in doc/howtos/image-install.rst.
+See detailed instructions in ``doc/howtos/image-install.rst``.
 
 Mailing Lists
 =============
