@@ -1,0 +1,28 @@
+From bdc96422dc9c1a697264494e7f9e8efe4c48de92 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Wed, 8 Mar 2017 16:32:04 +0200
+Subject: [PATCH 2/2] constants: change rs.h search location.
+
+Upstream-status: Inappropriate.
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ pyrealsense/constants.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyrealsense/constants.py b/pyrealsense/constants.py
+index 9c97739..2b83bca 100644
+--- a/pyrealsense/constants.py
++++ b/pyrealsense/constants.py
+@@ -2,7 +2,7 @@ import pycparser
+ import io
+ 
+ # Platform dependent
+-rs_h_filename = '/usr/local/include/librealsense/rs.h'
++rs_h_filename = '/usr/include/librealsense/rs.h'
+ 
+ 
+ # Dynamically extract API version
+-- 
+2.9.3
+
