@@ -49,6 +49,7 @@ def testing_script = ""
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
+def added_commits = ""
 
 try {
     def build_runs = [:]
@@ -154,7 +155,13 @@ try {
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
                     testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
-                    ci_git_commit = readFile("ci_git_commit").trim()
+
+                    if ( !is_pr ) {
+                      ci_git_commit = readFile("ci_git_commit").trim()
+                      // This command expects that each new master build is based on a github merge
+                      sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
+                      added_commits = readFile("added_commits")
+                    }
                 } // ws
             } // node
         } // build_runs =
@@ -264,11 +271,13 @@ try {
     } else {
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
-            global_sum_log += "\nGit commit hash: ${ci_git_commit}"
+            email = "Git commit hash: ${ci_git_commit} \n\n"
+            email += "Added commits:\n\n${added_commits}\n"
+            email += "Test results:\n\n${global_sum_log}"
             def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
-            echo "${global_sum_log}"
+            echo "${email}"
             node('rk-mailer') {
-                writeFile file: 'msg.txt', text: global_sum_log
+                writeFile file: 'msg.txt', text: email
                 sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
             }
         }
