@@ -46,9 +46,10 @@ python refkit_qa_image () {
             if os.path.islink(path):
                 target = os.readlink(path)
                 final_target = resolve_links(target, root)
-                if not os.path.exists(final_target) and not final_target[len(rootfs):] in whitelist:
-                    bb.error("Dangling symlink: %s -> %s -> %s does not resolve to a valid filesystem entry." %
-                             (path, target, final_target))
+                local_target = final_target[len(rootfs):]
+                if not os.path.exists(final_target) and not local_target in whitelist:
+                    bb.error("Dangling symlink: %s -> %s -> %s (= %s) does not resolve to a valid filesystem entry and %s not in REFKIT_QA_IMAGE_SYMLINK_WHITELIST." %
+                             (path, target, local_target, final_target, local_target))
                     qa_sane = False
 
     if not qa_sane:
