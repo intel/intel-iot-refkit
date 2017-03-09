@@ -1,7 +1,7 @@
 intel-iot-refkit
 ################
 
-This README file contains information on setting up, building, and booting
+This README file contains information on setting up, building, and booting the
 IoT Reference OS Kit for Intel(r) Architecture project.
 
 Installing Docker on Linux
@@ -81,7 +81,7 @@ While not recommended, you can also use Yocto Project bitbake directly.
 reproducible and debuggable by other developers using a different
 distribution.)
 
-Here are the basic preperation steps::
+Here are the basic preparation steps::
 
 $ mkdir -p $HOME/work
 $ cd $HOME/work
@@ -142,4 +142,4 @@ mailing list.
 
 Please follow the common Yocto Project/OpenEmbedded Core `Patch Submission Guidelines`_.
 
-.. _Patch Submission Guidelines: http://www.openembedded.org/wiki/How_to_submit_a_patch_to_OpenEmbedded
+.. _Patch Submission Guidelines: http://www.openembedded.org/wiki/Commit_Patch_Message_Guidelines#Patch_Headers_and_Commit_Messages
