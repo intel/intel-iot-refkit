@@ -189,7 +189,7 @@ try {
                         def one_image_testinfo = separated_testinfo[m]
                         echo "Image #${m} to be tested on test_${test_device} info: ${separated_testinfo[m]}"
                         test_runs["test_${m}_${test_device}"] = {
-                            node('refkit-tester') {
+                            node('refkit-tester-2') {
                                 // clean workspace
                                 echo 'Cleanup testing workspace'
                                 deleteDir()
