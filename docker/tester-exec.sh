@@ -28,7 +28,7 @@ testimg() {
 
   # Copy local WLAN settings to iottest over example file and chmod to readable
   _WLANCONF=./iottest/oeqa/runtime/sanity/files/config.ini
-  cp /home/tester/.config.ini.wlan ${_WLANCONF}
+  cp $HOME/.config.ini.wlan ${_WLANCONF}
   chmod 644 ${_WLANCONF}
 
   # Get image(s)
