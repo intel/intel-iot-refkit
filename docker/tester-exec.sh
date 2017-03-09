@@ -109,7 +109,8 @@ testimg() {
   # create summary file to be used in email notification sending
   _reports=`ls TEST-${DEVICE}.${_IMG_NAME}.*.xml`
   num_total=0
-  num_skipped=$((0+num_masked))
+  num_skipped=0
+  num_na=$((0+num_masked))
   num_failed=0
   num_error=0
   for _r in $_reports; do
@@ -126,7 +127,7 @@ testimg() {
   sumfile=results-summary-${DEVICE}.${_IMG_NAME}.log
   echo "Image: ${FILENAME}" > $sumfile
   echo "  Device: ${DEVICE}" >> $sumfile
-  echo "  Total:$num_total  Pass:$num_passed  Fail:$num_failed  Skip:$num_skipped  Error:$num_error" >> $sumfile
+  echo "  Total:$num_total  Pass:$num_passed  Fail:$num_failed  Skip:$num_skipped  Error:$num_error  N/A:$num_na" >> $sumfile
   if [ $num_total -gt 0 ]; then
     run_rate=$((100*run_total/num_total))
     pass_rate_of_total=$((100*num_passed/num_total))
