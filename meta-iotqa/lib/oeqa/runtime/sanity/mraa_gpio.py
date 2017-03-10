@@ -28,17 +28,20 @@ class MraaGpioTest(oeRuntimeTest):
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             return int(output)
 
-        self.target.run("mraa-gpio set " + self.pin + " 0")
+        status, output = self.target.run("mraa-gpio set " + self.pin + " 0")
         sleep(1)
-        output = check_gpio_output()
-        self.assertEqual(output, 0, msg="GPIO pin output is not 0")
+        gpio = check_gpio_output()
+        self.assertEqual(gpio, 0, msg="GPIO pin output is not 0, " +
+                                      "mraa output:\n" + output)
 
-        self.target.run("mraa-gpio set " + self.pin + " 1")
+        status, output = self.target.run("mraa-gpio set " + self.pin + " 1")
         sleep(1)
-        output = check_gpio_output()
-        self.assertEqual(output, 1, msg="GPIO pin output is not 1")
+        gpio = check_gpio_output()
+        self.assertEqual(gpio, 1, msg="GPIO pin output is not 1, " +
+                                      "mraa output:\n" + output)
 
-        self.target.run("mraa-gpio set " + self.pin + " 0")
+        status, output = self.target.run("mraa-gpio set " + self.pin + " 0")
         sleep(1)
-        output = check_gpio_output()
-        self.assertEqual(output, 0, msg="GPIO pin output is not 0")
+        gpio = check_gpio_output()
+        self.assertEqual(gpio, 0, msg="GPIO pin output is not 0, " +
+                                      "mraa output:\n" + output)
