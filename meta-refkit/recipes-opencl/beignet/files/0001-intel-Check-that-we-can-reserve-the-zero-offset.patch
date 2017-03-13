@@ -1,0 +1,71 @@
+From 97fbe764d1b77288b289f6cf37384507e7dd4149 Mon Sep 17 00:00:00 2001
+From: "Yang, Rong R" <rong.r.yang@intel.com>
+Date: Thu, 9 Mar 2017 15:35:37 +0800
+Subject: [PATCH] intel: Check that we can reserve the zero-offset
+
+commit ff57cee0519d ("ocl20/runtime: take the first 64KB page table
+entries") tries to allocate a bo at 0 offset, but failed to take into
+account that something may already be allocated there that it is not
+allowed to evict (particularly when not using full-ppgtt separation).
+Failure to do so causes all execution to subsequentally fail with
+"drm_intel_gem_bo_context_exec() failed: Device or resource busy"
+
+Reported-by: Kenneth Johansson <ken@kenjo.org>
+Fixes: https://bugs.freedesktop.org/show_bug.cgi?id=98647
+
+Contributor: Chris Wilson <chris@chris-wilson.co.uk>
+Signed-off-by: Yang Rong <rong.r.yang@intel.com>
+
+Upstream-status: Submitted
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ src/intel/intel_driver.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/src/intel/intel_driver.c b/src/intel/intel_driver.c
+index b8a1b52..3caf737 100644
+--- a/src/intel/intel_driver.c
++++ b/src/intel/intel_driver.c
+@@ -137,19 +137,28 @@ return 1;
+ static int
+ intel_driver_context_init(intel_driver_t *driver)
+ {
+-driver->ctx = drm_intel_gem_context_create(driver->bufmgr);
+-if (!driver->ctx)
+-  return 0;
+-driver->null_bo = NULL;
++  driver->ctx = drm_intel_gem_context_create(driver->bufmgr);
++  if (!driver->ctx)
++    return 0;
++  driver->null_bo = NULL;
+ #ifdef HAS_BO_SET_SOFTPIN
+-drm_intel_bo *bo = dri_bo_alloc(driver->bufmgr, "null_bo", 64*1024, 4096);
+-drm_intel_bo_set_softpin_offset(bo, 0);
+-// don't reuse it, that would make two bo trying to bind to same address,
+-// which is un-reasonable.
+-drm_intel_bo_disable_reuse(bo);
+-driver->null_bo = bo;
++  drm_intel_bo *bo = dri_bo_alloc(driver->bufmgr, "null_bo", 64*1024, 4096);
++  drm_intel_bo_set_softpin_offset(bo, 0);
++  // don't reuse it, that would make two bo trying to bind to same address,
++  // which is un-reasonable.
++  drm_intel_bo_disable_reuse(bo);
++
++  drm_intel_bo_map(bo, 1);
++  *(uint32_t *)bo->virtual = MI_BATCH_BUFFER_END;
++  drm_intel_bo_unmap(bo);
++
++  if (drm_intel_gem_bo_context_exec(bo, driver->ctx, 0, 0) == 0) {
++    driver->null_bo = bo;
++  } else {
++    drm_intel_bo_unreference(bo);
++  }
+ #endif
+-return 1;
++    return 1;
+ }
+ 
+ static void
+-- 
+2.9.3
+
