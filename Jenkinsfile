@@ -16,9 +16,7 @@
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
 
-// an example how to build for multiple machines:
-//def target_machines = [ "intel-corei7-64", "intel-quark" ]
-def target_machines = [ "intel-corei7-64" ]
+def target_machine = "intel-corei7-64"
 
 // test on these HW targets:
 def test_devices = [ "570x", "minnowboardturbot" ]
@@ -59,8 +57,6 @@ def script_env_global = """
 
 try {
     def build_runs = [:]
-    for(int i=0; i < target_machines.size(); i++) {
-        def target_machine = target_machines[i]
         build_runs["build_${target_machine}"] = {
             node('rk-docker') {
                 ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
@@ -111,7 +107,6 @@ try {
                 } // ws
             } // node
         } // build_runs =
-    } // for
 
     stage('Build') {
         if (is_pr) {
@@ -124,16 +119,12 @@ try {
 
     // find out combined size of all testinfo files
     int testinfo_sumz = 0
-    for(int i=0; i < target_machines.size(); i++) {
-        testinfo_sumz += testinfo_data["${target_machines[i]}"].length()
-    }
+    testinfo_sumz += testinfo_data["${target_machine}"].length()
     // skip tester parts if no tests configured
     if ( testinfo_sumz > 0 ) {
         def test_runs = [:]
         for(int i = 0; i < test_devices.size(); i++) {
             def test_device = test_devices[i]
-            for(int k = 0; k < target_machines.size(); k++) {
-                def target_machine = target_machines[k]
                 // only if built for machine that this tester wants
                 if ( target_machine == mapping["${test_device}"] ) {
                     // testinfo_data may contain multiple lines stating different images
@@ -196,7 +187,6 @@ try {
                         } // test_runs =
                     } // for m
 	        } // if target_machine == mapping
-            } // for k
         } // for i
         stage('Parallel test run') {
             if (is_pr) {
