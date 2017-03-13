@@ -75,7 +75,6 @@ try {
                     def script_env_local = """
                         export TARGET_MACHINE=${target_machine}
                     """
-                    sshagent(['github-auth-ssh']) {
                         docker_image.inside(run_args) {
                             try {
                                 params = ["${script_env_global}", "${script_env_local}",
@@ -98,7 +97,6 @@ try {
                                 sh "${params}"
                             }
                         } // docker_image
-                    } // sshagent
                     // cleanup image (disabled for now, as would remove caches)
                     // sh "docker rmi ${image_name}"
                     tester_script = readFile "docker/tester-exec.sh"
