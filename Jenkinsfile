@@ -56,82 +56,82 @@ def script_env_global = """
 """
 
 try {
-        timestamps {
-            node('rk-docker') {
-                ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
-                    stage('Cleanup workspace') {
-                        deleteDir()
-                    }
-                    stage('Checkout content') {
-                        checkout_content(is_pr)
-                    }
-                    stage('Build docker image') {
-                        build_docker_image(image_name)
-                    }
-                    def docker_image = docker.image(image_name)
-                    run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
-                                run_proxy_args()].join(" ")
+    timestamps {
+        node('rk-docker') {
+            ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+                stage('Cleanup workspace') {
+                    deleteDir()
+                }
+                stage('Checkout content') {
+                    checkout_content(is_pr)
+                }
+                stage('Build docker image') {
+                    build_docker_image(image_name)
+                }
+                def docker_image = docker.image(image_name)
+                run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
+                            run_proxy_args()].join(" ")
 
-                    // Add specifics of this build to build.env
-                    def script_env_local = """
-                        export TARGET_MACHINE=${target_machine}
-                    """
-                        docker_image.inside(run_args) {
-                            try {
-                                if (is_pr) {
-                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Pre-build tests"
-                                }
-                                params = ["${script_env_global}", "${script_env_local}",
-                                "docker/pre-build.sh"].join("\n")
-                                stage('Pre-build tests') {
-                                    sh "${params}"
-                                }
+                // Add specifics of this build to build.env
+                def script_env_local = """
+                    export TARGET_MACHINE=${target_machine}
+                """
+                docker_image.inside(run_args) {
+                    try {
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Pre-build tests"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/pre-build.sh"].join("\n")
+                        stage('Pre-build tests') {
+                            sh "${params}"
+                        }
 
-                                if (is_pr) {
-                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
-                                }
-                                params = ["${script_env_global}", "${script_env_local}",
-                                "docker/build-project.sh"].join("\n")
-                                stage('Build') {
-                                    sh "${params}"
-                                }
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/build-project.sh"].join("\n")
+                        stage('Build') {
+                            sh "${params}"
+                        }
 
-                                if (is_pr) {
-                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Post-build tests"
-                                }
-                                params = ["${script_env_global}", "${script_env_local}",
-                                "docker/post-build.sh"].join("\n")
-                                stage('Post-build tests') {
-                                    sh "${params}"
-                                }
-                            } catch (Exception e) {
-                                throw e
-                            } finally {
-                                // publish detailed logs, partial results also after failed build
-                                if (is_pr) {
-                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Store images"
-                                }
-                                params = ["${script_env_global}", "${script_env_local}",
-                                "docker/publish-project.sh"].join("\n")
-                                stage('Store images') {
-                                    sh "${params}"
-                                }
-                            }
-                        } // docker_image
-                    // cleanup image (disabled for now, as would remove caches)
-                    // sh "docker rmi ${image_name}"
-                    tester_script = readFile "docker/tester-exec.sh"
-                    testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
-
-                    if ( !is_pr ) {
-                      ci_git_commit = readFile("ci_git_commit").trim()
-                      // This command expects that each new master build is based on a github merge
-                      sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
-                      added_commits = readFile("added_commits")
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Post-build tests"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/post-build.sh"].join("\n")
+                        stage('Post-build tests') {
+                            sh "${params}"
+                        }
+                    } catch (Exception e) {
+                        throw e
+                    } finally {
+                        // publish detailed logs, partial results also after failed build
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Store images"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/publish-project.sh"].join("\n")
+                        stage('Store images') {
+                            sh "${params}"
+                        }
                     }
-                } // ws
-            } // node
-        } // timestamps
+                } // docker_image
+                // cleanup image (disabled for now, as would remove caches)
+                // sh "docker rmi ${image_name}"
+                tester_script = readFile "docker/tester-exec.sh"
+                testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
+
+                if ( !is_pr ) {
+                    ci_git_commit = readFile("ci_git_commit").trim()
+                    // This command expects that each new master build is based on a github merge
+                    sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
+                    added_commits = readFile("added_commits")
+                }
+            } // ws
+        } // node
+    } // timestamps
 
     // find out combined size of all testinfo files
     int testinfo_sumz = 0
