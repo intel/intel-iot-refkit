@@ -56,13 +56,18 @@ def script_env_global = """
 """
 
 try {
-    def build_runs = [:]
-        build_runs["build_${target_machine}"] = {
+        timestamps {
             node('rk-docker') {
                 ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
-                    deleteDir()
-                    checkout_content(is_pr)
-                    build_docker_image(image_name)
+                    stage('Cleanup workspace') {
+                        deleteDir()
+                    }
+                    stage('Checkout content') {
+                        checkout_content(is_pr)
+                    }
+                    stage('Build docker image') {
+                        build_docker_image(image_name)
+                    }
                     def docker_image = docker.image(image_name)
                     run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                                 run_proxy_args()].join(" ")
@@ -73,24 +78,44 @@ try {
                     """
                         docker_image.inside(run_args) {
                             try {
+                                if (is_pr) {
+                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Pre-build tests"
+                                }
                                 params = ["${script_env_global}", "${script_env_local}",
                                 "docker/pre-build.sh"].join("\n")
-                                sh "${params}"
+                                stage('Pre-build tests') {
+                                    sh "${params}"
+                                }
 
+                                if (is_pr) {
+                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
+                                }
                                 params = ["${script_env_global}", "${script_env_local}",
                                 "docker/build-project.sh"].join("\n")
-                                sh "${params}"
+                                stage('Build') {
+                                    sh "${params}"
+                                }
 
+                                if (is_pr) {
+                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Post-build tests"
+                                }
                                 params = ["${script_env_global}", "${script_env_local}",
                                 "docker/post-build.sh"].join("\n")
-                                sh "${params}"
+                                stage('Post-build tests') {
+                                    sh "${params}"
+                                }
                             } catch (Exception e) {
                                 throw e
                             } finally {
                                 // publish detailed logs, partial results also after failed build
-                                params =  ["${script_env_global}", "${script_env_local}",
+                                if (is_pr) {
+                                    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Store images"
+                                }
+                                params = ["${script_env_global}", "${script_env_local}",
                                 "docker/publish-project.sh"].join("\n")
-                                sh "${params}"
+                                stage('Store images') {
+                                    sh "${params}"
+                                }
                             }
                         } // docker_image
                     // cleanup image (disabled for now, as would remove caches)
@@ -106,16 +131,7 @@ try {
                     }
                 } // ws
             } // node
-        } // build_runs =
-
-    stage('Build') {
-        if (is_pr) {
-           setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
-        }
-        timestamps {
-            parallel build_runs
-        }
-    }
+        } // timestamps
 
     // find out combined size of all testinfo files
     int testinfo_sumz = 0
