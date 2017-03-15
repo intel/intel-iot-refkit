@@ -37,7 +37,7 @@ $ tar xvf iot-testfiles.xxx.tar.gz -C iottest/
 Running the tests:
 ```
 $ cd iottest
-$ python runtest.py -f testplan/xxx.manifest -m [target machine] -t [target IP] -s [host IP]
+$ python runtest.py -f testplan/xxx.manifest -m <target machine> -t <target IP>[:<port number>] -s <host IP>
 ```
 
 For example:

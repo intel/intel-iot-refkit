@@ -41,6 +41,7 @@ class FakeTarget(object):
     def __init__(self, d):
         self.connection = None
         self.ip = None
+        self.port = None
         self.server_ip = None
         self.datetime = time.strftime('%Y%m%d%H%M%S',time.gmtime())
         self.testdir = d.getVar("TEST_LOG_DIR", True)
@@ -56,7 +57,7 @@ class FakeTarget(object):
             print("SSH log file: %s" %  self.sshlog)
         else:
             self.sshlog = os.path.join(self.testdir, "ssh_target_log_%s_%s" % (self.ip, self.datetime))
-        self.connection = SSHControl(self.ip, logfile=self.sshlog)
+        self.connection = SSHControl(self.ip, port=self.port, logfile=self.sshlog)
 
     def run(self, cmd, timeout=None):
         return self.connection.run(cmd, timeout)
@@ -223,7 +224,8 @@ def main():
     first = True
     for ip in targets_ip:
         target = FakeTarget(d)
-        target.ip = ip
+        buf_ip = ip.split(":", 1)
+        [target.ip, target.port] = buf_ip if len(buf_ip) == 2 else [buf_ip[0], "22"]
         target.server_ip = server_ip
         target.exportStart(first)
         first = False
