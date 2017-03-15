@@ -193,6 +193,7 @@ linux-firmware@core
 linux-intel@intel
 linux-libc-headers@core
 linux-yocto@core
+lms8@intel
 lowpan-tools@networking-layer
 lttng-ust@core
 m4@core
@@ -270,6 +271,7 @@ taglib@core
 tbb@openembedded-layer
 tcp-smack-test@security-smack
 tiff@core
+thermald@intel
 tpm-tools@security
 tremor@core
 trousers@security
