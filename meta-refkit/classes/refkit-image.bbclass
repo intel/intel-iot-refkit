@@ -5,7 +5,7 @@ IMAGE_INSTALL = " \
 		kernel-modules \
 		linux-firmware \
 		packagegroup-core-boot \
-                ${ROOTFS_PKGMANAGE_BOOTSTRAP} \
+                ${ROOTFS_BOOTSTRAP_INSTALL} \
                 ${CORE_IMAGE_EXTRA_INSTALL} \
                 ${REFKIT_IMAGE_EXTRA_INSTALL} \
 		"
