@@ -6,6 +6,8 @@ DEPENDS = "upm"
 SRC_URI = "file://upm_test.c \
 "
 
+inherit pkgconfig
+
 S = "${WORKDIR}"
 
 do_compile() {

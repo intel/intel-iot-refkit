@@ -42,7 +42,7 @@ python buildhistory_extra_emit_pkghistory() {
     # into their main source tree. The other variable do not show
     # up (yet), but might eventually.
     d = d.createCopy()
-    for var in ('S', 'WORKDIR', 'BASE_WORKDIR', 'TMPDIR'):
+    for var in ('S', 'BASE_WORKDIR'):
         d.delVar(var)
     relpath = os.path.dirname(d.getVar('TOPDIR', True))
 
