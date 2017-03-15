@@ -80,6 +80,9 @@ EOF
   fi
   # Buildhistory mode set always in CI run
   cat >> conf/auto.conf << EOF
+INHERIT += "buildhistory"
+BUILDHISTORY_COMMIT = "1"
+INHERIT += "buildhistory-extra"
 BUILDHISTORY_DIR ?= "${BUILDHISTORY_TMP}"
 EOF
   if [ ! -z ${COORD_BASE_URL+x} ]; then

@@ -29,7 +29,7 @@ set +u
 source refkit-init-build-env ${BUILD_DIR}
 set -u
 
-# Take local CI preferences if present, 1st time, to get bb_e_env parsed
+# Initialize auto.conf from local CI preferences if present
 if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
   cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
 fi
@@ -38,14 +38,10 @@ fi
 bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
 grep -E "^REFKIT_CI" bb_e_out > ${WORKSPACE}/refkit_ci_vars || true
 
-if [ ! -z ${JOB_NAME+x} ]; then
-  # in CI: run pre-build oe-selftests using development-mode settings in auto.conf
-  # we can't use full auto.conf of builder, oe-selftest does not like buildhistory=ON
-  echo "include conf/distro/include/refkit-development.inc" > ${WORKSPACE}/build/conf/auto.conf
-  _tests=`grep REFKIT_CI_PREBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
-  if [ -n "$_tests" ]; then
-    oe-selftest --run-tests ${_tests}
-  fi
-  rm -f ${WORKSPACE}/build/conf/auto.conf
+_tests=`grep REFKIT_CI_PREBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
+if [ -n "$_tests" ]; then
+  oe-selftest --run-tests ${_tests}
 fi
+rm -f ${WORKSPACE}/build/conf/auto.conf
+
 

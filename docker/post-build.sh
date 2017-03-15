@@ -23,12 +23,13 @@ set +u
 source refkit-init-build-env ${BUILD_DIR}
 set -u
 
-if [ ! -z ${JOB_NAME+x} ]; then
-  # in CI: run post-build oe-selftests using development-mode settings in auto.conf
-  # we can't use full auto.conf of builder, oe-selftest does not like buildhistory=ON
-  echo "include conf/distro/include/refkit-development.inc" > ${WORKSPACE}/build/conf/auto.conf
-  _tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
-  if [ -n "$_tests" ]; then
-    oe-selftest --run-tests ${_tests}
-  fi
+# Initialize auto.conf from local CI preferences if present,
+# build phase has added BUILDHISTORY there which is not welcomed by oe-selftest
+if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
+  cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
+fi
+
+_tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
+if [ -n "$_tests" ]; then
+  oe-selftest --run-tests ${_tests}
 fi

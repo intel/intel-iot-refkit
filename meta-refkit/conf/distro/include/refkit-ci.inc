@@ -26,12 +26,7 @@ ISAFW_LA_PLUGIN_IMAGE_WHITELIST = "refkit-image-minimal refkit-initramfs"
 # image files are not needed for that.
 IMAGE_FSTYPES_pn-refkit-image-minimal = ""
 REFKIT_VM_IMAGE_TYPES_pn-refkit-image-minimal = ""
-
-# Enable extended buildhistory:
-INHERIT += "buildhistory"
-BUILDHISTORY_COMMIT = "1"
-INHERIT += "buildhistory-extra"
-
+ 
 # Test data generation:
 INHERIT += "test-iot"
 TEST_EXPORT_DIR = "iottest"
