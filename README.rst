@@ -69,7 +69,13 @@ When Docker is configured properly and all project code is cloned and
 available locally, it's time to trigger a build. To do this run the
 command from within the ``~/work/intel-iot-refkit`` directory::
 
+Build all pre-configured target images with test suites::
+
 $ docker/local-build.sh
+
+Specify one or more target image(s)::
+
+$ docker/local-build.sh refkit-image-common
 
 Building without Docker
 =======================
