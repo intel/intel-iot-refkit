@@ -5,7 +5,8 @@ AUTHOR = "Brendan Le Foll, Tom Ingleby, Dmitry Rozhkov"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=66493d54e65bfc12c7983ff2e884f37f"
 
-SRC_URI = "git://github.com/intel-iot-devkit/mraa.git;protocol=http;tag=v${PV}"
+SRC_URI = "git://github.com/intel-iot-devkit/mraa.git;protocol=http;tag=v${PV} \
+           file://0001-mraa.c-Fix-strsep-crash.patch"
 
 S = "${WORKDIR}/git"
 
