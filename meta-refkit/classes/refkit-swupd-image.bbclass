@@ -60,9 +60,4 @@ export ALTERNATIVE_PRIORITY_BASH ?= "305"
 # For now avoid these problems by sticking to the traditional
 # mount utilities from util-linux.
 export ALTERNATIVE_PRIORITY_UTIL_LINUX ?= "305"
-
-# We do not know exactly which util-linux packages will get
-# pulled into bundles, so we have to install all of them
-# also in the os-core. Alternatively we could try to select
-# just mount/umount as overrides for Toybox/Busybox.
-IMAGE_INSTALL += "util-linux"
+IMAGE_INSTALL += "util-linux-mount"
