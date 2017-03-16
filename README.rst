@@ -154,6 +154,6 @@ The project is open to patches and bug fixes. The patches can be submitted as Gi
 Pull requests in https://github.com/intel/intel-iot-refkit or to the project
 mailing list.
 
-Please follow the common Yocto Project/OpenEmbedded Core `Patch Submission Guidelines`_.
+Please follow the common Yocto Project/OpenEmbedded Core `Commit Message Guidelines`_.
 
-.. _Patch Submission Guidelines: http://www.openembedded.org/wiki/How_to_submit_a_patch_to_OpenEmbedded
+.. _Commit Message Guidelines: http://www.openembedded.org/wiki/Commit_Patch_Message_Guidelines#Patch_Headers_and_Commit_Messages
