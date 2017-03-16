@@ -143,9 +143,11 @@ python do_install () {
 # netbase is needed because it enables IPv6, and tpm-tools happens
 # to communicate with trousers via IPv6. Probably could be reconfigured
 # to use only IPv4.
-
+#
+# libgcc is needed by tpm-tools and has to be specified explicitly because of
+# https://bugzilla.yoctoproject.org/show_bug.cgi?id=10954
 FILES_${PN} = "/init.d"
 RDEPENDS_${PN} = " \
     cryptsetup \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'trousers tpm-tools strace netbase init-ifupdown', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'trousers tpm-tools libgcc strace netbase init-ifupdown', '', d) } \
 "
