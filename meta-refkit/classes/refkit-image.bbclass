@@ -237,17 +237,6 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
-# We could make bash the login shell for interactive accounts as shown
-# below, but that would have to be done also in the os-core and thus
-# tools-interactive would have to be set in all swupd images.
-# TODO (?): introduce a bash-login-shell image feature?
-# ROOTFS_POSTPROCESS_COMMAND_append = "${@bb.utils.contains('IMAGE_FEATURES', 'tools-interactive', ' root_bash_shell; ', '', d)}"
-# root_bash_shell () {
-#     sed -i -e 's;/bin/sh;/bin/bash;' \
-#        ${IMAGE_ROOTFS}${sysconfdir}/passwd \
-#        ${IMAGE_ROOTFS}${sysconfdir}/default/useradd
-# }
-
 IMAGE_LINGUAS = " "
 
 LICENSE = "MIT"
