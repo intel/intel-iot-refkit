@@ -123,7 +123,8 @@ try {
                 tester_script = readFile "docker/tester-exec.sh"
                 testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
 
-                if ( !is_pr ) {
+                if ( is_pr ) {
+                    sh "git rev-parse HEAD > ci_git_commit"
                     ci_git_commit = readFile("ci_git_commit").trim()
                     // This command expects that each new master build is based on a github merge
                     sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
