@@ -33,7 +33,8 @@ class SStateTests(SStateBase):
         libcappend = get_bb_var('TCLIBCAPPEND')
         # Select subset of the machines to speed up testing.
         # Edison/intel-core2-32 are particularly sensitive.
-        machines = "edison intel-quark intel-core2-32 intel-corei7-64 beaglebone".split()
+        machines = "intel-corei7-64".split()
+        # machines = "edison intel-quark intel-core2-32 intel-corei7-64 beaglebone".split()
         # machines = "edison intel-core2-32".split()
         first = machines[0]
         workdir = os.getcwd()

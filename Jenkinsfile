@@ -15,13 +15,8 @@
 //
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
-if (is_pr) {
-    setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Run #${env.BUILD_NUMBER} started"
-}
 
-// an example how to build for multiple machines:
-//def target_machines = [ "intel-corei7-64", "intel-quark" ]
-def target_machines = [ "intel-corei7-64" ]
+def target_machine = "intel-corei7-64"
 
 // test on these HW targets:
 def test_devices = [ "570x", "minnowboardturbot" ]
@@ -37,9 +32,6 @@ def mapping = [
   'minnowboardturbot' : 'intel-corei7-64'
 ]
 
-// Base container OS to use, see docker configs in docker/
-def build_os = "opensuse-42.2"
-
 // JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
@@ -51,136 +43,104 @@ def ci_git_commit = ""
 def global_sum_log = ""
 def added_commits = ""
 
+// Define global environment common for all docker sessions
+def script_env_global = """
+    export WORKSPACE=\$PWD
+    export HOME=\$JENKINS_HOME
+    export CURRENT_PROJECT=${current_project}
+    export BUILD_CACHE_DIR=${env.PUBLISH_DIR}/bb-cache
+    export GIT_PROXY_COMMAND=oe-git-proxy
+    export CI_BUILD_ID=${ci_build_id}
+    export GIT_COMMITTER_NAME="IOT Refkit CI"
+    export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
+"""
+
 try {
-    def build_runs = [:]
-    for(int i=0; i < target_machines.size(); i++) {
-        def target_machine = target_machines[i]
-        build_runs["build_${target_machine}"] = {
-            node('rk-docker') {
-                ws ("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
-                    stage('Cleanup workspace') {
-                        deleteDir()
-                    }
+    timestamps {
+        node('rk-docker') {
+            ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+                stage('Cleanup workspace') {
+                    deleteDir()
+                }
+                stage('Checkout content') {
+                    checkout_content(is_pr)
+                }
+                stage('Build docker image') {
+                    build_docker_image(image_name)
+                }
+                def docker_image = docker.image(image_name)
+                run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
+                            run_proxy_args()].join(" ")
 
-                    stage('Checkout own content') {
-                        //if (binding.variables.get("GITHUB_PR_NUMBER"))
-                        // we can't use binding method any more, rely on is_pr
+                // Add specifics of this build to build.env
+                def script_env_local = """
+                    export TARGET_MACHINE=${target_machine}
+                """
+                docker_image.inside(run_args) {
+                    try {
                         if (is_pr) {
-                            // we are building pull request
-                            echo "Checkout: checkout in PR case"
-                            checkout([$class: 'GitSCM',
-                                branches: [
-                                    [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
-                                ],
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions: [
-                                    [$class: 'SubmoduleOption',
-                                        disableSubmodules: false,
-                                        recursiveSubmodules: true,
-                                        reference: "${env.PUBLISH_DIR}/bb-cache/.git-mirror",
-                                        trackingSubmodules: false],
-                                    [$class: 'CleanBeforeCheckout']
-                                ],
-                                submoduleCfg: [],
-                                    userRemoteConfigs: [
-                                    [
-                                        credentialsId: "${GITHUB_AUTH}",
-                                        name: 'origin-pull',
-                                        refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
-                                        url: "${GITHUB_PROJECT}"
-                                     ]
-                                ]
-                            ])
-                        } else {
-                            echo "Checkout: checkout in MASTER case"
-                            checkout poll: false, scm: scm
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Pre-build tests"
                         }
-                    } // stage
-
-                    stage('Build docker image') {
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building Docker image"
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/pre-build.sh"].join("\n")
+                        stage('Pre-build tests') {
+                            sh "${params}"
                         }
 
-                        def build_args = [ build_proxy_args(), build_user_args()].join(" ")
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/build-project.sh"].join("\n")
+                        stage('Build') {
+                            sh "${params}"
+                        }
 
-                        sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
-                        dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Post-build tests"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/post-build.sh"].join("\n")
+                        stage('Post-build tests') {
+                            sh "${params}"
+                        }
+                    } catch (Exception e) {
+                        throw e
+                    } finally {
+                        // publish detailed logs, partial results also after failed build
+                        if (is_pr) {
+                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Store images"
+                        }
+                        params = ["${script_env_global}", "${script_env_local}",
+                        "docker/publish-project.sh"].join("\n")
+                        stage('Store images') {
+                            sh "${params}"
+                        }
                     }
-                    def docker_image = docker.image(image_name)
-                    run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
-                                run_proxy_args()].join(" ")
+                } // docker_image
+                // cleanup image (disabled for now, as would remove caches)
+                // sh "docker rmi ${image_name}"
+                tester_script = readFile "docker/tester-exec.sh"
+                testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
 
-                    // Prepare environment for calling other scripts.
-                    def script_env = """
-                        export WORKSPACE=\$PWD
-                        export HOME=\$JENKINS_HOME
-                        export CURRENT_PROJECT=${current_project}
-                        export BUILD_CACHE_DIR=${env.PUBLISH_DIR}/bb-cache
-                        export GIT_PROXY_COMMAND=oe-git-proxy
-                        export CI_BUILD_ID=${ci_build_id}
-                        export TARGET_MACHINE=${target_machine}
-                        export GIT_COMMITTER_NAME="IOT Refkit CI"
-                        export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
-                    """
-                    timestamps {
-                        sshagent(['github-auth-ssh']) {
-                            docker_image.inside(run_args) {
-                                try {
-                                    stage('Bitbake Build') {
-                                        if (is_pr) {
-                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Bitbake Build"
-                                        }
-                                        params = ["${script_env}",
-                                        "docker/build-project.sh"].join("\n")
-                                        sh "${params}"
-                                    }
-                                } catch (Exception e) {
-                                    throw e
-                                } finally {
-                                    // publish in finally-block so that detailed logs or any partial results get stored even in case of failed build
-                                    stage('Build publishing') {
-                                        if (is_pr) {
-                                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Build publishing"
-                                        }
-                                        params =  ["${script_env}",
-                                        "docker/publish-project.sh"].join("\n")
-                                        sh "${params}"
-                                    }
-                                }
-                            }
-                        } // sshagent
-                    } // timestamps
-                    // all good, cleanup image (disabled for now, as also removes caches)
-                    // sh "docker rmi ${image_name}"
-                    tester_script = readFile "docker/tester-exec.sh"
-                    testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
-
-                    if ( !is_pr ) {
-                      ci_git_commit = readFile("ci_git_commit").trim()
-                      // This command expects that each new master build is based on a github merge
-                      sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
-                      added_commits = readFile("added_commits")
-                    }
-                } // ws
-            } // node
-        } // build_runs =
-    } // for
-
-    parallel build_runs
+                if ( !is_pr ) {
+                    ci_git_commit = readFile("ci_git_commit").trim()
+                    // This command expects that each new master build is based on a github merge
+                    sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
+                    added_commits = readFile("added_commits")
+                }
+            } // ws
+        } // node
+    } // timestamps
 
     // find out combined size of all testinfo files
     int testinfo_sumz = 0
-    for(int i=0; i < target_machines.size(); i++) {
-        testinfo_sumz += testinfo_data["${target_machines[i]}"].length()
-    }
+    testinfo_sumz += testinfo_data["${target_machine}"].length()
     // skip tester parts if no tests configured
     if ( testinfo_sumz > 0 ) {
         def test_runs = [:]
         for(int i = 0; i < test_devices.size(); i++) {
             def test_device = test_devices[i]
-            for(int k = 0; k < target_machines.size(); k++) {
-                def target_machine = target_machines[k]
                 // only if built for machine that this tester wants
                 if ( target_machine == mapping["${test_device}"] ) {
                     // testinfo_data may contain multiple lines stating different images
@@ -243,7 +203,6 @@ try {
                         } // test_runs =
                     } // for m
 	        } // if target_machine == mapping
-            } // for k
         } // for i
         stage('Parallel test run') {
             if (is_pr) {
@@ -320,4 +279,46 @@ def build_user_args() {
         deleteDir()
     }
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
+}
+
+def checkout_content(is_pr) {
+    if (is_pr) {
+        // we are building pull request
+        echo "Checkout: PR case"
+        checkout([$class: 'GitSCM',
+            branches: [
+                [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
+            ],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+                [$class: 'SubmoduleOption',
+                    disableSubmodules: false,
+                    recursiveSubmodules: true,
+                    reference: "${env.PUBLISH_DIR}/bb-cache/.git-mirror",
+                    trackingSubmodules: false],
+                [$class: 'CleanBeforeCheckout']
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: [
+                [
+                credentialsId: "${GITHUB_AUTH}",
+                name: 'origin-pull',
+                refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
+                url: "${GITHUB_PROJECT}"
+                ]
+            ]
+        ])
+    } else {
+        echo "Checkout: MASTER case"
+        checkout poll: false, scm: scm
+    }
+}
+
+def build_docker_image(image_name) {
+    // Base container OS to use, see docker configs in docker/
+    def build_os = "opensuse-42.2"
+
+    def build_args = [ build_proxy_args(), build_user_args()].join(" ")
+    sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
+    dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
 }

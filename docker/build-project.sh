@@ -21,28 +21,26 @@ BUILD_TARGET="$@"
 export LC_ALL=en_US.UTF-8
 
 cd $WORKSPACE
-# get git commit ID of the project for using in buildhistory tagging
-CI_GIT_COMMIT=$(git rev-parse HEAD)
-echo ${CI_GIT_COMMIT} > ci_git_commit
-
-# document env.vars in build log
-env |sort
 
 # use +u to avoid exit caused by unbound variables use in init scripts
 set +u
-# note, BUILD_DIR is also undef in CI case, but is set in local-build case.
+# BUILD_DIR is undef in CI case, but is set in local-build case.
 source refkit-init-build-env ${BUILD_DIR}
 set -u
 
 if [ ! -z ${JOB_NAME+x} ]; then
-  # Prepare for buildhistory generation
-  # If JOB_NAME is defined, we commit buildhistory in
-  # BH branch, name of which is composed from JOB_NAME and MACHINE.
+  # in CI run only:
+  # get commit ID for using in buildhistory tagging, save for later use
+  CI_GIT_COMMIT=$(git rev-parse HEAD)
+  echo ${CI_GIT_COMMIT} > ci_git_commit
+
+  # Prepare for buildhistory generation in BH branch, name of which
+  # is composed from JOB_NAME and TARGET_MACHINE
   _BUILDHISTORY_DIR="${PUBLISH_DIR}/buildhistory"
   BUILDHISTORY_TMP=${WORKSPACE}/buildhistory
   BUILDHISTORY_BRANCH="${JOB_NAME}/${TARGET_MACHINE}"
 
-  # Clone directory
+  # Clone master buildhistory, checkout this build speficic branch
   rm -fr ${BUILDHISTORY_TMP}
   git clone ${_BUILDHISTORY_DIR} ${BUILDHISTORY_TMP}
   pushd ${BUILDHISTORY_TMP}
@@ -55,18 +53,9 @@ if [ ! -z ${JOB_NAME+x} ]; then
   popd
 fi
 
-# Take local CI preferences if present
+# Initialize auto.conf from local CI preferences if present
 if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
   cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
-fi
-
-if [ ! -z ${CI_ARCHIVER_MODE+x} ]; then
-cat >> conf/auto.conf << EOF
-INHERIT += "archiver"
-ARCHIVER_MODE[src] = "original"
-ARCHIVER_MODE[diff] = "1"
-ARCHIVER_MODE[recipe] = "1"
-EOF
 fi
 
 cat >> conf/auto.conf << EOF
@@ -77,8 +66,23 @@ if [ -n "$BUILD_CACHE_DIR" ]; then
 DL_DIR = "${BUILD_CACHE_DIR}/sources"
 EOF
 fi
+
 if [ ! -z ${JOB_NAME+x} ]; then
-	cat >> conf/auto.conf << EOF
+  # in CI run only:
+  # Archiver set optionally: Product build has it, PR job does not.
+  if [ ! -z ${CI_ARCHIVER_MODE+x} ]; then
+    cat >> conf/auto.conf << EOF
+INHERIT += "archiver"
+ARCHIVER_MODE[src] = "original"
+ARCHIVER_MODE[diff] = "1"
+ARCHIVER_MODE[recipe] = "1"
+EOF
+  fi
+  # Buildhistory mode set always in CI run
+  cat >> conf/auto.conf << EOF
+INHERIT += "buildhistory"
+BUILDHISTORY_COMMIT = "1"
+INHERIT += "buildhistory-extra"
 BUILDHISTORY_DIR ?= "${BUILDHISTORY_TMP}"
 EOF
   if [ ! -z ${COORD_BASE_URL+x} ]; then
@@ -96,9 +100,14 @@ export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
 if [ -z "$BUILD_TARGET" ]; then
-  # Let's try to fetch build targets from configuration files
-  bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
-  grep -E "^REFKIT_CI" bb_e_out > ${WORKSPACE}/refkit_ci_vars || true
+  # Try to read build targets from configured CI specific settings.
+  # refkit_ci_vars is made in pre-build script in CI run, but
+  # may need to be created in local-build run.
+  if [ ! -f ${WORKSPACE}/refkit_ci_vars ]; then
+    # use bitbake -e for variables parsing, then pick REFKIT_CI part
+    bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
+    grep -E "^REFKIT_CI" bb_e_out > ${WORKSPACE}/refkit_ci_vars || true
+  fi
   _bitbake_targets=""
   for ci_var in `perl -pe "s/^([A-Z_]+)=.+/\1/g" ${WORKSPACE}/refkit_ci_vars`; do
     case "$ci_var" in
@@ -122,18 +131,18 @@ else
 fi
 
 if [ ! -z ${JOB_NAME+x} ]; then
-  # build inside CI, save log
+  # CI run: save output to log file
   LOG=$WORKSPACE/bitbake-${TARGET_MACHINE}-${CI_BUILD_ID}.log
   bitbake ${_bitbake_targets} 2>&1 | tee -a $LOG
 else
   bitbake ${_bitbake_targets}
 fi
 
-# ########################################
-# Push buildhistory into machine-specific branch in the master buildhistory
-#
 if [ ! -z ${JOB_NAME+x} ]; then
-  cd ${BUILDHISTORY_TMP}
+  # in CI run only:
+  # #############
+  # Push buildhistory into job-machine-specific branch in the master buildhistory
+  pushd ${BUILDHISTORY_TMP}
   BUILDHISTORY_TAG="${JOB_NAME}/${CI_BUILD_ID}/${CI_GIT_COMMIT}/${TARGET_MACHINE}"
   git tag -a -m "Build #${BUILD_NUMBER} (${BUILD_TIMESTAMP}) of ${JOB_NAME} for ${TARGET_MACHINE}" -m "Built from Git revision ${CI_GIT_COMMIT}" ${BUILDHISTORY_TAG} refs/heads/${BUILDHISTORY_BRANCH}
 
@@ -141,18 +150,19 @@ if [ ! -z ${JOB_NAME+x} ]; then
   # push branch might fail if multiple concurent jobs running for this branch.
   # That's ok, as most important part is stored under tag.
   git push origin refs/heads/${BUILDHISTORY_BRANCH}:refs/heads/${BUILDHISTORY_BRANCH} || true
-fi
+  popd
 
-# #############
-# Test run data
-set +e
-REFKIT_CI_TEST_RUNS=`grep REFKIT_CI_TEST_RUNS= ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ ,.a-zA-Z0-9_-]//g'`
-if [ -n "$REFKIT_CI_TEST_RUNS" ]; then
-  for row in $REFKIT_CI_TEST_RUNS; do
-    echo $row >> ${WORKSPACE}/${TARGET_MACHINE}.testinfo.csv
-  done
-else
-  # No automatic testing targets found
-  echo -n "" > ${WORKSPACE}/${TARGET_MACHINE}.testinfo.csv
+  # #############
+  # Create testinfo data for CI tester session
+  set +e
+  REFKIT_CI_TEST_RUNS=`grep REFKIT_CI_TEST_RUNS= ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ ,.a-zA-Z0-9_-]//g'`
+  if [ -n "$REFKIT_CI_TEST_RUNS" ]; then
+    for row in $REFKIT_CI_TEST_RUNS; do
+      echo $row >> ${WORKSPACE}/${TARGET_MACHINE}.testinfo.csv
+    done
+  else
+    # No automatic testing targets found
+    echo -n "" > ${WORKSPACE}/${TARGET_MACHINE}.testinfo.csv
+  fi
+  set -e
 fi
-set -e
