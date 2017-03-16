@@ -1,0 +1,312 @@
+From 501a485f22806ed829c1753f01a495e7d6dfe0df Mon Sep 17 00:00:00 2001
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Mon, 22 Aug 2016 09:03:37 +0100
+Subject: [PATCH] drm/i915: Fix i915_gem_evict_for_vma (soft-pinning)
+
+Soft-pinning depends upon being able to check for availabilty of an
+inverval and evict overlapping object fro a drm_mm range manager very
+quickly. Currently it uses a linear list which makes performance dire,
+and softpinning not a suitable replacement.
+
+It also helps if the routine reports the correct error codes as expected
+by its callers and emits a tracepoint upon use.
+
+For posterity since the wrong patch was pushed (i.e. that missed these
+key points), this is the changelog that should have been on commit
+506a8e87d8d2 ("drm/i915: Add soft-pinning API for execbuffer"):
+
+Userspace can pass in an offset that it presumes the object is located
+at. The kernel will then do its utmost to fit the object into that
+location. The assumption is that userspace is handling its own object
+locations (for example along with full-ppgtt) and that the kernel will
+rarely have to make space for the user's requests.
+
+This extends the DRM_IOCTL_I915_GEM_EXECBUFFER2 to do the following:
+* if the user supplies a virtual address via the execobject->offset
+  *and* sets the EXEC_OBJECT_PINNED flag in execobject->flags, then
+  that object is placed at that offset in the address space selected
+  by the context specifier in execbuffer.
+* the location must be aligned to the GTT page size, 4096 bytes
+* as the object is placed exactly as specified, it may be used by this
+  execbuffer call without relocations pointing to it
+
+It may fail to do so if:
+* EINVAL is returned if the object does not have a 4096 byte aligned
+  address
+* the object conflicts with another pinned object (either pinned by
+  hardware in that address space, e.g. scanouts in the aliasing ppgtt)
+  or within the same batch.
+  EBUSY is returned if the location is pinned by hardware
+  EINVAL is returned if the location is already in use by the batch
+* EINVAL is returned if the object conflicts with its own alignment (as meets
+  the hardware requirements) or if the placement of the object does not fit
+  within the address space
+
+All other execbuffer errors apply.
+
+Presence of this execbuf extension may be queried by passing
+I915_PARAM_HAS_EXEC_SOFTPIN to DRM_IOCTL_I915_GETPARAM and checking for
+a reported value of 1 (or greater).
+
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+
+Upstream-status: Submitted [https://patchwork.kernel.org/patch/9431107/]
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ drivers/gpu/drm/drm_mm.c                   |  9 ++++
+ drivers/gpu/drm/i915/i915_drv.h            |  3 +-
+ drivers/gpu/drm/i915/i915_gem_evict.c      | 87 +++++++++++++++++++++---------
+ drivers/gpu/drm/i915/i915_gem_execbuffer.c |  2 +-
+ drivers/gpu/drm/i915/i915_gem_gtt.c        | 10 ++--
+ drivers/gpu/drm/i915/i915_trace.h          | 23 ++++++++
+ drivers/gpu/drm/i915/i915_vma.c            |  8 +--
+ 7 files changed, 103 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_mm.c b/drivers/gpu/drm/drm_mm.c
+index ca1e344..6a68ef9 100644
+--- a/drivers/gpu/drm/drm_mm.c
++++ b/drivers/gpu/drm/drm_mm.c
+@@ -337,6 +337,15 @@ int drm_mm_reserve_node(struct drm_mm *mm, struct drm_mm_node *node)
+ 	if (adj_start > node->start || adj_end < end)
+ 		return -ENOSPC;
+ 
++	if (mm->color_adjust) {
++		u64 adj_start = hole_start, adj_end = hole_end;
++
++		mm->color_adjust(hole, node->color, &adj_start, &adj_end);
++		if (adj_start > node->start ||
++		    adj_end < node->start + node->size)
++			return -ENOSPC;
++	}
++
+ 	node->mm = mm;
+ 	node->allocated = 1;
+ 
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 243224a..cc3084f 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -3258,7 +3258,8 @@ int __must_check i915_gem_evict_something(struct i915_address_space *vm,
+ 					  unsigned cache_level,
+ 					  u64 start, u64 end,
+ 					  unsigned flags);
+-int __must_check i915_gem_evict_for_vma(struct i915_vma *target);
++int __must_check i915_gem_evict_for_vma(struct i915_vma *vma,
++					unsigned int flags);
+ int i915_gem_evict_vm(struct i915_address_space *vm, bool do_idle);
+ 
+ /* belongs in i915_gem_gtt.h */
+diff --git a/drivers/gpu/drm/i915/i915_gem_evict.c b/drivers/gpu/drm/i915/i915_gem_evict.c
+index d534a31..d6d23de6 100644
+--- a/drivers/gpu/drm/i915/i915_gem_evict.c
++++ b/drivers/gpu/drm/i915/i915_gem_evict.c
+@@ -214,44 +214,83 @@ i915_gem_evict_something(struct i915_address_space *vm,
+ }
+ 
+ int
+-i915_gem_evict_for_vma(struct i915_vma *target)
++i915_gem_evict_for_vma(struct i915_vma *target, unsigned int flags)
+ {
+-	struct drm_mm_node *node, *next;
++	struct list_head eviction_list;
++	struct drm_mm_node *node;
++	u64 start = target->node.start;
++	u64 end = start + target->node.size - 1;
++	struct i915_vma *vma, *next;
++	bool check_snoop;
++	int ret = 0;
+ 
+ 	lockdep_assert_held(&target->vm->dev->struct_mutex);
+ 
+-	list_for_each_entry_safe(node, next,
+-			&target->vm->mm.head_node.node_list,
+-			node_list) {
+-		struct i915_vma *vma;
+-		int ret;
++	trace_i915_gem_evict_vma(target, flags);
++
++	check_snoop = target->vm->mm.color_adjust;
++	if (check_snoop) {
++		if (start > target->vm->start)
++			start -= 4096;
++		if (end < target->vm->start + target->vm->total)
++			end += 4096;
++	}
+ 
+-		if (node->start + node->size <= target->node.start)
+-			continue;
+-		if (node->start >= target->node.start + target->node.size)
++	node = __drm_mm_interval_first(&target->vm->mm, start, end);
++	if (!node)
++		return 0;
++
++	INIT_LIST_HEAD(&eviction_list);
++	vma = container_of(node, typeof(*vma), node);
++	list_for_each_entry_from(vma,
++				 &target->vm->mm.head_node.node_list,
++				 node.node_list) {
++		if (vma->node.start > end)
+ 			break;
+ 
+-		vma = container_of(node, typeof(*vma), node);
++		if (check_snoop) {
++			if (vma->node.start + vma->node.size == target->node.start) {
++				if (vma->node.color == target->node.color)
++					continue;
++			}
++			if (vma->node.start == target->node.start + target->node.size) {
++				if (vma->node.color == target->node.color)
++					continue;
++			}
++		}
+ 
+-		if (i915_vma_is_pinned(vma)) {
+-			if (!vma->exec_entry || i915_vma_pin_count(vma) > 1)
+-				/* Object is pinned for some other use */
+-				return -EBUSY;
++		if (vma->node.color == -1) {
++			ret = -ENOSPC;
++			break;
++		}
+ 
+-			/* We need to evict a buffer in the same batch */
+-			if (vma->exec_entry->flags & EXEC_OBJECT_PINNED)
+-				/* Overlapping fixed objects in the same batch */
+-				return -EINVAL;
++		if (flags & PIN_NONBLOCK &&
++		    (i915_vma_is_pinned(vma) || i915_vma_is_active(vma))) {
++			ret = -ENOSPC;
++			break;
++		}
+ 
+-			return -ENOSPC;
++		/* Overlap of objects in the same batch? */
++		if (i915_vma_is_pinned(vma)) {
++			ret = -ENOSPC;
++			if (vma->exec_entry &&
++			    vma->exec_entry->flags & EXEC_OBJECT_PINNED)
++				ret = -EINVAL;
++			break;
+ 		}
+ 
+-		ret = i915_vma_unbind(vma);
+-		if (ret)
+-			return ret;
++		__i915_vma_pin(vma);
++		list_add(&vma->exec_list, &eviction_list);
+ 	}
+ 
+-	return 0;
++	list_for_each_entry_safe(vma, next, &eviction_list, exec_list) {
++		list_del_init(&vma->exec_list);
++		__i915_vma_unpin(vma);
++		if (ret == 0)
++			ret = i915_vma_unbind(vma);
++	}
++
++	return ret;
+ }
+ 
+ /**
+diff --git a/drivers/gpu/drm/i915/i915_gem_execbuffer.c b/drivers/gpu/drm/i915/i915_gem_execbuffer.c
+index b8b877c..6f187c3 100644
+--- a/drivers/gpu/drm/i915/i915_gem_execbuffer.c
++++ b/drivers/gpu/drm/i915/i915_gem_execbuffer.c
+@@ -437,7 +437,7 @@ static void *reloc_iomap(struct drm_i915_gem_object *obj,
+ 			memset(&cache->node, 0, sizeof(cache->node));
+ 			ret = drm_mm_insert_node_in_range_generic
+ 				(&ggtt->base.mm, &cache->node,
+-				 4096, 0, 0,
++				 4096, 0, -1,
+ 				 0, ggtt->mappable_end,
+ 				 DRM_MM_SEARCH_DEFAULT,
+ 				 DRM_MM_CREATE_DEFAULT);
+diff --git a/drivers/gpu/drm/i915/i915_gem_gtt.c b/drivers/gpu/drm/i915/i915_gem_gtt.c
+index b4bde14..6045c89 100644
+--- a/drivers/gpu/drm/i915/i915_gem_gtt.c
++++ b/drivers/gpu/drm/i915/i915_gem_gtt.c
+@@ -2076,16 +2076,14 @@ static int gen6_ppgtt_allocate_page_directories(struct i915_hw_ppgtt *ppgtt)
+ 		return ret;
+ 
+ alloc:
+-	ret = drm_mm_insert_node_in_range_generic(&ggtt->base.mm,
+-						  &ppgtt->node, GEN6_PD_SIZE,
+-						  GEN6_PD_ALIGN, 0,
+-						  0, ggtt->base.total,
++	ret = drm_mm_insert_node_in_range_generic(&ggtt->base.mm, &ppgtt->node,
++						  GEN6_PD_SIZE, GEN6_PD_ALIGN,
++						  -1, 0, ggtt->base.total,
+ 						  DRM_MM_TOPDOWN);
+ 	if (ret == -ENOSPC && !retried) {
+ 		ret = i915_gem_evict_something(&ggtt->base,
+ 					       GEN6_PD_SIZE, GEN6_PD_ALIGN,
+-					       I915_CACHE_NONE,
+-					       0, ggtt->base.total,
++					       -1, 0, ggtt->base.total,
+ 					       0);
+ 		if (ret)
+ 			goto err_out;
+diff --git a/drivers/gpu/drm/i915/i915_trace.h b/drivers/gpu/drm/i915/i915_trace.h
+index c5d210e..2ed60ed 100644
+--- a/drivers/gpu/drm/i915/i915_trace.h
++++ b/drivers/gpu/drm/i915/i915_trace.h
+@@ -450,6 +450,29 @@ TRACE_EVENT(i915_gem_evict_vm,
+ 	    TP_printk("dev=%d, vm=%p", __entry->dev, __entry->vm)
+ );
+ 
++TRACE_EVENT(i915_gem_evict_vma,
++	    TP_PROTO(struct i915_vma *vma, unsigned int flags),
++	    TP_ARGS(vma, flags),
++
++	    TP_STRUCT__entry(
++			     __field(u32, dev)
++			     __field(struct i915_address_space *, vm)
++			     __field(u64, start)
++			     __field(u64, size)
++			     __field(unsigned int, flags)
++			    ),
++
++	    TP_fast_assign(
++			   __entry->dev = vma->vm->dev->primary->index;
++			   __entry->vm = vma->vm;
++			   __entry->start = vma->node.start;
++			   __entry->size = vma->node.size;
++			   __entry->flags = flags;
++			  ),
++
++	    TP_printk("dev=%d, vm=%p, start=%llx size=%llx, flags=%x", __entry->dev, __entry->vm, (long long)__entry->start, (long long)__entry->size, __entry->flags)
++);
++
+ TRACE_EVENT(i915_gem_ring_sync_to,
+ 	    TP_PROTO(struct drm_i915_gem_request *to,
+ 		     struct drm_i915_gem_request *from),
+diff --git a/drivers/gpu/drm/i915/i915_vma.c b/drivers/gpu/drm/i915/i915_vma.c
+index a792dcb..47c79ae 100644
+--- a/drivers/gpu/drm/i915/i915_vma.c
++++ b/drivers/gpu/drm/i915/i915_vma.c
+@@ -313,12 +313,6 @@ bool i915_gem_valid_gtt_space(struct i915_vma *vma,
+ 	if (vma->vm->mm.color_adjust == NULL)
+ 		return true;
+ 
+-	if (!drm_mm_node_allocated(gtt_space))
+-		return true;
+-
+-	if (list_empty(&gtt_space->node_list))
+-		return true;
+-
+ 	other = list_entry(gtt_space->node_list.prev, struct drm_mm_node, node_list);
+ 	if (other->allocated && !other->hole_follows && other->color != cache_level)
+ 		return false;
+@@ -401,7 +395,7 @@ i915_vma_insert(struct i915_vma *vma, u64 size, u64 alignment, u64 flags)
+ 		vma->node.color = obj->cache_level;
+ 		ret = drm_mm_reserve_node(&vma->vm->mm, &vma->node);
+ 		if (ret) {
+-			ret = i915_gem_evict_for_vma(vma);
++			ret = i915_gem_evict_for_vma(vma, flags);
+ 			if (ret == 0)
+ 				ret = drm_mm_reserve_node(&vma->vm->mm, &vma->node);
+ 			if (ret)
+-- 
+2.9.3
+
