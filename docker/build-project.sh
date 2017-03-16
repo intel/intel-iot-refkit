@@ -32,7 +32,7 @@ if [ ! -z ${JOB_NAME+x} ]; then
   # in CI run only:
   # get commit ID for using in buildhistory tagging, save for later use
   CI_GIT_COMMIT=$(git rev-parse HEAD)
-  echo ${CI_GIT_COMMIT} > ci_git_commit
+  echo ${CI_GIT_COMMIT} > ${WORKSPACE}/ci_git_commit
 
   # Prepare for buildhistory generation in BH branch, name of which
   # is composed from JOB_NAME and TARGET_MACHINE
