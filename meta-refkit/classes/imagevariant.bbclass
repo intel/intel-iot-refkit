@@ -19,7 +19,7 @@
 #
 # Example for core-image-minimal.bb:
 #   IMAGE_VARIANT[dev] = "tools-debug tools-profile"
-#   BBCLASSEXTEND = "imagevariant:ptest-pkgs imagevariant:tools-debug,no-debug-tweaks imagevariant=dev"
+#   BBCLASSEXTEND = "imagevariant:ptest-pkgs imagevariant:tools-debug,no-debug-tweaks imagevariant:dev"
 #   ->
 #   core-image-minimal-ptest-pkgs (ptest-pkgs enabled)
 #   core-image-minimal-tools-debug-no-debug-tweaks (debug-tweaks disabled)
