@@ -47,8 +47,9 @@ SWUPD_LOG_FN ?= "bbplain"
 # core system tools, one just has to remove Toybox/Busybox from
 # the image.
 export ALTERNATIVE_PRIORITY_BUSYBOX ?= "250"
-# systemd is at 300 and must be higher than busybox for the "halt" command
-export ALTERNATIVE_PRIORITY_TOYBOX ?= "301"
+export ALTERNATIVE_PRIORITY_TOYBOX ?= "280"
+# systemd has priority 300, busybox must have less because
+# we want halt/poweroff/reboot from systemd
 export ALTERNATIVE_PRIORITY_BASH ?= "305"
 
 # Both systemd and the efi_combo_updater have problems when
@@ -58,7 +59,7 @@ export ALTERNATIVE_PRIORITY_BASH ?= "305"
 #
 # For now avoid these problems by sticking to the traditional
 # mount utilities from util-linux.
-export ALTERNATIVE_PRIORITY_UTIL_LINUX ?= "306"
+export ALTERNATIVE_PRIORITY_UTIL_LINUX ?= "305"
 
 # We do not know exactly which util-linux packages will get
 # pulled into bundles, so we have to install all of them
