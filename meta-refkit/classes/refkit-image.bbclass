@@ -384,12 +384,10 @@ ROOTFS_POSTPROCESS_COMMAND += "${@'extra_motd;' if d.getVar('REFKIT_EXTRA_MOTD',
 # FIXME: make this work with both ${IMAGE_ROOTFS}/etc/ and ${IMAGE_ROOTFS}/usr/lib
 refkit_image_patch_os_release () {
     sed -i \
-        -e 's/distro-version-to-be-added-during-image-creation/${DISTRO_VERSION}/' \
         -e 's/build-id-to-be-added-during-image-creation/${BUILD_ID}/' \
         ${IMAGE_ROOTFS}/etc/os-release
 }
 refkit_image_patch_os_release[vardepsexclude] = " \
-    DISTRO_VERSION \
     BUILD_ID \
 "
 ROOTFS_POSTPROCESS_COMMAND += "refkit_image_patch_os_release; "
