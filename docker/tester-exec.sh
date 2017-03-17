@@ -15,6 +15,7 @@
 
 # function to test one image, see call point below.
 testimg() {
+  declare -i num_masked=0 num_total=0 num_skipped=0 num_na=0 num_failed=0 num_error=0
   _IMG_NAME=$1
   TEST_SUITE_FILE=$2
   TEST_CASES_FILE=$3
@@ -108,20 +109,16 @@ testimg() {
   rename .log .${DEVICE}.${_IMG_NAME}.log *.log
   # create summary file to be used in email notification sending
   _reports=`ls TEST-${DEVICE}.${_IMG_NAME}.*.xml`
-  num_total=0
-  num_skipped=0
-  num_na=$((0+num_masked))
-  num_failed=0
-  num_error=0
+  num_na=$num_masked
   for _r in $_reports; do
     _s=`grep 'testsuite errors=' $_r |tr -d '<>' |sed 's/testsuite//g'`
     eval $_s
-    num_error=$(( num_error + errors ))
-    num_failed=$(( num_failed + failures ))
-    num_skipped=$(( num_skipped + skipped ))
-    num_total=$(( num_total + tests ))
+    num_error+=${errors}
+    num_failed+=${failures}
+    num_skipped+=${skipped}
+    num_total+=${tests}
   done
-  num_passed=$(( num_total - num_error - num_failed - num_skipped ))
+  num_passed=$((num_total - num_error - num_failed - num_skipped))
   run_total=$((num_passed + num_failed))
   # passing data from here to Jenkinsfile works through file in workspace:
   sumfile=results-summary-${DEVICE}.${_IMG_NAME}.log
