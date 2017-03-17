@@ -1,0 +1,43 @@
+From 3a0407e127559d2349f0217c6c5cf7751dd1aeba Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Tue, 25 Oct 2016 12:09:19 +0300
+Subject: [PATCH 1/6] Allow setting numpy include dir from outside.
+
+---
+ cmake/Modules/FindNumPy.cmake | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/cmake/Modules/FindNumPy.cmake b/cmake/Modules/FindNumPy.cmake
+index a671494..38ebb32 100644
+--- a/cmake/Modules/FindNumPy.cmake
++++ b/cmake/Modules/FindNumPy.cmake
+@@ -16,11 +16,16 @@ unset(NUMPY_VERSION)
+ unset(NUMPY_INCLUDE_DIR)
+ 
+ if(PYTHONINTERP_FOUND)
+-  execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+-    "import numpy as n; print(n.__version__); print(n.get_include());"
+-    RESULT_VARIABLE __result
+-    OUTPUT_VARIABLE __output
+-    OUTPUT_STRIP_TRAILING_WHITESPACE)
++  if(NOT DEFINED PYTHON_NUMPY_INCLUDE_DIR)
++    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
++      "import numpy as n; print(n.__version__); print(n.get_include());"
++      RESULT_VARIABLE __result
++      OUTPUT_VARIABLE __output
++      OUTPUT_STRIP_TRAILING_WHITESPACE)
++  else()
++    SET(__result 0)
++    SET(__output "1.11.0\n${PYTHON_NUMPY_INCLUDE_DIR}")
++  endif()
+ 
+   if(__result MATCHES 0)
+     string(REGEX REPLACE ";" "\\\\;" __values ${__output})
+@@ -55,4 +60,3 @@ if(NUMPY_FOUND)
+ endif()
+ 
+ caffe_clear_vars(__result __output __error_value __values __ver_check __error_value)
+-
+-- 
+2.9.3
+

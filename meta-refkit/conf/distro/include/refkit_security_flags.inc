@@ -15,6 +15,10 @@ SECURITY_CFLAGS_pn-tbb = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-protobuf = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-glog = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-clang = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-python3-pillow = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-snappy = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-leveldb = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-python3-pyrealsense = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 
 # openjdk-8 ends up linking with "-shared -pie -fpie" in some cases (see
 # hotspot/make/linux/makefiles/saproc.make) which then tries (and fails) to

@@ -1,0 +1,38 @@
+From 74d41ac1b871dbc04d14e311ba7fa30b0b9e3087 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Wed, 8 Mar 2017 15:26:22 +0200
+Subject: [PATCH 1/2] setup.py: change to use Bitbake variables.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ setup.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index a8bddfd..df41d35 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1,6 +1,6 @@
+ from setuptools import setup, Extension
+ from setuptools import find_packages
+-from os import path
++from os import path, environ
+ import io
+ 
+ import numpy as np
+@@ -12,8 +12,8 @@ with io.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+ module = [Extension('pyrealsense.rsutilwrapper',
+                     sources=['pyrealsense/rsutilwrapper.c'],
+                     libraries=['realsense'],
+-                    include_dirs=[np.get_include(), '/usr/local/include/librealsense'],
+-                    library_dirs=['/usr/local/lib'], )]
++                    include_dirs=[np.get_include(), environ.get('STAGING_INCDIR'), environ.get('STAGING_INCDIR')+"/librealsense"],
++                    library_dirs=[environ.get('STAGING_LIBDIR')], )]
+ 
+ setup(name='pyrealsense',
+       version='1.4',
+-- 
+2.9.3
+

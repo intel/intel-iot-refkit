@@ -8,4 +8,6 @@ RDEPENDS_${PN} = " \
     python3-opencv \
     librealsense-examples \
     viennacl-examples \
+    caffe-imagenet-model \
+    python3-pyrealsense \
 "

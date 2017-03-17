@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fa3c971..f1ec7e2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -797,4 +797,10 @@ endif (EXISTS "${HDF5_SOURCE_DIR}/c++" AND IS_DIRECTORY "${HDF5_SOURCE_DIR}/c++"
+ #-----------------------------------------------------------------------------
+ configure_file (${HDF_RESOURCES_DIR}/H5pubconf.h.in ${HDF5_BINARY_DIR}/H5pubconf.h @ONLY)
+ 
++#-----------------------------------------------------------------------------
++# Copy the pre-generated files in place
++#-----------------------------------------------------------------------------
++configure_file(H5Tinit.c H5Tinit.c COPYONLY)
++configure_file(H5lib_settings.c H5lib_settings.c COPYONLY)
++
+ include (CMakeInstallation.cmake)
