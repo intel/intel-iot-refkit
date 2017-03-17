@@ -38,9 +38,6 @@ SDKMACHINE ?= "x86_64"
 # HOSTTOOLS setup:
 HOSTTOOLS_remove = "hostname ip vi"
 
-# Submitted: https://patchwork.openembedded.org/patch/138108/
-HOSTTOOLS_NONFATAL_append = " socat"
-
 # Generate source mirror tarballs:
 BB_GENERATE_MIRROR_TARBALLS = "1"
 
