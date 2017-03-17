@@ -27,36 +27,32 @@ The basic principles of a profile configuration are:
 This purpose of this document is to document each profile/configuration. The list is also
 maintained in `conf-notes.txt` and shown every time the build target is being prepared.
 
-Profile implementation
-======================
+Profile implementation and usage
+================================
 
-Profiles are buildable image targets. Every profile offers two targets: one as a
-basis for further development (``refkit-image-<profilename>``) and one as a
-means for testing and experimenting with the profile
-(``refkit-image-<profilename>-test``). The test image should be easily usable
-and contain various tools for trying out the profile features.
-
-Because the profiles are implemented as recipes, they all belong to the same
-distribution. This means that the distribution-wide settings are shared between
-the profiles, meaning that DISTRO_FEATURES cannot be added to profiles without
+The profiles are buildable image targets and are implemented by image recipes.
+Each profile belongs to the same distribution that consequently means that the distribution-wide
+settings are shared. Therefore, DISTRO_FEATURES cannot be added to profiles without
 them affecting also the other profiles.
 
-The goal is to keep the custom profile content minimal. All changes should be
-upstreamed whenever possible.
-
-Taking a profile into use
-=========================
-
-The kernel configuration is shared between the profiles, meaning that profiles
-do contain kernel features which are not necessarily needed in the profile.
+Furthermore, the kernel configuration is shared between the profiles, meaning that profiles
+contain kernel features which are not necessarily needed in the profile.
 The users of the profiles should verify the kernel configuration and only add
 the kernel features that are needed for their own particular use case.
 
-The development images (``refkit-image-<profilename>``) have the high-level
+The profiles (``refkit-image-<profilename>``) have the high-level
 tools and frameworks installed for several possible tools that make sense for
 the profile. The users need to see which ones they really need and remove the
 other tools from the image. Probably the best way to accomplish this is to copy
 the image recipe with a custom name and do the required changes there.
+
+When building the "development" versions of the profiles (``refkit-development.inc`` included),
+additional components to support testing are installed. For each profile, the testing specific content
+is provided by ``<profilename>-test`` image feature. This content is not installed when building
+the "production" versions (``refkit-production.inc`` included).
+
+The goal is to keep the custom profile content minimal. All changes should be
+upstreamed whenever possible.
 
 Profile Summary
 ===============
