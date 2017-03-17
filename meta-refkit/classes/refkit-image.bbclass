@@ -3,11 +3,12 @@
 REFKIT_IMAGE_EXTRA_INSTALL ?= ""
 IMAGE_INSTALL = " \
 		kernel-modules \
-		linux-firmware \
 		packagegroup-core-boot \
-                ${ROOTFS_BOOTSTRAP_INSTALL} \
-                ${CORE_IMAGE_EXTRA_INSTALL} \
-                ${REFKIT_IMAGE_EXTRA_INSTALL} \
+		${MACHINE_EXTRA_RDEPENDS} \
+		${MACHINE_EXTRA_RRECOMMENDS} \
+		${ROOTFS_BOOTSTRAP_INSTALL} \
+		${CORE_IMAGE_EXTRA_INSTALL} \
+		${REFKIT_IMAGE_EXTRA_INSTALL} \
 		"
 
 # In IoT Reference OS Kit, /bin/sh is always dash, even if bash is installed for
