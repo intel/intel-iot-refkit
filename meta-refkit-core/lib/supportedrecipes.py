@@ -291,15 +291,17 @@ def dump_unsupported(unsupported, supported_recipes):
 def check_build(d, event):
     supported_recipes, files = load_supported_recipes(d)
     supported_recipes_check = d.getVar('SUPPORTED_RECIPES_CHECK', True)
-    if not supported_recipes_check:
+    report_sources = d.getVar('SUPPORTED_RECIPES_SOURCES', True)
+
+    # Bail out early if nothing to do.
+    if not supported_recipes_check and not report_sources:
         return
 
     isnative = IsNative(d)
-    valid = ('note', 'warn', 'error', 'fatal')
+    valid = ('note', 'warn', 'error', 'fatal', '')
     if supported_recipes_check not in valid:
         bb.fatal('SUPPORTED_RECIPES_CHECK must be set to one of %s, currently is: %s' %
                  ('/'.join(valid), supported_recipes_check))
-    logger = bb.__dict__[supported_recipes_check]
 
     # See bitbake/lib/bb/cooker.py buildDependTree() for the content of the depgraph hash.
     # Basically it mirrors the information dumped by "bitbake -g".
@@ -308,7 +310,6 @@ def check_build(d, event):
     # bb.note('depgraph: %s' % pprint.pformat(depgraph))
 
     dirname = d.getVar('SUPPORTED_RECIPES_SOURCES_DIR', True)
-    report_sources = d.getVar('SUPPORTED_RECIPES_SOURCES', True)
 
     unsupported = {}
     sources = []
@@ -356,7 +357,7 @@ def check_build(d, event):
                 writer.writerow(row)
         bb.note('Created SUPPORTED_RECIPES_SOURCES = %s file.' % report_sources)
 
-    if unsupported:
+    if supported_recipes_check and unsupported:
         max_lines = int(d.getVar('SUPPORTED_RECIPES_CHECK_DEPENDENCY_LINES', True))
         dependencies, truncated = dump_dependencies(depgraph, max_lines, unsupported)
 
@@ -401,4 +402,4 @@ To avoid this message, several options exist:
   'bitbake -g <build target>' produces .dot files showing these dependencies.
 ''' % '\n  '.join(files))
 
-        logger('\n'.join(output))
+        bb.__dict__[supported_recipes_check]('\n'.join(output))
