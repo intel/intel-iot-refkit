@@ -4,12 +4,10 @@ intel-iot-refkit
 This README file contains information on setting up, building, and booting
 the IoT Reference OS Kit for Intel(r) Architecture project.
 
-.. note::
-
    Only Linux development hosts are currently supported, as documented
    in the `Yocto Project Quick Start Guide`_
 
-.. Yocto Project Quick Start Guide: http://www.yoctoproject.org/docs/current/yocto-project-qs/yocto-project-qs.html#the-linux-distro
+.. _Yocto Project Quick Start Guide: http://www.yoctoproject.org/docs/current/yocto-project-qs/yocto-project-qs.html#the-linux-distro
 
 Installing Docker on Linux
 ==========================
@@ -103,7 +101,7 @@ $ git clone --recursive https://github.com/intel/intel-iot-refkit.git
 $ cd intel-iot-refkit
 $ source refkit-init-build-env
 
-Edit :file:`conf/local.conf` to select whether to build the production or the development image.
+Edit ``conf/local.conf`` to select whether to build the production or the development image.
 More details about the choices in that file.
 
 Basic build steps::
