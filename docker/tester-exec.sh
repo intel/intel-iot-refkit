@@ -15,6 +15,7 @@
 
 # function to test one image, see call point below.
 testimg() {
+  declare -i num_masked=0 num_total=0 num_skipped=0 num_na=0 num_failed=0 num_error=0
   _IMG_NAME=$1
   TEST_SUITE_FILE=$2
   TEST_CASES_FILE=$3
@@ -31,46 +32,25 @@ testimg() {
   cp $HOME/.config.ini.wlan ${_WLANCONF}
   chmod 644 ${_WLANCONF}
 
-  # Get image(s)
-  if [ "${MACHINE}" = "edison" ]; then
-    # Workaround for the wifi test bug -- not enabled, left here for possible future activation
-    #sed -i "s/oeqa.runtime.sanity.comm_wifi_connect/#oeqa.runtime.sanity.comm_wifi_connect/g" iottest/testplan/iottest.manifest
-    EDISON_TAR_FILENAME=${_IMG_NAME_MACHINE}.toflash.tar.bz2
-    TEST_IMG_URL=${DIR_FULL_URL}/images/${MACHINE}/${EDISON_TAR_FILENAME}
-    wget ${_WGET_OPTS} ${TEST_IMG_URL}
-    tar -xf ${EDISON_TAR_FILENAME}
-    mv toFlash/* .
-    FILENAME=${_IMG_NAME_MACHINE}.ext4
-  elif [ "${MACHINE}" = "beaglebone" ]; then
-    FILE_DIR="${DIR_FULL_URL}/images/${MACHINE}"
-    wget ${_WGET_OPTS} ${FILE_DIR}/MLO
-    wget ${_WGET_OPTS} ${FILE_DIR}/u-boot.img
-    wget ${_WGET_OPTS} ${FILE_DIR}/zImage
-    wget ${_WGET_OPTS} ${FILE_DIR}/zImage-am335x-boneblack.dtb
-    FILENAME=${_IMG_NAME_MACHINE}.tar.bz2
-    wget ${_WGET_OPTS} ${FILE_DIR}/${FILENAME}
+  FN_BASE=${_IMG_NAME_MACHINE}-${CI_BUILD_ID}
+  FILENAME=${FN_BASE}.wic
+  FILENAME_BMAP=${FILENAME}.bmap
+  FILENAME_XZ=${FILENAME}.xz
+  FILENAME_ZIP=${FILENAME}.zip
 
-  else
-    FN_BASE=${_IMG_NAME_MACHINE}-${CI_BUILD_ID}
-    FILENAME=${FN_BASE}.wic
-    FILENAME_BMAP=${FILENAME}.bmap
-    FILENAME_XZ=${FILENAME}.xz
-    FILENAME_ZIP=${FILENAME}.zip
-
-    set +e
-    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
-    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
-    if [ ! -s ${FILENAME} ]; then
-      wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
-      if [ -s ${FILENAME_ZIP} ]; then
-        unzip ${FILENAME_ZIP}
-      else
-        echo "ERROR: No file ${FILENAME_XZ} or ${FILENAME_ZIP} found, can not continue."
-        exit 1
-      fi
+  set +e
+  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
+  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
+  if [ ! -s ${FILENAME} ]; then
+    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
+    if [ -s ${FILENAME_ZIP} ]; then
+      unzip ${FILENAME_ZIP}
+    else
+      echo "ERROR: No file ${FILENAME_XZ} or ${FILENAME_ZIP} found, can not continue."
+      exit 1
     fi
-    set -e
   fi
+  set -e
 
   if [ ! -z ${TEST_DEVICE+x} ]; then
     DEVICE="$TEST_DEVICE"
@@ -78,12 +58,6 @@ testimg() {
     DEVICE=`echo ${JOB_NAME} | awk -F'_' '{print $2}'`
   else
     DEVICE="unconfigured"
-  fi
-
-  if [ "${DEVICE}" != "gigabyte" ]; then
-    RECORD_ARG="--record"
-  else
-    RECORD_ARG=""
   fi
 
   # Remove incompatible tests for the DUT from image-testplan.manifest
@@ -97,7 +71,7 @@ testimg() {
   # Execute with +e to make sure that possibly created log files get
   # renamed, archived, published even when AFT or some of renaming fails
   set +e
-  daft ${DEVICE} ${FILENAME} ${RECORD_ARG}
+  daft ${DEVICE} ${FILENAME} --record
   AFT_EXIT_CODE=$?
 
   # modify names inside TEST-*.xml files to contain device and img_name
@@ -108,20 +82,16 @@ testimg() {
   rename .log .${DEVICE}.${_IMG_NAME}.log *.log
   # create summary file to be used in email notification sending
   _reports=`ls TEST-${DEVICE}.${_IMG_NAME}.*.xml`
-  num_total=0
-  num_skipped=0
-  num_na=$((0+num_masked))
-  num_failed=0
-  num_error=0
+  num_na=$num_masked
   for _r in $_reports; do
     _s=`grep 'testsuite errors=' $_r |tr -d '<>' |sed 's/testsuite//g'`
     eval $_s
-    num_error=$(( num_error + errors ))
-    num_failed=$(( num_failed + failures ))
-    num_skipped=$(( num_skipped + skipped ))
-    num_total=$(( num_total + tests ))
+    num_error+=${errors}
+    num_failed+=${failures}
+    num_skipped+=${skipped}
+    num_total+=${tests}
   done
-  num_passed=$(( num_total - num_error - num_failed - num_skipped ))
+  num_passed=$((num_total - num_error - num_failed - num_skipped))
   run_total=$((num_passed + num_failed))
   # passing data from here to Jenkinsfile works through file in workspace:
   sumfile=results-summary-${DEVICE}.${_IMG_NAME}.log
