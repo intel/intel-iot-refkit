@@ -1,7 +1,7 @@
 [submodule "openembedded-core"]
 	path = openembedded-core
-	url = http://git.openembedded.org/openembedded-core
-	branch = master
+	url = https://github.com/klihub/openembedded-core.git
+	branch = intel-iot-refkit/flatpak
 [submodule "bitbake"]
 	path = bitbake
 	url = http://git.openembedded.org/bitbake
