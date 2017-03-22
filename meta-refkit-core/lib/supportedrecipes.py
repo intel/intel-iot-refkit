@@ -378,6 +378,12 @@ def check_build(d, event, tinfoil=None):
                     add_rows(rows)
                 else:
                     dumpfile = os.path.join(dirname, pn + strip_multiconfig_prefix(filename))
+                    # Work around multiconfig:qemuarm.gcc vs multiconfig:qemuarm:gcc bug.
+                    if not os.path.exists(dumpfile):
+                        pn = re.sub(r'^multiconfig:([^:.]*)\.', r'multiconfig:\1:', pn)
+                        dumpfile2 = os.path.join(dirname, pn + strip_multiconfig_prefix(filename))
+                        if os.path.exists(dumpfile2):
+                            dumpfile = dumpfile2
                     with open(dumpfile) as f:
                         reader = csv.reader(f)
                         add_rows(reader)
