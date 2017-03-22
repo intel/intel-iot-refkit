@@ -19,7 +19,7 @@
 #
 # Example for core-image-minimal.bb:
 #   IMAGE_VARIANT[dev] = "tools-debug tools-profile"
-#   BBCLASSEXTEND = "imagevariant:ptest-pkgs imagevariant:tools-debug,no-debug-tweaks imagevariant=dev"
+#   BBCLASSEXTEND = "imagevariant:ptest-pkgs imagevariant:tools-debug,no-debug-tweaks imagevariant:dev"
 #   ->
 #   core-image-minimal-ptest-pkgs (ptest-pkgs enabled)
 #   core-image-minimal-tools-debug-no-debug-tweaks (debug-tweaks disabled)
@@ -46,13 +46,30 @@ python imagevariant_virtclass_handler () {
     # Expand parameter aliases, recursively.
     def expand(parameters):
         modified = []
-        for parameter in parameters:
+        recursive = []
+
+        for parameter in parameters or []:
             alias = e.data.getVarFlag('IMAGE_VARIANT', parameter, True)
+
             if alias is not None:
-                modified.extend(expand(alias.split()))
+                split_alias = alias.split()
+                if parameter in split_alias:
+                    # continue expansion with parameter removed to avoid
+                    # infinite recursion
+                    split_alias.remove(parameter)
+                    recursive.append(parameter)
+                try:
+                    modified.extend(expand(split_alias))
+                except RuntimeError as re:
+                    bb.fatal('You probably have a non-trivially ' \
+                             'expandable imagevariant (%s). ' \
+                             'Runtime error: %s.' % (variant, re))
             else:
                 modified.append(parameter)
+
+        modified.extend(recursive)
         return modified
+
     parameters = expand(parameters)
 
     # Validate parameters and apply them to IMAGE_FEATURES.
