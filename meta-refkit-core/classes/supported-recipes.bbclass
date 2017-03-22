@@ -60,7 +60,7 @@ SUPPORTED_RECIPES_NATIVE_BASECLASSES ??= " \
 # Use this by setting the variable to the name of a file and then start a dry run, like this:
 # BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE SUPPORTED_RECIPES_SOURCES" SUPPORTED_RECIPES_SOURCES=/tmp/sources.csv bitbake --dry-run my-build-targets
 #
-# One can abort after the "NOTE: Created SUPPORTED_RECIPES_SOURCES = <filename>" message.
+# One can abort after the "NOTE: Wrote supported recipes report to <filename>" message.
 #
 # The output is a comma-separated list of fields:
 # - recipe name

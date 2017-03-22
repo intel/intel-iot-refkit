@@ -3,6 +3,7 @@
 
 import csv
 import os
+import sys
 import re
 try:
     import urlparse
@@ -140,13 +141,28 @@ def load_supported_recipes(d):
 
     return (supported_recipes, files)
 
+def strip_multiconfig_prefix(name):
+    parts = name.split(':', 2)
+    # There's an open bug about
+    # shortening "multiconfig" to "mc", so support both here
+    # (https://bugzilla.yoctoproject.org/show_bug.cgi?id=11168).
+    if len(parts) >= 2 and parts[0] in ('multiconfig', 'mc'):
+        if len(parts) == 3:
+            name = parts[2]
+        elif len(parts) == 2:
+            # There was a bug in bitbake were it produced multiconfig:qemuarm.ggc
+            # in the depgraph. Support that also.
+            parts = parts[1].split('.', 1)
+            if len(parts) == 2:
+                name = parts[1]
+    return name
+
 SOURCE_FIELDS = 'component,collection,version,homepage,source,summary,license'.split(',')
 
-# Collects information about one recipe during parsing for SUPPORTED_RECIPES_SOURCES.
-# The dumped information cannot be removed because it might be needed in future
-# bitbake invocations, so the default location is inside the tmp directory.
-def dump_sources(d):
+def gather_sources(d):
     pn = d.getVar('PN', True)
+    # Shorten the name because it gets copied into the output below.
+    pn = strip_multiconfig_prefix(pn)
     filename = d.getVar('FILE', True)
     collection = bb.utils.get_file_layer(filename, d)
     pv = d.getVar('PV', True)
@@ -166,21 +182,39 @@ def dump_sources(d):
                 params = {}
             name = params.get('name', None)
             sources.append((name, '%s://%s%s' % (scheme, netloc, path)))
+
+    # Produce SOURCE_FIELDS.
+    rows = []
+    for idx, val in enumerate(sources):
+        name, url = val
+        if name and len(sources) != 1:
+            fullname = '%s/%s' % (pn, name)
+        elif idx > 0:
+            fullname = '%s/%d' % (pn, idx)
+        else:
+            fullname = pn
+        rows.append((fullname, collection, pv, homepage, url, summary, license))
+    return rows
+
+# Collects information about one recipe during parsing for SUPPORTED_RECIPES_SOURCES.
+# The dumped information cannot be removed because it might be needed in future
+# bitbake invocations, so the default location is inside the tmp directory.
+def dump_sources(d):
+    pn = d.getVar('PN', True)
+    # We need to distinguish between different multiconfigs. Below we get pn with
+    # multiconfig prefix, so do the same here.
+    mc = d.getVar('BB_CURRENT_MC', True)
+    if mc:
+        pn = 'multiconfig:%s:%s' % (mc, pn)
+    filename = d.getVar('FILE', True)
+    rows = gather_sources(d)
     dumpfile = d.getVar('SUPPORTED_RECIPES_SOURCES_DIR', True) + '/' + pn + filename
     bb.utils.mkdirhier(os.path.dirname(dumpfile))
     with open(dumpfile, 'w') as f:
         # File intentionally kept small by not writing a header
         # line. Guaranteed to contain SOURCE_FIELDS.
         writer = csv.writer(f)
-        for idx, val in enumerate(sources):
-            name, url = val
-            if name and len(sources) != 1:
-                fullname = '%s/%s' % (pn, name)
-            elif idx > 0:
-                fullname = '%s/%d' % (pn, idx)
-            else:
-                fullname = pn
-            writer.writerow((fullname, collection, pv, homepage, url, summary, license))
+        writer.writerows(rows)
 
 class IsNative(object):
     def __init__(self, d):
@@ -288,7 +322,7 @@ def dump_unsupported(unsupported, supported_recipes):
         lines.append(entry)
     return sorted(lines)
 
-def check_build(d, event):
+def check_build(d, event, tinfoil=None):
     supported_recipes, files = load_supported_recipes(d)
     supported_recipes_check = d.getVar('SUPPORTED_RECIPES_CHECK', True)
     report_sources = d.getVar('SUPPORTED_RECIPES_SOURCES', True)
@@ -313,29 +347,43 @@ def check_build(d, event):
 
     unsupported = {}
     sources = []
+    bb.note('Checking active recipes')
     for pn, pndata in depgraph['pn'].items():
+        # Both SUPPORTED_RECIPES_NATIVE_RECIPES and the mapping files in SUPPORTED_RECIPES_SOURCES
+        # are without the multiconfig prefix, so strip that.
+        pn_stripped = strip_multiconfig_prefix(pn)
+
         # We only care about recipes compiled for the target.
         # Most native ones can be detected reliably because they inherit native.bbclass,
         # but some special cases have to be hard-coded.
         # Image recipes also do not matter.
-        if not isnative(pn, pndata):
+        if not isnative(pn_stripped, pndata):
             filename = pndata['filename']
-            collection = bb.utils.get_file_layer(filename, d)
-            supportedby = supported_recipes.recipe_supportedby(pn, collection)
+            collection = bb.utils.get_file_layer(strip_multiconfig_prefix(filename), d)
+            supportedby = supported_recipes.recipe_supportedby(pn_stripped, collection)
             if not supportedby:
-                unsupported[pn] = collection
+                unsupported[pn_stripped] = collection
             if report_sources:
-                dumpfile = os.path.join(dirname, pn + filename)
-                with open(dumpfile) as f:
-                    reader = csv.reader(f)
-                    for row in reader:
+                def add_rows(rows):
+                    for row in rows:
                         row_hash = {f: row[i] for i, f in enumerate(SOURCE_FIELDS)}
                         row_hash['supported'] = 'yes (%s)' % ' '.join(supportedby) \
-                                                if supportedby else 'no'
+                                            if supportedby else 'no'
                         sources.append(row_hash)
 
+                if tinfoil:
+                    bb.note('Parsing %s' % filename)
+                    pn_d = tinfoil.parse_recipe_file(filename)
+                    rows = gather_sources(pn_d)
+                    add_rows(rows)
+                else:
+                    dumpfile = os.path.join(dirname, pn + strip_multiconfig_prefix(filename))
+                    with open(dumpfile) as f:
+                        reader = csv.reader(f)
+                        add_rows(reader)
+
     if report_sources:
-        with open(report_sources, 'w') as f:
+        def write_report(f):
             fields = SOURCE_FIELDS[:]
             # Insert after 'collection'.
             fields.insert(fields.index('collection') + 1, 'supported')
@@ -347,15 +395,23 @@ def check_build(d, event):
                         extensions.append(clazz(d, sources))
             for e in extensions:
                 e.extend_header(fields)
-            writer = csv.DictWriter(f, fields)
-            writer.writeheader()
+            writer = csv.writer(f)
+            writer.writerow(fields)
             for row in sources:
                 for e in extensions:
                     e.extend_row(row)
             # Sort by first column, then second column, etc., after extending all rows.
-            for row in sorted(sources, key=lambda r: [r.get(f, None) for f in fields]):
+            # Also de-duplicate. Duplicates can occur when the exact same compontent
+            # is used multiple times by different recipes or we have a multiconfig build
+            # that builds the same recipe more than once.
+            for row in sorted(set([tuple([r.get(f, None) for f in fields]) for r in sources])):
                 writer.writerow(row)
-        bb.note('Created SUPPORTED_RECIPES_SOURCES = %s file.' % report_sources)
+        if report_sources == '-':
+            write_report(sys.stdout)
+        else:
+            with open(report_sources, 'w') as f:
+                write_report(f)
+        bb.note('Wrote supported recipes report to %s.' % ('stdout' if report_sources == '-' else report_sources))
 
     if supported_recipes_check and unsupported:
         max_lines = int(d.getVar('SUPPORTED_RECIPES_CHECK_DEPENDENCY_LINES', True))
