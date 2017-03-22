@@ -1,4 +1,4 @@
-From fe2374f27e5f24b047a5a498964fea4de0e4294d Mon Sep 17 00:00:00 2001
+From 0038afdcd8b80b22f58aa0cd2a4154802f715195 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Mon, 20 Feb 2017 23:21:48 +0200
 Subject: [PATCH] api: mark platform not supported if device is not found.
@@ -20,7 +20,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  2 files changed, 78 insertions(+)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index f3c4632..c0e78a3 100644
+index 77a1c87..0a67acd 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -7,6 +7,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
@@ -28,13 +28,13 @@ index f3c4632..c0e78a3 100644
                      ${EGL_INCLUDE_DIRS})
  
 +if(GEN_PCI_ID)
-+    STRING(REGEX REPLACE "0x" "" ONLY_PCI_ID ${GEN_PCI_ID})
++  STRING(REGEX REPLACE "0x" "" ONLY_PCI_ID ${GEN_PCI_ID})
 +  add_definitions(-DPCI_ID=${ONLY_PCI_ID})
 +endif(GEN_PCI_ID)
 +
- macro (MakeKernelBinStr KERNEL_PATH KERNEL_FILES)
+ macro (MakeKernelBinStr KERNEL_DIST KERNEL_SOURCE KERNEL_FILES)
  foreach (KF ${KERNEL_FILES})
-   set (input_file ${KERNEL_PATH}/${KF}.cl)
+   set (input_file ${KERNEL_SOURCE}/${KF}.cl)
 diff --git a/src/cl_api_platform_id.c b/src/cl_api_platform_id.c
 index 10d8894..1045e93 100644
 --- a/src/cl_api_platform_id.c
