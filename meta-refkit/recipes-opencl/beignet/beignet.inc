@@ -5,14 +5,14 @@ SRC_URI = "git://anongit.freedesktop.org/beignet;nobranch=1 \
            file://fix-llvm-paths.patch \
            file://0001-api-mark-platform-not-supported-if-device-is-not-fou.patch \
            "
-SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.0.patch"
+SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.1.patch"
 SRC_URI_append_class-target = " file://0001-Run-native-gbe_bin_generater-to-compile-built-in-ker.patch"
 
 BBCLASSEXTEND = "native"
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
-PV = "1.3.0.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "c8b47b1737402ff78151daec65c774d437f0b546"
+PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
+SRCREV = "8b04f0be372da8eabdc93d6ae1b81a3c83cba284"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right
@@ -56,6 +56,10 @@ do_install_append_class-target () {
     # Change the intel-beignet.icd file
     rm ${D}${sysconfdir}/OpenCL/vendors/intel-beignet.icd
     echo ${libdir}/beignet-${CL_HW_TARGET}/libcl.so > ${D}${sysconfdir}/OpenCL/vendors/intel-beignet-${CL_HW_TARGET}.icd
+
+    # Remove AppStream metadata so that the packages won't conflict
+    rm ${D}${datadir}/metainfo/com.intel.beignet.metainfo.xml
+    rmdir --ignore-fail-on-non-empty -p ${D}${datadir}/metainfo
 }
 
 do_install_class-native() {

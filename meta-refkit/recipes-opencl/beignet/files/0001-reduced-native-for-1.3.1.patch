@@ -1,7 +1,7 @@
-From ce4ccd76905c48c9267c44f0b2af97456c9e638e Mon Sep 17 00:00:00 2001
+From d29092072f802f7bd5b646c39ed7260cb8c428f2 Mon Sep 17 00:00:00 2001
 From: Tuomas Katila <tuomas.katila@intel.com>
 Date: Wed, 9 Nov 2016 11:16:40 +0200
-Subject: [PATCH] reduced native for 1.3.0
+Subject: [PATCH] reduced native for 1.3.1
 
 Signed-off-by: Tuomas Katila <tuomas.katila@intel.com>
 Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
@@ -10,7 +10,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  1 file changed, 116 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 02b5d88..051d808 100644
+index 7e01688..20c26b2 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -28,7 +28,6 @@ set (NOT_BUILD_STAND_ALONE_UTEST 1)
@@ -21,7 +21,7 @@ index 02b5d88..051d808 100644
  INCLUDE (FindPkgConfig)
  
  SET(CMAKE_VERBOSE_MAKEFILE "false")
-@@ -111,119 +110,11 @@ ELSE(X11_FOUND)
+@@ -112,119 +111,11 @@ ELSE(X11_FOUND)
    MESSAGE(STATUS "Looking for XLib - not found")
  ENDIF(X11_FOUND)
  
@@ -109,23 +109,21 @@ index 02b5d88..051d808 100644
 -ENDIF(XFIXES_FOUND)
 -ENDIF(X11_FOUND)
 -
--OPTION(ENABLE_GL_SHARING "cl_khr_gl_sharing" OFF)
+-pkg_check_modules(OPENGL QUIET gl>=13.0.0)
+-IF(OPENGL_FOUND)
+-  MESSAGE(STATUS "Looking for OpenGL - found at ${OPENGL_PREFIX} ${OPENGL_VERSION}")
+-ELSE(OPENGL_FOUND)
+-  MESSAGE(STATUS "Looking for OpenGL (>=13.0.0) - not found, cl_khr_gl_sharing will be disabled")
+-ENDIF(OPENGL_FOUND)
+-pkg_check_modules(EGL QUIET egl>=13.0.0)
+-IF(EGL_FOUND)
+-  MESSAGE(STATUS "Looking for EGL - found at ${EGL_PREFIX} ${EGL_VERSION}")
+-ELSE(EGL_FOUND)
+-  MESSAGE(STATUS "Looking for EGL (>=13.0.0) - not found, cl_khr_gl_sharing will be disabled")
+-ENDIF(EGL_FOUND)
 -
--IF(ENABLE_GL_SHARING)
--  pkg_check_modules(OPENGL REQUIRED gl)
--  IF(OPENGL_FOUND)
--    MESSAGE(STATUS "Looking for OpenGL - found at ${OPENGL_PREFIX}")
--  ELSE(OPENGL_FOUND)
--    MESSAGE(STATUS "Looking for OpenGL - not found")
--  ENDIF(OPENGL_FOUND)
--  pkg_check_modules(EGL REQUIRED egl>=11.0.0)
--  IF(EGL_FOUND)
--    MESSAGE(STATUS "Looking for EGL - found at ${EGL_PREFIX}")
--  ELSE(EGL_FOUND)
--    MESSAGE(STATUS "Looking for EGL - not found")
--  ENDIF(EGL_FOUND)
--ENDIF(ENABLE_GL_SHARING)
--
+-OPTION(OCLICD_COMPAT "OCL ICD compatibility mode" ON)
+-IF(OCLICD_COMPAT)
 -Find_Package(OCLIcd)
 -IF(OCLIcd_FOUND)
 -  MESSAGE(STATUS "Looking for OCL ICD header file - found")
@@ -136,12 +134,14 @@ index 02b5d88..051d808 100644
 -  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME} DESTINATION /etc/OpenCL/vendors)
 -ELSE(OCLIcd_FOUND)
 -  MESSAGE(STATUS "Looking for OCL ICD header file - not found")
+-  MESSAGE(FATAL_ERROR "OCL ICD loader miss. If you really want to disable OCL ICD support, please run cmake with option -DOCLICD_COMPAT=0.")
 -ENDIF(OCLIcd_FOUND)
+-ENDIF(OCLICD_COMPAT)
 -
  Find_Package(PythonInterp)
  
  OPTION(EXPERIMENTAL_DOUBLE "Enable experimental double support" OFF)
-@@ -306,13 +197,6 @@ ENDIF(BUILD_EXAMPLES)
+@@ -328,13 +219,6 @@ ENDIF(BUILD_EXAMPLES)
  
  ADD_SUBDIRECTORY(include)
  ADD_SUBDIRECTORY(backend)
