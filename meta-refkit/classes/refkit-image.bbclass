@@ -112,7 +112,6 @@ FEATURE_PACKAGES_common-test = "packagegroup-common-test"
 REFKIT_IMAGE_FEATURES_COMMON ?= " \
     connectivity \
     ssh-server-openssh \
-    iotivity \
     alsa \
     sensors \
 "
