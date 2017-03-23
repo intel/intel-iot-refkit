@@ -4,15 +4,16 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=6b566c5b4da35d474758324899cb4562"
 SRC_URI = "git://anongit.freedesktop.org/beignet;nobranch=1 \
            file://fix-llvm-paths.patch \
            file://0001-api-mark-platform-not-supported-if-device-is-not-fou.patch \
+           file://0001-intel-Check-that-we-can-reserve-the-zero-offset.patch \
            "
-SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.0.patch"
+SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.1.patch"
 SRC_URI_append_class-target = " file://0001-Run-native-gbe_bin_generater-to-compile-built-in-ker.patch"
 
 BBCLASSEXTEND = "native"
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
-PV = "1.3.0.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "c8b47b1737402ff78151daec65c774d437f0b546"
+PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
+SRCREV = "8bd8c3ac829ef86d7ba3c35680ce5f713c82304e"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right
