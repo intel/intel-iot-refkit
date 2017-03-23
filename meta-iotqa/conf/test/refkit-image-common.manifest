@@ -7,6 +7,5 @@ oeqa.runtime.sanity.comm_wifi_connect
 oeqa.runtime.sanity.apprt_python
 oeqa.runtime.sanity.mraa_hello
 oeqa.runtime.sanity.mraa_gpio
-oeqa.runtime.sanity.iotivity
 oeqa.runtime.alsa.alsa
 oeqa.runtime.sanity.upm
