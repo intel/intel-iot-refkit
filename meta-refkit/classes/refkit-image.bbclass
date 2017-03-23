@@ -291,9 +291,10 @@ REFKIT_IMAGE_STRIP_SMACK = "${@ 'refkit_image_strip_smack' if not bb.utils.conta
 do_rootfs[postfuncs] += "${REFKIT_IMAGE_STRIP_SMACK}"
 DEPENDS += "${@ 'attr-native' if '${REFKIT_IMAGE_STRIP_SMACK}' else '' }"
 
-# Mount read-only at first. This gives systemd a chance to run fsck
-# and then mount read/write.
-APPEND_append = " ro"
+# Disable running fsck at boot. System clock is typically wrong at early boot
+# stage due to lack of RTC backup battery. This causes unnecessary fixes being
+# made due to filesystem metadata time stamps being in future.
+APPEND_append = " fsck.mode=skip"
 
 # Ensure that images preserve Smack labels and IMA/EVM.
 inherit ${@bb.utils.contains_any('IMAGE_FEATURES', ['ima','smack'], 'xattr-images', '', d)}
