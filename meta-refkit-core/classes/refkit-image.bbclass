@@ -523,3 +523,43 @@ EOF
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "refkit_image_system_serialgetty; "
+
+#  Prepare the symlinks required for merged /usr at the time of rootfs creation.
+
+# The links created in rootfs are:
+#/bin --> /usr/sbin
+#/sbin --> /usr/sbin
+#/lib --> /usr/lib
+#/lib64 --> /usr/lib64
+
+# We cannot make these symlinks as part of 'base-files' or some other package.
+# Because at rootfs creation, installation of the package(say kernel) that
+# depends on these root folders/links fails, if package manager installs this
+# package prior to base-files.
+
+# These symbolic links in top level folder should present as long as
+#   - kerenl tools use /lib/{module,firmware}
+#   - shell scripts uses
+#upstream commit waiting for review: 
+# http://lists.openembedded.org/pipermail/openembedded-core/2017-February/133151.html
+create_merged_usr_symlinks() {
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_bindir}
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_sbindir}
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_libdir}
+    lnr ${IMAGE_ROOTFS}${base_bindir} ${IMAGE_ROOTFS}/bin
+    lnr ${IMAGE_ROOTFS}${base_sbindir} ${IMAGE_ROOTFS}/sbin
+    lnr ${IMAGE_ROOTFS}${base_libdir} ${IMAGE_ROOTFS}/${baselib}
+
+    if [ "${nonarch_base_libdir}" != "${base_libdir}" ]; then
+       install -m 0755 -d ${IMAGE_ROOTFS}/${nonarch_base_libdir}
+       lnr ${IMAGE_ROOTFS}${nonarch_base_libdir} ${IMAGE_ROOTFS}/lib
+    fi
+
+    # create base links for multilibs
+    multi_libdirs="${@d.getVar('MULTILIB_VARIANTS')}"
+    for d in $multi_libdirs; do
+        install -m 0755 -d ${IMAGE_ROOTFS}/${exec_prefix}/$d
+        lnr ${IMAGE_ROOTFS}/${exec_prefix}/$d ${IMAGE_ROOTFS}/$d
+    done
+}
+ROOTFS_PREPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'create_merged_usr_symlinks; ', '',d)}"
