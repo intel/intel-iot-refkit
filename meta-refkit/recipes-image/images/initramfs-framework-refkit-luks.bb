@@ -70,7 +70,8 @@ refkit_luks () {
                         fi
                         ifdown lo
                     }
-                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) }; then
+                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) } &&
+                       ls /dev/tpm* >/dev/null 2>&1; then
                         # Bring up IPv4 (needed by tcsd and tpm-tools) and tcsd itself.
                         ifup lo
                         tcsd -f &
