@@ -15,10 +15,7 @@
 //
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
-
 def target_machine = "intel-corei7-64"
-
-// test on these HW targets:
 def test_devices = [ "570x", "minnowboardturbot" ]
 
 // mapping [HW_target:build_MACHINE]
@@ -37,7 +34,6 @@ def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def ci_build_url = "${env.COORD_BASE_URL}/builds/${env.JOB_NAME}/${ci_build_id}"
-def testing_script = ""
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
@@ -72,7 +68,6 @@ try {
                 def docker_image = docker.image(image_name)
                 run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
-
                 // Add specifics of this build to build.env
                 def script_env_local = """
                     export TARGET_MACHINE=${target_machine}
@@ -81,41 +76,35 @@ try {
                     try {
                         set_gh_status_pending(is_pr, 'Pre-build tests')
                         params = ["${script_env_global}", "${script_env_local}",
-                        "docker/pre-build.sh"].join("\n")
+                                  "docker/pre-build.sh"].join("\n")
                         stage('Pre-build tests') {
                             sh "${params}"
                         }
-
                         set_gh_status_pending(is_pr, 'Building')
                         params = ["${script_env_global}", "${script_env_local}",
-                        "docker/build-project.sh"].join("\n")
+                                  "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
                         }
-
                         set_gh_status_pending(is_pr, 'Post-build tests')
                         params = ["${script_env_global}", "${script_env_local}",
-                        "docker/post-build.sh"].join("\n")
+                                  "docker/post-build.sh"].join("\n")
                         stage('Post-build tests') {
                             sh "${params}"
                         }
                     } catch (Exception e) {
                         throw e
                     } finally {
-                        // publish detailed logs, partial results also after failed build
                         set_gh_status_pending(is_pr, 'Store images')
                         params = ["${script_env_global}", "${script_env_local}",
-                        "docker/publish-project.sh"].join("\n")
+                                  "docker/publish-project.sh"].join("\n")
                         stage('Store images') {
                             sh "${params}"
                         }
                     }
                 } // docker_image
-                // cleanup image (disabled for now, as would remove caches)
-                // sh "docker rmi ${image_name}"
                 tester_script = readFile "docker/tester-exec.sh"
                 testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
-
                 if ( !is_pr ) {
                     ci_git_commit = readFile("ci_git_commit").trim()
                     // This command expects that each new master build is based on a github merge
@@ -143,9 +132,7 @@ try {
                         echo "Image #${m} to be tested on test_${test_device} info: ${separated_testinfo[m]}"
                         test_runs["test_${m}_${test_device}"] = {
                             node('refkit-tester') {
-                                // clean workspace
-                                echo 'Cleanup testing workspace'
-                                deleteDir()
+                                deleteDir() // clean workspace
                                 echo "Testing test_${test_device} with image_info: ${one_image_testinfo}"
                                 writeFile file: 'tester-exec.sh', text: tester_script
                                 // append newline so that tester-exec.sh can parse it using "read"
@@ -154,7 +141,6 @@ try {
                                 writeFile file: "testinfo.csv", text: one_image_testinfo
                                 String[] one_testinfo_elems = one_image_testinfo.split(",")
                                 def img = one_testinfo_elems[0]
-
                                 try {
                                     withEnv(["CI_BUILD_ID=${ci_build_id}",
                                         "CI_BUILD_URL=${ci_build_url}",
@@ -171,7 +157,6 @@ try {
                                     archiveArtifacts allowEmptyArchive: true,
                                                      artifacts: '**/*.log, **/*.xml, **/aft-results*.tar.bz2'
                                 }
-
                                 step([$class: 'XUnitPublisher',
                                     testTimeMargin: '3000',
                                     thresholdMode: 1,
@@ -212,7 +197,6 @@ try {
         //   to be run, but currentBuild.result is correctly set to FAILURE.
         // 2. If tests stage was skipped because of no tests,
         //   then currentBuild.result remains null until end
-
         if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
             setGitHubPullRequestStatus state: 'SUCCESS', context: "${env.JOB_NAME}", message: 'Build finished successfully'
         } else {
@@ -291,12 +275,10 @@ def checkout_content(is_pr) {
             ],
             submoduleCfg: [],
             userRemoteConfigs: [
-                [
-                credentialsId: "${GITHUB_AUTH}",
-                name: 'origin-pull',
-                refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
-                url: "${GITHUB_PROJECT}"
-                ]
+                [credentialsId: "${GITHUB_AUTH}",
+                    name: 'origin-pull',
+                    refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
+                    url: "${GITHUB_PROJECT}"]
             ]
         ])
     } else {
@@ -308,7 +290,6 @@ def checkout_content(is_pr) {
 def build_docker_image(image_name) {
     // Base container OS to use, see docker configs in docker/
     def build_os = "opensuse-42.2"
-
     def build_args = [ build_proxy_args(), build_user_args()].join(" ")
     sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
