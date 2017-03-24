@@ -39,10 +39,10 @@ testimg() {
   FILENAME_ZIP=${FILENAME}.zip
 
   set +e
-  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
-  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_BMAP}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
   if [ ! -s ${FILENAME} ]; then
-    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
+    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_ZIP}
     if [ -s ${FILENAME_ZIP} ]; then
       unzip ${FILENAME_ZIP}
     else
@@ -116,9 +116,8 @@ testimg() {
 # Note: this script relies on cleaned workspace (clean it via jenkins job config)
 
 _WGET_OPTS="--no-verbose --no-proxy"
-
-DIR_FULL_URL="$CI_BUILD_URL"
-TEST_SUITE_FOLDER_URL="${DIR_FULL_URL}/testsuite/${MACHINE}/"
+CI_BUILD_URL=${COORD_BASE_URL}/builds/${JOB_NAME}/${$CI_BUILD_ID}
+TEST_SUITE_FOLDER_URL="${CI_BUILD_URL}/testsuite/${MACHINE}/"
 
 # document env.vars in build log
 env |sort

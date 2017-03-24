@@ -33,7 +33,6 @@ def mapping = [
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
-def ci_build_url = "${env.COORD_BASE_URL}/builds/${env.JOB_NAME}/${ci_build_id}"
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
@@ -143,7 +142,6 @@ try {
                                 def img = one_testinfo_elems[0]
                                 try {
                                     withEnv(["CI_BUILD_ID=${ci_build_id}",
-                                        "CI_BUILD_URL=${ci_build_url}",
                                         "MACHINE=${mapping["${test_device}"]}",
                                         "TEST_DEVICE=${test_device}" ]) {
                                             sh 'chmod a+x tester-exec.sh && ./tester-exec.sh'
