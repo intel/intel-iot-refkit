@@ -195,6 +195,9 @@ FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
                              'flatpak-image', '', d)}
 
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'ostree', \
+                             'ostree-image', '', d)}
+
 IMAGE_LINGUAS = " "
 
 LICENSE = "MIT"
@@ -233,7 +236,11 @@ IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
 # By default, the full image is meant to fit into 4*10^9 bytes, i.e.
 # "4GB" regardless whether 1000 or 1024 is used as base. 64M are reserved
 # for potential partitioning overhead.
-WKS_FILE = "refkit-directdisk.wks.in"
+WKS_FILE = " \
+    refkit-directdisk${@bb.utils.contains('IMAGE_FEATURES', 'ostree', \
+                                                 '-ostree', '', d)}.wks.in \
+"
+
 REFKIT_VFAT_MB ??= "64"
 REFKIT_IMAGE_SIZE ??= "--fixed-size 3622M"
 REFKIT_EXTRA_PARTITION ??= ""
