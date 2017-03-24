@@ -59,6 +59,7 @@ try {
     timestamps {
         node('rk-docker') {
             ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+                set_gh_status_pending(is_pr, 'Prepare for build')
                 stage('Cleanup workspace') {
                     deleteDir()
                 }
@@ -78,27 +79,21 @@ try {
                 """
                 docker_image.inside(run_args) {
                     try {
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Pre-build tests"
-                        }
+                        set_gh_status_pending(is_pr, 'Pre-build tests')
                         params = ["${script_env_global}", "${script_env_local}",
                         "docker/pre-build.sh"].join("\n")
                         stage('Pre-build tests') {
                             sh "${params}"
                         }
 
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Building"
-                        }
+                        set_gh_status_pending(is_pr, 'Building')
                         params = ["${script_env_global}", "${script_env_local}",
                         "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
                         }
 
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Post-build tests"
-                        }
+                        set_gh_status_pending(is_pr, 'Post-build tests')
                         params = ["${script_env_global}", "${script_env_local}",
                         "docker/post-build.sh"].join("\n")
                         stage('Post-build tests') {
@@ -108,9 +103,7 @@ try {
                         throw e
                     } finally {
                         // publish detailed logs, partial results also after failed build
-                        if (is_pr) {
-                            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Store images"
-                        }
+                        set_gh_status_pending(is_pr, 'Store images')
                         params = ["${script_env_global}", "${script_env_local}",
                         "docker/publish-project.sh"].join("\n")
                         stage('Store images') {
@@ -205,9 +198,7 @@ try {
 	        } // if target_machine == mapping
         } // for i
         stage('Parallel test run') {
-            if (is_pr) {
-                setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Testing"
-            }
+            set_gh_status_pending(is_pr, 'Testing')
             timestamps {
                 parallel test_runs
             }
@@ -321,4 +312,10 @@ def build_docker_image(image_name) {
     def build_args = [ build_proxy_args(), build_user_args()].join(" ")
     sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
+}
+
+def set_gh_status_pending(is_pr, _msg) {
+    if (is_pr) {
+        setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "${_msg}"
+    }
 }
