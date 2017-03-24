@@ -63,7 +63,17 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         fi
 
         if [ "$uuid" ]; then
-            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) }; then
+            # Rootfs partition.
+
+            # Encryption with key stored in a TPM is optional, both at the distro
+            # level (support not compiled in at all) and at the hardware level (not
+            # all target machines have support). The use of a TPM can be configured
+            # explicitly by setting the TPM12 env variable to "yes" or "no".
+            # The default is "true" if there is a /dev/tpm* device.
+            TPM12=${TPM12:-`ls /dev/tpm* >/dev/null 2>&1 && echo yes || echo no`}
+
+            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) } &&
+               istrue TPM12; then
                 # This uses the well-known (all zero) owner and SRK secrets,
                 # thus granting any process running on the device access to the
                 # TPM.
@@ -92,13 +102,16 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                 fi
             fi
 
-            # Unsafe fallback without TPM: well-known password.
-            # TODO: detect when this ends up getting used in production.
-            if [ ! -s "$keyfile" ]; then
+            # Unsafe fallback without TPM: well-known password. Not used unless explicitly selected.
+            FIXED_PASSWORD=${FIXED_PASSWORD:-no}
+
+            if [ ! -s "$keyfile" ] &&
+               istrue FIXED_PASSWORD; then
                 printf "%s" "$LUKS_PASSWORD" >"$keyfile"
                 keyfile_offset=0
             fi
-            if ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'true', 'false', d) }; then
+            if ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'true', 'false', d) } &&
+               [ -s "$keyfile" ]; then
                 if ! execute cryptsetup luksFormat "$partition" --batch-mode --key-file "$keyfile" --keyfile-offset "$keyfile_offset"; then
                     fatal "formatting $partition as LUKS contained failed"
                 fi
@@ -121,6 +134,8 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                 fatal "copying rootfs failed"
             fi
         else
+            # UEFI system partition.
+
             if ! execute mkfs.fat "$partition"; then
                 fatal "formating vfat partition $gdisk_pnum failed"
             fi
