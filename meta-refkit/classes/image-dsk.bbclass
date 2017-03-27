@@ -227,6 +227,16 @@ python do_uefiapp_setscene () {
     sstate_setscene(d)
 }
 
+uefiapp_sign() {
+    if [ -f ${REFKIT_DB_KEY} ] && [ -f ${REFKIT_DB_CERT} ]; then
+        for i in `find ${DEPLOYDIR} -name '*.efi'`; do
+            sbsign --key ${REFKIT_DB_KEY} --cert ${REFKIT_DB_CERT} $i
+            sbverify --cert ${REFKIT_DB_CERT} $i.signed
+            mv $i.signed $i
+        done
+    fi
+}
+
 uefiapp_deploy() {
   #Let's make sure that only what is needed stays in the /boot dir
   rm -rf ${IMAGE_ROOTFS}/boot/*
@@ -241,6 +251,11 @@ addtask do_uefiapp
 
 addtask do_uefiapp before do_rootfs
 
+# re-run do_rootfs (and signing) if the key names change.
+do_rootfs[vardeps] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','REFKIT_DB_CERT REFKIT_DB_KEY','',d)}'
+do_rootfs[depends] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','sbsigntool-native:do_populate_sysroot','',d)}'
+
+ROOTFS_POSTPROCESS_COMMAND += " ${@bb.utils.contains('IMAGE_FEATURES','secureboot','uefiapp_sign;','',d)} "
 ROOTFS_POSTPROCESS_COMMAND += " uefiapp_deploy; "
 
 # All variables explicitly passed to image-dsk.py.

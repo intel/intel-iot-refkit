@@ -8,6 +8,10 @@ IMA_EVM_KEY_DIR = "${IMA_EVM_BASE}/data/debug-keys"
 REFKIT_DMVERITY_PRIVATE_KEY = "${META_REFKIT_BASE}/files/dm-verity/private.pem"
 REFKIT_DMVERITY_PASSWORD = "pass:refkit"
 
+# Pre-generated test/development keys for UEFI combo application signing
+REFKIT_DB_KEY ?= "${META_REFKIT_BASE}/files/secureboot/refkit-db.key"
+REFKIT_DB_CERT ?= "${META_REFKIT_BASE}/files/secureboot/refkit-db.crt"
+
 # Build a fixed password into refkit-initramfs for testing purposes.
 REFKIT_DISK_ENCRYPTION_PASSWORD = "refkit"
 
