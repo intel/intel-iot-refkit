@@ -415,7 +415,10 @@ def check_build(d, event, tinfoil=None):
         if report_sources == '-':
             write_report(sys.stdout)
         else:
-            with open(report_sources, 'w') as f:
+            # Always write as UTF-8, regardless of the current system locale.
+            # If that locale is the C locale, writing UTF-8 strings with non-ASCII
+            # characters would fail.
+            with open(report_sources, 'w', encoding='utf-8') as f:
                 write_report(f)
         bb.note('Wrote supported recipes report to %s.' % ('stdout' if report_sources == '-' else report_sources))
 
