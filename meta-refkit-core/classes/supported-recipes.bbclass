@@ -48,6 +48,7 @@ SUPPORTED_RECIPES_NATIVE_BASECLASSES ??= " \
     image.bbclass \
     native.bbclass \
     nativesdk.bbclass \
+    nopackages.bbclass \
     packagegroup.bbclass \
     populate_sdk.bbclass \
 "
@@ -85,12 +86,6 @@ SUPPORTED_RECIPES_SOURCES_DIR ??= "${TMPDIR}/supported-recipe-sources"
 # is also this list of space-separated regular expressions which identify
 # additional recipes which do not need to be checked.
 SUPPORTED_RECIPES_NATIVE_RECIPES ??= " \
-    build-sysroots \
-    buildtools-tarball \
-    depmodwrapper-cross \
-    gcc-source-.* \
-    glibc-initial \
-    libgcc-initial \
     libtool-cross \
     meta-environment-.* \
     meta-extsdk-toolchain \
@@ -101,7 +96,6 @@ SUPPORTED_RECIPES_NATIVE_RECIPES ??= " \
     qemuwrapper-cross \
     shadow-sysroot \
     testexport-tarball \
-    uninative-tarball \
 "
 
 python () {
