@@ -116,7 +116,10 @@ refkit_luks () {
                     fi
                     luks_cleanup
                     ;;
-                  1) # not a LUKS volume
+                  1) # not a LUKS volume, which might be a problem (attacker replaced encrypted rootfs with modified unencrypted one)
+                    if [ "$bootparam_use_encryption" ] ; then
+                        fatal "$bootparam_root is not a LUKS volume."
+                    fi
                     return
                     ;;
                   *) # something else
