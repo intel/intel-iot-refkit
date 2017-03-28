@@ -13,6 +13,8 @@
 # more details.
 #
 
+# This script relies on workspace which is cleaned via jenkins method
+
 # function to test one image, see call point below.
 testimg() {
   declare -i num_masked=0 num_total=0 num_skipped=0 num_na=0 num_failed=0 num_error=0
@@ -39,10 +41,10 @@ testimg() {
   FILENAME_ZIP=${FILENAME}.zip
 
   set +e
-  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_BMAP}
-  wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_BMAP}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
   if [ ! -s ${FILENAME} ]; then
-    wget ${_WGET_OPTS} ${DIR_FULL_URL}/images/${MACHINE}/${FILENAME_ZIP}
+    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_ZIP}
     if [ -s ${FILENAME_ZIP} ]; then
       unzip ${FILENAME_ZIP}
     else
@@ -112,19 +114,15 @@ testimg() {
   return ${AFT_EXIT_CODE}
 }
 
-# Start
-# Note: this script relies on cleaned workspace (clean it via jenkins job config)
-
-_WGET_OPTS="--no-verbose --no-proxy"
-
-DIR_FULL_URL="$CI_BUILD_URL"
-TEST_SUITE_FOLDER_URL="${DIR_FULL_URL}/testsuite/${MACHINE}/"
-
-# document env.vars in build log
+# Start, document env.vars in build log
 env |sort
 
-# process testinfo file written to tester workspace by Jenkinsfile.
-# Jenkinsfile sorts it all out, we have just one line for this tester session.
+_WGET_OPTS="--no-verbose --no-proxy"
+CI_BUILD_URL=${COORD_BASE_URL}/builds/${JOB_NAME}/${CI_BUILD_ID}
+TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/testsuite/${MACHINE}
+
+# get necessary params from testinfo.csv file written to tester workspace
+# by code in Jenkinsfile. We have just one line for this tester session.
 while IFS=, read _img _tsuite _tdata _mach
 do
   [ "${_mach}" = "${MACHINE}" ] && testimg ${_img} ${_tsuite} ${_tdata}
