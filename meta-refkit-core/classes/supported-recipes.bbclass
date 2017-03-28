@@ -96,6 +96,7 @@ SUPPORTED_RECIPES_NATIVE_RECIPES ??= " \
     qemuwrapper-cross \
     shadow-sysroot \
     testexport-tarball \
+    wic-tools \
 "
 
 python () {
