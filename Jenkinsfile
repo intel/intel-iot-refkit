@@ -183,23 +183,35 @@ try {
         stage('Parallel test run') {
             set_gh_status_pending(is_pr, 'Testing')
             timestamps {
-                parallel test_runs
+                try {
+                    parallel test_runs
+                } catch (Exception e) {
+                    currentBuild.result = 'UNSTABLE'
+                }
             }
         }
     } // if testinfo_sumz
 
 } catch (Exception e) {
     echo "Error: ${e}"
+    if (currentBuild.result == null) {
+        // Set currentBuild.result as FAILURE if there is an error in building
+        currentBuild.result = 'FAILURE'
+    }
     throw e
 } finally {
     //  If tests stage was skipped because of no tests, then currentBuild.result
     //  remains null until end so manually set it as SUCCESS
     if (currentBuild.result == null) {
-        currentBuild.result == 'SUCCESS'
+        currentBuild.result = 'SUCCESS'
     }
     echo "Finally: build result is ${currentBuild.result}"
     if (is_pr) {
-        setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
+        if (currentBuild.result == 'UNSTABLE') {
+            setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
+        } else {
+            setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
+        }
     } else {
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
