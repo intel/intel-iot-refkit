@@ -33,6 +33,7 @@ def mapping = [
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
+def testinfo_sumz = 0
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
@@ -115,7 +116,6 @@ try {
     } // timestamps
 
     // find out combined size of all testinfo files
-    int testinfo_sumz = 0
     testinfo_sumz += testinfo_data["${target_machine}"].length()
     // skip tester parts if no tests configured
     if ( testinfo_sumz > 0 ) {
@@ -189,6 +189,17 @@ try {
     } // if testinfo_sumz
 
     echo "After test stage: build result is ${currentBuild.result}"
+
+} catch (Exception e) {
+    echo "Error: ${e}"
+    if (is_pr) {
+        // GH API cant take more than 140 chars in status msg so lets truncate.
+        def _msg = e.getMessage().take(120)
+        setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed: ${_msg}"
+    }
+    throw e
+} finally {
+    echo "Finally: build result is ${currentBuild.result}"
     if (is_pr) {
         // need to cross-check build result to handle possible combinations:
         // 1. FAILURE in xUnit processing does not cause Exception block below
@@ -214,16 +225,6 @@ try {
             }
         }
     }
-} catch (Exception e) {
-    echo "Error: ${e}"
-    if (is_pr) {
-        // GH API cant take more than 140 chars in status msg so lets truncate.
-        def _msg = e.getMessage().take(120)
-        setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed: ${_msg}"
-    }
-    throw e
-} finally {
-    echo "Finally: build result is ${currentBuild.result}"
 }
 
 echo "End of pipeline, build result is ${currentBuild.result}"
