@@ -188,29 +188,18 @@ try {
         }
     } // if testinfo_sumz
 
-    echo "After test stage: build result is ${currentBuild.result}"
-
 } catch (Exception e) {
     echo "Error: ${e}"
-    if (is_pr) {
-        // GH API cant take more than 140 chars in status msg so lets truncate.
-        def _msg = e.getMessage().take(120)
-        setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed: ${_msg}"
-    }
     throw e
 } finally {
+    //  If tests stage was skipped because of no tests, then currentBuild.result
+    //  remains null until end so manually set it as SUCCESS
+    if (currentBuild.result == null) {
+        currentBuild.result == 'SUCCESS'
+    }
     echo "Finally: build result is ${currentBuild.result}"
     if (is_pr) {
-        // need to cross-check build result to handle possible combinations:
-        // 1. FAILURE in xUnit processing does not cause Exception block below
-        //   to be run, but currentBuild.result is correctly set to FAILURE.
-        // 2. If tests stage was skipped because of no tests,
-        //   then currentBuild.result remains null until end
-        if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
-            setGitHubPullRequestStatus state: 'SUCCESS', context: "${env.JOB_NAME}", message: 'Build finished successfully'
-        } else {
-            setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed"
-        }
+        setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
     } else {
         // send summary email after non-PR build, if tests were run
         if ( testinfo_sumz > 0 ) {
