@@ -50,7 +50,7 @@ REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 # pre/post-build oe-selftests started by CI builder, whitespace-separated.
 #
 REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
-REFKIT_CI_POSTBUILD_SELFTESTS=""
+REFKIT_CI_POSTBUILD_SELFTESTS="image-installer"
 #
 # Automated build targets
 # Those targets should be space separated list of items,
