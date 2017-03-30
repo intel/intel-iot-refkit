@@ -91,7 +91,7 @@ class ImageInstaller(oeSelfTest):
         with runqemu('refkit-installer-image', ssh=False,
                      discard_writes=False,
                      qemuparams='-drive if=virtio,file=%s/internal-image-%s.wic,format=raw%s' % (self.resultdir, self.image_arch, qemuparams_tpm),
-                     runqemuparams='ovmf',
+                     runqemuparams='ovmf slirp',
                      image_fstype='wic') as qemu:
             # Check that we have booted, with dm-verity if enabled.
             cmd = "findmnt / --output SOURCE --noheadings"
@@ -121,7 +121,7 @@ class ImageInstaller(oeSelfTest):
         with runqemu('refkit-installer-image', ssh=False,
                      overrides=overrides,
                      qemuparams=qemuparams_tpm,
-                     runqemuparams='ovmf',
+                     runqemuparams='ovmf slirp',
                      image_fstype='wic') as qemu:
             # Check that we have booted, without device mapper involved.
             # Can't use the simpler findmnt here.
