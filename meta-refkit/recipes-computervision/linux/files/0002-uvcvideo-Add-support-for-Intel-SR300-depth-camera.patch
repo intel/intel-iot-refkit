@@ -1,0 +1,71 @@
+From 31b7b745643dc1c22f1662d6c876c347ff73401b Mon Sep 17 00:00:00 2001
+From: Daniel Patrick Johnson <teknotus@teknot.us>
+Date: Fri, 3 Mar 2017 01:43:20 +0200
+Subject: [PATCH 2/2] uvcvideo: Add support for Intel SR300 depth camera
+
+Add support for Intel SR300 depth camera in uvc driver.
+This includes adding three uvc GUIDs for the required pixel formats
+and updating the uvc driver GUID-to-4cc tables with the new formats.
+
+Signed-off-by: Daniel Patrick Johnson <teknotus@teknot.us>
+Signed-off-by: Aviv Greenberg <avivgr@gmail.com>
+Signed-off-by: Evgeni Raikhel <evgeni.raikhel@intel.com>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
+Upstream-status: Submitted [https://patchwork.linuxtv.org/patch/39673/]
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ drivers/media/usb/uvc/uvc_driver.c | 15 +++++++++++++++
+ drivers/media/usb/uvc/uvcvideo.h   |  9 +++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+index 302e284..b8bf674 100644
+--- a/drivers/media/usb/uvc/uvc_driver.c
++++ b/drivers/media/usb/uvc/uvc_driver.c
+@@ -168,6 +168,21 @@ static struct uvc_format_desc uvc_fmts[] = {
+ 		.guid		= UVC_GUID_FORMAT_RW10,
+ 		.fcc		= V4L2_PIX_FMT_SRGGB10P,
+ 	},
++	{
++		.name		= "Depth data 16-bit (Z16)",
++		.guid		= UVC_GUID_FORMAT_INVZ,
++		.fcc		= V4L2_PIX_FMT_Z16,
++	},
++	{
++		.name		= "Greyscale 10-bit (Y10 )",
++		.guid		= UVC_GUID_FORMAT_INVI,
++		.fcc		= V4L2_PIX_FMT_Y10,
++	},
++	{
++		.name		= "IR:Depth 26-bit (INZI)",
++		.guid		= UVC_GUID_FORMAT_INZI,
++		.fcc		= V4L2_PIX_FMT_INZI,
++	},
+ };
+ 
+ /* ------------------------------------------------------------------------
+diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
+index 7e4d3ee..460b99c 100644
+--- a/drivers/media/usb/uvc/uvcvideo.h
++++ b/drivers/media/usb/uvc/uvcvideo.h
+@@ -131,6 +131,15 @@
+ #define UVC_GUID_FORMAT_RW10 \
+ 	{ 'R',  'W',  '1',  '0', 0x00, 0x00, 0x10, 0x00, \
+ 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
++#define UVC_GUID_FORMAT_INVZ \
++	{ 'I',  'N',  'V',  'Z', 0x90, 0x2d, 0x58, 0x4a, \
++	 0x92, 0x0b, 0x77, 0x3f, 0x1f, 0x2c, 0x55, 0x6b}
++#define UVC_GUID_FORMAT_INZI \
++	{ 'I',  'N',  'Z',  'I', 0x66, 0x1a, 0x42, 0xa2, \
++	 0x90, 0x65, 0xd0, 0x18, 0x14, 0xa8, 0xef, 0x8a}
++#define UVC_GUID_FORMAT_INVI \
++	{ 'I',  'N',  'V',  'I', 0xdb, 0x57, 0x49, 0x5e, \
++	 0x8e, 0x3f, 0xf4, 0x79, 0x53, 0x2b, 0x94, 0x6f}
+ 
+ /* ------------------------------------------------------------------------
+  * Driver specific constants.
+-- 
+2.9.3
+
