@@ -33,6 +33,7 @@ def mapping = [
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
+def testinfo_sumz = 0
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
@@ -115,7 +116,6 @@ try {
     } // timestamps
 
     // find out combined size of all testinfo files
-    int testinfo_sumz = 0
     testinfo_sumz += testinfo_data["${target_machine}"].length()
     // skip tester parts if no tests configured
     if ( testinfo_sumz > 0 ) {
@@ -183,22 +183,34 @@ try {
         stage('Parallel test run') {
             set_gh_status_pending(is_pr, 'Testing')
             timestamps {
-                parallel test_runs
+                try {
+                    parallel test_runs
+                } catch (Exception e) {
+                    currentBuild.result = 'UNSTABLE'
+                }
             }
         }
     } // if testinfo_sumz
 
-    echo "After test stage: build result is ${currentBuild.result}"
+} catch (Exception e) {
+    echo "Error: ${e}"
+    if (currentBuild.result == null) {
+        // Set currentBuild.result as FAILURE if there is an error in building
+        currentBuild.result = 'FAILURE'
+    }
+    throw e
+} finally {
+    //  If tests stage was skipped because of no tests, then currentBuild.result
+    //  remains null until end so manually set it as SUCCESS
+    if (currentBuild.result == null) {
+        currentBuild.result = 'SUCCESS'
+    }
+    echo "Finally: build result is ${currentBuild.result}"
     if (is_pr) {
-        // need to cross-check build result to handle possible combinations:
-        // 1. FAILURE in xUnit processing does not cause Exception block below
-        //   to be run, but currentBuild.result is correctly set to FAILURE.
-        // 2. If tests stage was skipped because of no tests,
-        //   then currentBuild.result remains null until end
-        if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
-            setGitHubPullRequestStatus state: 'SUCCESS', context: "${env.JOB_NAME}", message: 'Build finished successfully'
+        if (currentBuild.result == 'UNSTABLE') {
+            setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
         } else {
-            setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed"
+            setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
         }
     } else {
         // send summary email after non-PR build, if tests were run
@@ -214,16 +226,6 @@ try {
             }
         }
     }
-} catch (Exception e) {
-    echo "Error: ${e}"
-    if (is_pr) {
-        // GH API cant take more than 140 chars in status msg so lets truncate.
-        def _msg = e.getMessage().take(120)
-        setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build failed: ${_msg}"
-    }
-    throw e
-} finally {
-    echo "Finally: build result is ${currentBuild.result}"
 }
 
 echo "End of pipeline, build result is ${currentBuild.result}"
