@@ -28,6 +28,8 @@ set -u
 if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
   cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
 fi
+export BUILD_ID=${CI_BUILD_ID}
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
 _tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
 if [ -n "$_tests" ]; then

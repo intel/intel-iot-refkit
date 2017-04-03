@@ -33,6 +33,8 @@ set -u
 if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
   cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
 fi
+export BUILD_ID=${CI_BUILD_ID}
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
 # use bitbake -e for variables parsing, then pick REFKIT_CI part
 bitbake -e >bb_e_out 2>bb_e_err || (cat bb_e_err && false)
