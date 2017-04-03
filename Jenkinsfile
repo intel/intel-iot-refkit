@@ -73,23 +73,17 @@ try {
                     export TARGET_MACHINE=${target_machine}
                 """
                 docker_image.inside(run_args) {
+                    set_gh_status_pending(is_pr, 'Pre-build tests')
+                    params = ["${script_env_global}", "${script_env_local}",
+                              "docker/pre-build.sh"].join("\n")
+                    stage('Pre-build tests') {
+                        sh "${params}"
+                    }
                     try {
-                        set_gh_status_pending(is_pr, 'Pre-build tests')
-                        params = ["${script_env_global}", "${script_env_local}",
-                                  "docker/pre-build.sh"].join("\n")
-                        stage('Pre-build tests') {
-                            sh "${params}"
-                        }
                         set_gh_status_pending(is_pr, 'Building')
                         params = ["${script_env_global}", "${script_env_local}",
                                   "docker/build-project.sh"].join("\n")
                         stage('Build') {
-                            sh "${params}"
-                        }
-                        set_gh_status_pending(is_pr, 'Post-build tests')
-                        params = ["${script_env_global}", "${script_env_local}",
-                                  "docker/post-build.sh"].join("\n")
-                        stage('Post-build tests') {
                             sh "${params}"
                         }
                     } catch (Exception e) {
@@ -101,6 +95,12 @@ try {
                         stage('Store images') {
                             sh "${params}"
                         }
+                    }
+                    set_gh_status_pending(is_pr, 'Post-build tests')
+                    params = ["${script_env_global}", "${script_env_local}",
+                              "docker/post-build.sh"].join("\n")
+                    stage('Post-build tests') {
+                        sh "${params}"
                     }
                 } // docker_image
                 tester_script = readFile "docker/tester-exec.sh"

@@ -42,6 +42,7 @@ _tests=`grep REFKIT_CI_PREBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe
 if [ -n "$_tests" ]; then
   oe-selftest --run-tests ${_tests}
 fi
-rm -f ${WORKSPACE}/build/conf/auto.conf
+# remove build/ dir to clean tester-related config and results
+rm -fr ${WORKSPACE}/build
 
 
