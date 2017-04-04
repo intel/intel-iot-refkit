@@ -85,17 +85,22 @@ SUPPORTED_RECIPES_SOURCES_DIR ??= "${TMPDIR}/supported-recipe-sources"
 # is also this list of space-separated regular expressions which identify
 # additional recipes which do not need to be checked.
 SUPPORTED_RECIPES_NATIVE_RECIPES ??= " \
+    build-sysroots \
     buildtools-tarball \
     depmodwrapper-cross \
     gcc-source-.* \
     glibc-initial \
     libgcc-initial \
     libtool-cross \
-    meta-environment-extsdk-.* \
+    meta-environment-.* \
+    meta-extsdk-toolchain \
     meta-world-pkgdata \
+    meta-toolchain \
     nativesdk-buildtools-perl-dummy \
+    package-index \
     qemuwrapper-cross \
     shadow-sysroot \
+    testexport-tarball \
     uninative-tarball \
 "
 
