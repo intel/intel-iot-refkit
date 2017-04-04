@@ -3,7 +3,7 @@ SECTION = "libs"
 AUTHOR = "Brendan Le Foll, Tom Ingleby, Yevgeniy Kiveisha, Dmitry Rozhkov"
 
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=d1cc191275d6a8c5ce039c75b2b3dc29"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=66493d54e65bfc12c7983ff2e884f37f"
 
 DEPENDS = "libjpeg-turbo mraa"
 
