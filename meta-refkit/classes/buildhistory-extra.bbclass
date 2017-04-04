@@ -37,13 +37,18 @@ python buildhistory_extra_emit_pkghistory() {
     if not os.path.exists(pkghistdir):
         bb.utils.mkdirhier(pkghistdir)
 
-    # Make the recorded information independent of varying paths.
-    # Some recipes use destsuffix=${S}/... to fetch components
+    # Make the recorded information independent of varying paths
+    # by replacing with the name of the variable. We have to have
+    # some value, otherwise expanding certain expressions fails
+    # entirely, for example in ovmf_git.bb:
+    # ${@bb.utils.contains('PACKAGECONFIG', 'secureboot', 'http://www.openssl.org/source/openssl-1.0.2j.tar.gz;name=openssl;subdir=${S}/CryptoPkg/Library/OpensslLib', '', d)}
+    #
+    # Some recipes also use destsuffix=${S}/... to fetch components
     # into their main source tree. The other variable do not show
     # up (yet), but might eventually.
     d = d.createCopy()
     for var in ('S', 'BASE_WORKDIR'):
-        d.delVar(var)
+        d.setVar(var, var)
     relpath = os.path.dirname(d.getVar('TOPDIR', True))
 
     # Record PV in the "latest" file. This duplicates work in
