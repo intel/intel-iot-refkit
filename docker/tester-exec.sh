@@ -73,7 +73,7 @@ testimg() {
   # Execute with +e to make sure that possibly created log files get
   # renamed, archived, published even when AFT or some of renaming fails
   set +e
-  daft ${DEVICE} ${FILENAME} --record
+  daft ${DEVICE} ${FILENAME} --record --emulateusb
   AFT_EXIT_CODE=$?
 
   # modify names inside TEST-*.xml files to contain device and img_name
