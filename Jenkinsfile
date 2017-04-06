@@ -154,26 +154,7 @@ try {
                                     archiveArtifacts allowEmptyArchive: true,
                                                      artifacts: '*.log, *.xml, aft-results*.tar.bz2'
                                 }
-                                step([$class: 'XUnitPublisher',
-                                    testTimeMargin: '3000',
-                                    thresholdMode: 1,
-                                    thresholds: [
-                                        [$class: 'FailedThreshold',
-                                            failureNewThreshold: '0',
-                                            failureThreshold: '0',
-                                            unstableNewThreshold: '99999',
-                                            unstableThreshold: '99999'],
-                                        [$class: 'SkippedThreshold',
-                                            failureNewThreshold: '99999',
-                                            failureThreshold: '99999',
-                                            unstableNewThreshold: '99999',
-                                            unstableThreshold: '99999']],
-                                    tools: [[$class: 'JUnitType',
-                                                deleteOutputFiles: true,
-                                                failIfNotNew: true,
-                                                pattern: 'TEST-*.xml',
-                                                skipNoTestFiles: false,
-                                                stopProcessingIfError: true]]])
+                                step_xunit()
                             } // node
                         } // test_runs =
                     } // for m
@@ -298,4 +279,28 @@ def set_gh_status_pending(is_pr, _msg) {
     if (is_pr) {
         setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "${_msg}"
     }
+}
+
+def step_xunit() {
+    step([$class: 'XUnitPublisher',
+    testTimeMargin: '3000',
+    thresholdMode: 1,
+    thresholds: [
+        [$class: 'FailedThreshold',
+            failureNewThreshold: '0',
+            failureThreshold: '0',
+            unstableNewThreshold: '99999',
+            unstableThreshold: '99999'],
+        [$class: 'SkippedThreshold',
+            failureNewThreshold: '99999',
+            failureThreshold: '99999',
+            unstableNewThreshold: '99999',
+            unstableThreshold: '99999']],
+    tools: [
+        [$class: 'JUnitType',
+            deleteOutputFiles: true,
+            failIfNotNew: true,
+            pattern: 'TEST-*.xml',
+            skipNoTestFiles: false,
+            stopProcessingIfError: true]]])
 }
