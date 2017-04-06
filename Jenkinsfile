@@ -136,10 +136,9 @@ try {
                                 writeFile file: 'tester-exec.sh', text: tester_script
                                 // append newline so that tester-exec.sh can parse it using "read"
                                 one_image_testinfo += "\n"
-                                // write testinfo file on this tester for this image, one line per tester
+                                // create testinfo.csv on this tester describing one image
                                 writeFile file: "testinfo.csv", text: one_image_testinfo
-                                String[] one_testinfo_elems = one_image_testinfo.split(",")
-                                def img = one_testinfo_elems[0]
+                                def img = one_image_testinfo.split(",")[0]
                                 try {
                                     withEnv(["CI_BUILD_ID=${ci_build_id}",
                                         "MACHINE=${mapping["${test_device}"]}",
