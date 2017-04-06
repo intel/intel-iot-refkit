@@ -53,7 +53,10 @@ class ImageInstaller(oeSelfTest):
         # clean up which can result in the native tools built earlier in
         # setUpClass being unavailable.
         if not ImageInstaller.image_is_ready:
-            bitbake('refkit-installer-image ovmf swtpm-wrappers')
+            targets = 'refkit-installer-image ovmf swtpm-wrappers'
+            print('Starting: bitbake %s' % targets)
+            result = bitbake(targets)
+            print(result.output)
             ImageInstaller.image_is_ready = True
 
         # We create the directory under ${TMPDIR} and thus can avoid
