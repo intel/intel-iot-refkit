@@ -1,18 +1,27 @@
-SUMMARY = "Sensor/Actuator repository for Mraa"
+SUMMARY = "Low Level Skeleton Library for Communication on Intel platforms"
 SECTION = "libs"
-AUTHOR = "Brendan Le Foll, Tom Ingleby, Yevgeniy Kiveisha, Dmitry Rozhkov"
+AUTHOR = "Brendan Le Foll, Tom Ingleby, Dmitry Rozhkov"
 
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=d1cc191275d6a8c5ce039c75b2b3dc29"
+LIC_FILES_CHKSUM = "file://COPYING;md5=66493d54e65bfc12c7983ff2e884f37f"
 
-DEPENDS = "libjpeg-turbo mraa"
-
-SRC_URI = "git://github.com/intel-iot-devkit/upm.git;protocol=http;tag=v${PV}"
+SRC_URI = "git://github.com/intel-iot-devkit/mraa.git;protocol=http;tag=v${PV} \
+           "
 
 S = "${WORKDIR}/git"
 
-inherit distutils-base cmake
+inherit cmake distutils-base
 
+DEPENDS += "json-c"
+
+EXTRA_OECMAKE_append = " -DINSTALLTOOLS:BOOL=ON -DFIRMATA=ON -DCMAKE_SKIP_RPATH=ON"
+
+# Prepend mraa-utils to make sure bindir ends up in there
+PACKAGES =+ "${PN}-utils"
+
+FILES_${PN}-doc += "${datadir}/mraa/examples/"
+
+FILES_${PN}-utils = "${bindir}/"
 
 # override this in local.conf to get needed bindings.
 # BINDINGS_pn-mraa="python"
@@ -24,8 +33,9 @@ PACKAGECONFIG ??= "${@bb.utils.contains('PACKAGES', 'node-${PN}', 'nodejs', '', 
 
 PACKAGECONFIG[python] = "-DBUILDSWIGPYTHON=ON, -DBUILDSWIGPYTHON=OFF, swig-native ${PYTHON_PN},"
 PACKAGECONFIG[nodejs] = "-DBUILDSWIGNODE=ON, -DBUILDSWIGNODE=OFF, swig-native nodejs-native,"
+PACKAGECONFIG[ft4222] = "-DUSBPLAT=ON -DFTDI4222=ON, -DUSBPLAT=OFF -DFTDI4222=OFF,, libft4222"
 
-FILES_${PYTHON_PN}-${PN} = "${PYTHON_SITEPACKAGES_DIR}"
+FILES_${PYTHON_PN}-${PN} = "${PYTHON_SITEPACKAGES_DIR}/"
 RDEPENDS_${PYTHON_PN}-${PN} += "${PYTHON_PN}"
 
 FILES_node-${PN} = "${prefix}/lib/node_modules/"
