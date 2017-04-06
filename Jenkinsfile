@@ -154,7 +154,11 @@ try {
                                 archiveArtifacts allowEmptyArchive: true,
                                                  artifacts: '*.log, *.xml, aft-results*.tar.bz2'
                             }
-                            step_xunit()
+                            // without locking we may lose tester result set(s)
+                            // if testers run xunit step in nearly same time
+                            lock(resource: "step-xunit") {
+                                step_xunit()
+                            }
                         } // node
                     } // test_runs =
                 } // for
