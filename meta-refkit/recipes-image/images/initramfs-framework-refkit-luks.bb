@@ -105,7 +105,8 @@ refkit_luks () {
                             fatal "Error locking NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}"
                         fi
                     fi
-                    if [ ! -s "$keyfile" ]; then
+                    if [ ! -s "$keyfile" ] &&
+                       [ "${REFKIT_DISK_ENCRYPTION_PASSWORD}" ]; then
                         printf "%s" "${REFKIT_DISK_ENCRYPTION_PASSWORD}" >"$keyfile"
                         keyfile_offset=0
                     fi

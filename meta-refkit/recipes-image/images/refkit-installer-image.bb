@@ -27,7 +27,6 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         output_mountpoint=
         output_luks=
         LUKS_NAME=installerrootfs
-        LUKS_PASSWORD="${REFKIT_DISK_ENCRYPTION_PASSWORD}"
         # Use something which is guaranteed to not be persistent.
         keydir=$(TMPDIR=/dev/shm mktemp -dt keydir.XXXXXX)
         keyfile="$keydir/keyfile"
@@ -70,7 +69,7 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             # all target machines have support). The use of a TPM can be configured
             # explicitly by setting the TPM12 env variable to "yes" or "no".
             # The default is "true" if there is a /dev/tpm* device.
-            TPM12=${TPM12:-`ls /dev/tpm* >/dev/null 2>&1 && echo yes || echo no`}
+            TPM12=${TPM12:-$(ls /dev/tpm* >/dev/null 2>&1 && echo yes || echo no)}
 
             if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) } &&
                istrue TPM12; then
@@ -102,12 +101,12 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                 fi
             fi
 
-            # Unsafe fallback without TPM: well-known password. Not used unless explicitly selected.
-            FIXED_PASSWORD=${FIXED_PASSWORD:-no}
+            # Unsafe fallback without TPM: well-known password. Not used unless explicitly set.
+            FIXED_PASSWORD=${FIXED_PASSWORD:-}
 
             if [ ! -s "$keyfile" ] &&
-               istrue FIXED_PASSWORD; then
-                printf "%s" "$LUKS_PASSWORD" >"$keyfile"
+               [ "$FIXED_PASSWORD" ]; then
+                printf "%s" "$FIXED_PASSWORD" >"$keyfile"
                 keyfile_offset=0
             fi
             if ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'true', 'false', d) } &&

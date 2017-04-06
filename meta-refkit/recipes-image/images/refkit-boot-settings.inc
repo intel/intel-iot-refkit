@@ -5,8 +5,15 @@
 REFKIT_DEVICE_MAPPER_ROOTFS_NAME ??= "rootfs"
 
 # Insecure, well-known password as fallback when there is no TPM.
-# TODO: ensure that this feature can't be used in production.
-REFKIT_DISK_ENCRYPTION_PASSWORD ??= "refkit"
+# Gets compiled into initramfs-framework-refkit-luks.bb and thus
+# refkit-initramfs.
+#
+# Leaving the password empty disables the feature.
+#
+# To use it when enabled, call image-installer in the
+# refkit-installer-image with
+# "FIXED_PASSWORD=<password chosen via REFKIT_DISK_ENCRYPTION_PASSWORD>".
+REFKIT_DISK_ENCRYPTION_PASSWORD ??= ""
 
 # Index of the TPM NVRAM area used for random the per-machine disk encryption key.
 # The area contains a short ID + version, followed by the key.

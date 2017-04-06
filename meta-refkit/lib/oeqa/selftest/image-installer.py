@@ -74,7 +74,7 @@ class ImageInstaller(oeSelfTest):
             # empty, sparse file of 8GB
             os.truncate(f.fileno(), 8 * 1024 * 1024 * 1024)
 
-    def do_install(self, fixed_password=False, tpm=False):
+    def do_install(self, fixed_password="", tpm=False):
         self.create_internal_disk()
 
         if tpm:
@@ -105,7 +105,7 @@ class ImageInstaller(oeSelfTest):
             # interactively would be also a worthwhile test...
             cmd = "CHOSEN_INPUT=refkit-image-common-%s.wic CHOSEN_OUTPUT=vdb FORCE=yes %s%simage-installer" % \
                   (self.image_arch,
-                   "FIXED_PASSWORD=yes " if fixed_password else "",
+                   ("FIXED_PASSWORD=%s " % fixed_password) if fixed_password else "",
                    "TPM12=yes " if tpm else "",
                    )
             status, output = qemu.run_serial(cmd, timeout=300)
@@ -146,7 +146,10 @@ class ImageInstaller(oeSelfTest):
 
     def test_install_fixed_password(self):
         """Test image installation under qemu without virtual TPM, using a fixed password"""
-        self.do_install(fixed_password=True)
+        fixed_password = get_bb_var('REFKIT_DISK_ENCRYPTION_PASSWORD')
+        if not fixed_password:
+            self.skipTest('REFKIT_DISK_ENCRYPTION_PASSWORD not set')
+        self.do_install(fixed_password=fixed_password)
 
     def test_install_tpm(self):
         """Test image installation under qemu without virtual TPM, using a fixed password"""
