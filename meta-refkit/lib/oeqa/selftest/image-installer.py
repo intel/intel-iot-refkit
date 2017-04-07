@@ -57,6 +57,10 @@ class ImageInstaller(oeSelfTest):
             print('Starting: bitbake %s' % targets)
             result = bitbake(targets)
             print(result.output)
+            if 'refkit-initramfs-1.0-r0: task do_rootfs: Started' in result.output:
+                # Happens in the CI system. Try to find out why...
+                result = runCmd('ls -l tmp-glibc/stamps/intel_corei7_64-refkit-linux/refkit-initramfs; bitbake-diffsigs tmp-glibc/stamps/intel_corei7_64-refkit-linux/refkit-initramfs/*do_rootfs.sigdata*')
+                print(result.output)
             ImageInstaller.image_is_ready = True
 
         # We create the directory under ${TMPDIR} and thus can avoid
