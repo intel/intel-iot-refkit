@@ -76,6 +76,8 @@ testimg() {
   daft ${DEVICE} ${FILENAME} --record
   AFT_EXIT_CODE=$?
 
+  # delete symlinks, these point outside of local set and are useless
+  find . -type l -print -delete
   # modify names inside TEST-*.xml files to contain device and img_name
   # as these get shown in same xUnit results table in Jenkins
   sed -e "s/name=\"oeqa/name=\"${DEVICE}.${_IMG_NAME}.oeqa/g" -i TEST-*.xml
