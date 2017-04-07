@@ -33,3 +33,8 @@ REFKIT_IMAGE_BUILD_MODE_SELECTED = "1"
 
 REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES_append = " computervision-test"
 REFKIT_IMAGE_FEATURES_COMMON_append = " common-test"
+
+# Mark this image as development on the kernel command line. Can be used
+# for things like automatically offering a debug shell from initramfs
+# modules upon fatal errors, etc.
+APPEND_append = " imagetype=development"
