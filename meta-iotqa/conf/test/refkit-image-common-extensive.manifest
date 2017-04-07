@@ -1,1 +1,3 @@
 # Extensive tests for common profile
+oeqa.runtime.bluetooth.comm_bt_command
+oeqa.runtime.bluetooth.comm_bt_6lowpan
