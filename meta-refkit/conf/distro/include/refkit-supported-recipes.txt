@@ -177,6 +177,7 @@ industrial-robot-simulator@ros-layer
 industrial-trajectory-filters@ros-layer
 industrial-utils@ros-layer
 init-ifupdown@core
+initramfs-framework-ostree@refkit-core
 initramfs-framework-refkit-dm-verity-development@refkit-core
 initramfs-framework-refkit-dm-verity@refkit-core
 initramfs-framework-refkit-luks@refkit-core
@@ -383,6 +384,7 @@ readline@core
 recordproto@core
 refkit-ros-tests@iotqa
 refkit.*image.*@refkit.*
+refkit-ostree@refkit-core
 renderproto@core
 resource-retriever@ros-layer
 resourceproto@core

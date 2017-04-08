@@ -1,0 +1,55 @@
+#!/bin/sh
+
+DISTRO='refkit'
+SCRIPT='/usr/bin/refkit-ostree'
+
+# We consider the ostree module always enabled if it is installed.
+ostree_enabled () {
+    if [ -d /rootfs/ostree/deploy ]; then
+        return 0
+    else
+        info "ostree: doesn't look like an ostree-based image... disabling."
+        return 1
+    fi
+}
+
+
+# Print a fatal error message, starting a shell if we're in development mode.
+ostree_fatal () {
+    fatal "ostree: $*"
+}
+
+# Print an info message.
+ostree_info () {
+    msg "ostree: $*"
+}
+
+# Print a debug message.
+ostree_debug () {
+    debug "ostree: $*"
+}
+
+# Find our ostree helper/wrapper script in on of the deployments.
+ostree_discover_wrapper () {
+    # TODO: how can we be sure that we pick the "right" refkit-ostree,
+    # whatever "right" means - the latest one, the one matching the initramfs?
+    for _e in /rootfs/ostree/deploy/$DISTRO/deploy/*.?; do
+        if [ -x $_e$SCRIPT ]; then
+            WRAPPER="$_e$SCRIPT"
+            break
+        fi
+    done
+
+    [ -n "$WRAPPER" ] && return 0 || return 1
+}
+
+# Run the ostree image setup sequence.
+ostree_run () {
+    if ! ostree_discover_wrapper; then
+        ostree_fatal "could not find $SCRIPT in any deployment..."
+    fi
+
+    # TODO: can we really rely on executing anything from the rootfs
+    # inside the initramfs? Theoretically they could be 
+    $WRAPPER initramfs-prepare-root
+}

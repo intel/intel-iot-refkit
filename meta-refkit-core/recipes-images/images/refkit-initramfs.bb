@@ -50,6 +50,13 @@ IMAGE_FEATURES += " \
 "
 FEATURE_PACKAGES_debug = "initramfs-module-debug"
 
+# OSTree support: we add the module if the distro supports OSTree.
+# It does not do anything in images not using OSTree.
+IMAGE_FEATURES += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'ostree', 'ostree', '', d)} \
+"
+FEATURE_PACKAGES_ostree = "initramfs-framework-ostree"
+
 IMAGE_LINGUAS = ""
 
 LICENSE = "MIT"
