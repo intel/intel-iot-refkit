@@ -10,7 +10,11 @@ from oeqa.utils.helper import get_files_dir
 class CommBTTest(oeRuntimeTest):
     def setUp(self):
         self.bt = bluetooth.BTFunction(self.target)
+        self.bt.enable_bluetooth()
         self.bt.target_hciconfig_init()
+
+    def tearDown(self):
+        self.bt.disable_bluetooth()
 
     def test_bt_power_on(self):
         """
