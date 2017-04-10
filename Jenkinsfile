@@ -122,63 +122,47 @@ try {
         def test_runs = [:]
         for(int i = 0; i < test_devices.size(); i++) {
             def test_device = test_devices[i]
-                // only if built for machine that this tester wants
-                if ( target_machine == mapping["${test_device}"] ) {
-                    // testinfo_data may contain multiple lines stating different images
-                    String[] separated_testinfo = testinfo_data["${target_machine}"].split("\n")
-                    for (int m = 0; m < separated_testinfo.length; m++) {
-                        def one_image_testinfo = separated_testinfo[m]
-                        echo "Image #${m} to be tested on test_${test_device} info: ${separated_testinfo[m]}"
-                        test_runs["test_${m}_${test_device}"] = {
-                            node('refkit-tester') {
-                                deleteDir() // clean workspace
-                                echo "Testing test_${test_device} with image_info: ${one_image_testinfo}"
-                                writeFile file: 'tester-exec.sh', text: tester_script
-                                // append newline so that tester-exec.sh can parse it using "read"
-                                one_image_testinfo += "\n"
-                                // write testinfo file on this tester for this image, one line per tester
-                                writeFile file: "testinfo.csv", text: one_image_testinfo
-                                String[] one_testinfo_elems = one_image_testinfo.split(",")
-                                def img = one_testinfo_elems[0]
-                                try {
-                                    withEnv(["CI_BUILD_ID=${ci_build_id}",
-                                        "MACHINE=${mapping["${test_device}"]}",
-                                        "TEST_DEVICE=${test_device}" ]) {
-                                            sh 'chmod a+x tester-exec.sh && ./tester-exec.sh'
-                                    }
-                                } catch (Exception e) {
-                                    throw e
-                                } finally {
-                                    // read tests summary prepared by tester-exec.sh
-                                    // Here one tester adds it's summary piece to the global buffer.
-                                    global_sum_log += readFile "results-summary-${test_device}.${img}.log"
-                                    archiveArtifacts allowEmptyArchive: true,
-                                                     artifacts: '**/*.log, **/*.xml, **/aft-results*.tar.bz2'
+            // only if built for machine that this tester wants
+            if ( target_machine == mapping["${test_device}"] ) {
+                // testinfo_data may contain multiple lines stating different images
+                String[] separated_testinfo = testinfo_data["${target_machine}"].split("\n")
+                for (int m = 0; m < separated_testinfo.length; m++) {
+                    def one_image_testinfo = separated_testinfo[m]
+                    echo "Image #${m} to be tested on test_${test_device} info: ${separated_testinfo[m]}"
+                    test_runs["test_${m}_${test_device}"] = {
+                        node('refkit-tester') {
+                            deleteDir() // clean workspace
+                            echo "Testing test_${test_device} with image_info: ${one_image_testinfo}"
+                            writeFile file: 'tester-exec.sh', text: tester_script
+                            // append newline so that tester-exec.sh can parse it using "read"
+                            one_image_testinfo += "\n"
+                            // create testinfo.csv on this tester describing one image
+                            writeFile file: "testinfo.csv", text: one_image_testinfo
+                            def img = one_image_testinfo.split(",")[0]
+                            try {
+                                withEnv(["CI_BUILD_ID=${ci_build_id}",
+                                    "MACHINE=${mapping["${test_device}"]}",
+                                    "TEST_DEVICE=${test_device}" ]) {
+                                        sh 'chmod a+x tester-exec.sh && ./tester-exec.sh'
                                 }
-                                step([$class: 'XUnitPublisher',
-                                    testTimeMargin: '3000',
-                                    thresholdMode: 1,
-                                    thresholds: [
-                                        [$class: 'FailedThreshold',
-                                            failureNewThreshold: '0',
-                                            failureThreshold: '0',
-                                            unstableNewThreshold: '99999',
-                                            unstableThreshold: '99999'],
-                                        [$class: 'SkippedThreshold',
-                                            failureNewThreshold: '99999',
-                                            failureThreshold: '99999',
-                                            unstableNewThreshold: '99999',
-                                            unstableThreshold: '99999']],
-                                    tools: [[$class: 'JUnitType',
-                                                deleteOutputFiles: true,
-                                                failIfNotNew: true,
-                                                pattern: 'TEST-*.xml',
-                                                skipNoTestFiles: false,
-                                                stopProcessingIfError: true]]])
-                            } // node
-                        } // test_runs =
-                    } // for m
-	        } // if target_machine == mapping
+                            } catch (Exception e) {
+                                throw e
+                            } finally {
+                                // read tests summary prepared by tester-exec.sh
+                                // Here one tester adds it's summary piece to the global buffer.
+                                global_sum_log += readFile "results-summary-${test_device}.${img}.log"
+                                archiveArtifacts allowEmptyArchive: true,
+                                                 artifacts: '*.log, *.xml'
+                            }
+                            // without locking we may lose tester result set(s)
+                            // if testers run xunit step in nearly same time
+                            lock(resource: "step-xunit") {
+                                step_xunit()
+                            }
+                        } // node
+                    } // test_runs =
+                } // for
+            } // if target_machine == mapping
         } // for i
         stage('Parallel test run') {
             set_gh_status_pending(is_pr, 'Testing')
@@ -299,4 +283,28 @@ def set_gh_status_pending(is_pr, _msg) {
     if (is_pr) {
         setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "${_msg}"
     }
+}
+
+def step_xunit() {
+    step([$class: 'XUnitPublisher',
+    testTimeMargin: '3000',
+    thresholdMode: 1,
+    thresholds: [
+        [$class: 'FailedThreshold',
+            failureNewThreshold: '0',
+            failureThreshold: '0',
+            unstableNewThreshold: '99999',
+            unstableThreshold: '99999'],
+        [$class: 'SkippedThreshold',
+            failureNewThreshold: '99999',
+            failureThreshold: '99999',
+            unstableNewThreshold: '99999',
+            unstableThreshold: '99999']],
+    tools: [
+        [$class: 'JUnitType',
+            deleteOutputFiles: true,
+            failIfNotNew: true,
+            pattern: 'TEST-*.xml',
+            skipNoTestFiles: false,
+            stopProcessingIfError: true]]])
 }
