@@ -21,7 +21,6 @@ testimg() {
   _IMG_NAME=$1
   TEST_SUITE_FILE=$2
   TEST_CASES_FILE=$3
-  _IMG_NAME_MACHINE=${_IMG_NAME}-${MACHINE}
 
   # Get test suite
   wget ${_WGET_OPTS} ${TEST_SUITE_FOLDER_URL}/${_IMG_NAME}/${TEST_SUITE_FILE}
@@ -34,21 +33,16 @@ testimg() {
   cp $HOME/.config.ini.wlan ${_WLANCONF}
   chmod 644 ${_WLANCONF}
 
-  FN_BASE=${_IMG_NAME_MACHINE}-${CI_BUILD_ID}
-  FILENAME=${FN_BASE}.wic
-  FILENAME_BMAP=${FILENAME}.bmap
-  FILENAME_XZ=${FILENAME}.xz
-  FILENAME_ZIP=${FILENAME}.zip
-
+  FILENAME=${_IMG_NAME}-${MACHINE}-${CI_BUILD_ID}.wic
   set +e
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_BMAP}
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_XZ} -O - | unxz - > ${FILENAME}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.bmap
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.xz -O - | unxz - > ${FILENAME}
   if [ ! -s ${FILENAME} ]; then
-    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME_ZIP}
-    if [ -s ${FILENAME_ZIP} ]; then
-      unzip ${FILENAME_ZIP}
+    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.zip
+    if [ -s ${FILENAME}.zip ]; then
+      unzip ${FILENAME}.zip
     else
-      echo "ERROR: No file ${FILENAME_XZ} or ${FILENAME_ZIP} found, can not continue."
+      echo "ERROR: No file ${FILENAME}.xz or ${FILENAME}.zip found, can not continue."
       exit 1
     fi
   fi
