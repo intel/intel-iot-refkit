@@ -8,6 +8,14 @@ class CommBluetoothTest(oeRuntimeTest):
     @class CommBluetoothTest
     """
     log = ""
+
+    def setUp(self):
+        self.target.run('connmanctl enable bluetooth')
+        time.sleep(8)
+
+    def tearDown(self):
+        self.target.run('connmanctl disable bluetooth')
+
     def target_collect_info(self, cmd):
         """
         @fn target_collect_info
@@ -29,8 +37,6 @@ class CommBluetoothTest(oeRuntimeTest):
         # un-block software rfkill lock
         self.target.run('rfkill unblock all')
         # This is special for edison platform
-        self.target.run('connmanctl enable bluetooth')
-        time.sleep(8)
         # Collect system information as log
         self.target_collect_info("ifconfig")
         self.target_collect_info("hciconfig")
