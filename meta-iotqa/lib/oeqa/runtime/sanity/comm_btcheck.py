@@ -34,9 +34,6 @@ class CommBluetoothTest(oeRuntimeTest):
         @param self
         @return
         '''
-        # un-block software rfkill lock
-        self.target.run('rfkill unblock all')
-        # This is special for edison platform
         # Collect system information as log
         self.target_collect_info("ifconfig")
         self.target_collect_info("hciconfig")
