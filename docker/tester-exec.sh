@@ -109,8 +109,6 @@ testimg() {
     echo "  Run rate:${run_rate}%  Pass rate of total:${pass_rate_of_total}%  Pass rate of exec:${pass_rate_of_exec}%" >> $sumfile
   fi
   echo "-------------------------------------------------------------------" >> $sumfile
-  # combine artifacts into single file for easier download
-  tar c --ignore-failed-read results* *.xml *.log | bzip2 -c9 > aft-results_${DEVICE}_${_IMG_NAME}_${TEST_SUITE_FILE}.tar.bz2
   set -e
 
   return ${AFT_EXIT_CODE}

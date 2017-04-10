@@ -152,7 +152,7 @@ try {
                                 // Here one tester adds it's summary piece to the global buffer.
                                 global_sum_log += readFile "results-summary-${test_device}.${img}.log"
                                 archiveArtifacts allowEmptyArchive: true,
-                                                 artifacts: '*.log, *.xml, aft-results*.tar.bz2'
+                                                 artifacts: '*.log, *.xml'
                             }
                             // without locking we may lose tester result set(s)
                             // if testers run xunit step in nearly same time
