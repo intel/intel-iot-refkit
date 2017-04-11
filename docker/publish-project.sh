@@ -98,10 +98,16 @@ if [ -d ${_DEPL}/testsuite ]; then
     create_remote_dirs ${_RSYNC_DEST} testsuite/${TARGET_MACHINE}
     rsync -av ${_DEPL}/testsuite/* ${_RSYNC_DEST}/testsuite/${TARGET_MACHINE}/
 fi
-# publish isafw reports
+# publish isafw reports and logs
 if [ -n "$(find ${_BRESULT}/log -maxdepth 1 -name 'isafw*' -print -quit)" ]; then
     create_remote_dirs ${_RSYNC_DEST} isafw/${TARGET_MACHINE}/
-    rsync -avz ${_BRESULT}/log/isafw-report*/* ${_RSYNC_DEST}/isafw/${TARGET_MACHINE}/ --exclude internal
+    if [ -n "$(find ${_BRESULT}/log -maxdepth 1 -name 'isafw-logs' -print -quit)" ]; then
+        rsync -avz ${_BRESULT}/log/isafw-logs/* ${_RSYNC_DEST}/isafw/${TARGET_MACHINE}/ --exclude internal
+    fi
+    # isafw reports are created in timestamp-named subdirs like isafw-report_20170409070145/
+    if [ -n "$(find ${_BRESULT}/log -maxdepth 1 -name 'isafw-report*' -print -quit)" ]; then
+        rsync -avz ${_BRESULT}/log/isafw-report*/* ${_RSYNC_DEST}/isafw/${TARGET_MACHINE}/ --exclude internal
+    fi
 fi
 
 LOG="$WORKSPACE/bitbake-${TARGET_MACHINE}-${CI_BUILD_ID}.log"
