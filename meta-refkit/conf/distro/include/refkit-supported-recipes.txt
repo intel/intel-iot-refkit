@@ -285,7 +285,6 @@ linux-yocto-rt@core
 linux-yocto@core
 lms8@intel
 log4cxx@ros-layer
-lowpan-tools@networking-layer
 lttng-ust@core
 lvm2@openembedded-layer
 m4@core
