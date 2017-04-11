@@ -50,15 +50,18 @@ REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 # pre/post-build oe-selftests started by CI builder, whitespace-separated.
 #
 REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
-REFKIT_CI_POSTBUILD_SELFTESTS=""
+REFKIT_CI_POSTBUILD_SELFTESTS="image-installer"
 #
 # Automated build targets
 # Those targets should be space separated list of items,
 # which must contain only alphanumeric symbols,'-' and '_'.
 # Any other symbols would be skipped in parser.
 #
-# Following targets would be used to perform default build task:
-REFKIT_CI_BUILD_TARGETS="refkit-image-minimal refkit-image-common refkit-image-computervision refkit-image-gateway"
+# Following targets would be used to perform default build task.
+# When adding new profile images, add them to refkit-installer-image.bb
+# and they will get pulled into the build indirectly.
+REFKIT_CI_BUILD_TARGETS="refkit-image-minimal refkit-installer-image swtpm-wrappers ovmf"
+
 # Following targets would be executed with do_populate_sdk task
 REFKIT_CI_SDK_TARGETS=""
 # Following targets would be executed with do_populate_sdk_ext task.
