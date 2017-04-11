@@ -342,11 +342,6 @@ procps@core
 protobuf@openembedded-layer
 ptest-runner@core
 pulseaudio@core
-python-dbus@core
-python-nose@core
-python-numpy@core
-python-pygobject@core
-python-setuptools@core
 python3-catkin-pkg@ros-layer
 python3-dbus@core
 python3-lxml@meta-python
