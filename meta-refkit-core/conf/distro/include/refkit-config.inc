@@ -155,3 +155,12 @@ SYSTEMD_AUTO_ENABLE_forcevariable_pn-trousers_refkit-config = "enable"
 # usbutils depends directly on libusb1, not the obsolete compatibility. This removes dependency on libusb-compat.
 DEPENDS_remove_pn-libgphoto2_refkit-config = "virtual/libusb0"
 DEPENDS_append_pn-libgphoto2_refkit-config = " libusb1"
+
+# remove readline dependency from nftables
+DEPENDS_remove_pn-nftables_refkit-config = "readline"
+EXTRA_OECONF_append_pn-nftables_refkit-config = " --without-cli"
+
+# make nftables require a settings package
+VIRTUAL-RUNTIME_nftables-settings ?= "nftables-settings-default"
+RDEPENDS_nftables_append_refkit-config = " ${VIRTUAL-RUNTIME_nftables-settings}"
+
