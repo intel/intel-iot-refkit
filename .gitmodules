@@ -1,7 +1,7 @@
 [submodule "openembedded-core"]
 	path = openembedded-core
-	url = http://git.openembedded.org/openembedded-core
-	branch = master
+	url = https://github.com/klihub/openembedded-core.git
+	branch = intel-iot-refkit/flatpak
 [submodule "bitbake"]
 	path = bitbake
 	url = http://git.openembedded.org/bitbake
@@ -32,3 +32,11 @@
 	path = meta-clang
 	url = https://github.com/kraj/meta-clang.git
 	branch = krogoth
+[submodule "meta-flatpak"]
+	path = meta-flatpak
+	url = https://github.com/klihub/meta-flatpak
+	branch = intel-iot-refkit/flatpak
+        ignore = untracked
+[submodule "meta-gplv2"]
+	path = meta-gplv2
+	url = https://git.yoctoproject.org/git/meta-gplv2

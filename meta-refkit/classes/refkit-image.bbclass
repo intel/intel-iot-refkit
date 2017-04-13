@@ -162,6 +162,9 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+                             'flatpak-image', '', d)}
+
 IMAGE_LINGUAS = " "
 
 LICENSE = "MIT"
