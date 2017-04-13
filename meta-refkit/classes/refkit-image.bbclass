@@ -178,6 +178,12 @@ refkit_root_authorized_keys () {
 # Do not create ISO images by default, only HDDIMG will be created (if it gets created at all).
 NOISO = "1"
 
+# Here we assume that the kernel has virtio support. We need to use a
+# strong assignment here to change the ?= default from qemuboot.bbclass.
+# The additional variable still allows changing the actual value.
+REFKIT_QB_DRIVE_TYPE = "/dev/vd"
+QB_DRIVE_TYPE = "${REFKIT_QB_DRIVE_TYPE}"
+
 inherit image_types_extra
 
 # Replace the default "live" (aka HDDIMG) images with whole-disk images
