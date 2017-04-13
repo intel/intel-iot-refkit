@@ -5,6 +5,7 @@ SECURITY_PIC_CFLAGS ?= "-fpic"
 
 # Add IoT Reference OS Kit specific flags to fix build issues with
 # recipes that are being used in IoT Reference OS Kit.
+SECURITY_CFLAGS_pn-efivar = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-zeromq = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-mraa = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-upm = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
