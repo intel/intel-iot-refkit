@@ -222,7 +222,9 @@ libidn@core
 libinput@core
 libjpeg-turbo@core
 libmicrohttpd@soletta
+libmnl@networking-layer
 libmpc@core
+libnftnl@networking-layer
 libnl@core
 libogg@core
 libpam@core
@@ -310,6 +312,8 @@ multipath-tools@openembedded-layer
 ncurses@core
 netbase@core
 nettle@core
+nftables-settings-default@refkit-core
+nftables@networking-layer
 nodejs@iotweb
 object-recognition-msgs@ros-layer
 ocl-icd@refkit-computervision
