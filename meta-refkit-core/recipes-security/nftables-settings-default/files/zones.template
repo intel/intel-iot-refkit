@@ -1,0 +1,43 @@
+#!/usr/sbin/nft
+
+# LOCAL zone -- loopback device and container virtual interfaces
+set ZONE_LOCAL {{
+    type iface_index
+    {local_interfaces}
+}}
+
+# LAN zone -- the internal network
+set ZONE_LAN {{
+    type iface_index
+    {lan_interfaces}
+}}
+
+# WAN zone -- typically the Internet
+set ZONE_WAN {{
+    type iface_index
+    {wan_interfaces}
+}}
+
+# DMZ zone -- for instance a wireless LAN interface if those are without
+# encryption or SSID password
+set ZONE_DMZ {{
+    type iface_index
+    {dmz_interfaces}
+}}
+
+# VPN zone -- virtual VPN interfaces. Since VPN interfaces come and go
+# dynamically, the interface indexes associated with interface names change.
+# Whenever a new VPN interface is brought up, the service doing it should add
+# the VPN interface to this set ("nft add element inet filter ZONE_VPN {{vpn0}}")
+# and remove it after it's gone ("nft delete ..."). This is not needed if the
+# dynamic loading of the firewall ruleset is enabled after any interface change.
+set ZONE_VPN {{
+    type iface_index
+    {vpn_interfaces}
+}}
+
+# ALL zone -- all network interfaces
+set ZONE_ALL {{
+    type iface_index
+    {all_interfaces}
+}}

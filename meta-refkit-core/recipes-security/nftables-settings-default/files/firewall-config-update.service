@@ -1,0 +1,9 @@
+[Unit]
+Description=Create firewall config if it doesn't exist
+After=firewall-zones-update.service
+Requires=firewall-zones-update.service
+ConditionPathExists=!/run/firewall/firewall.ruleset
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/firewall-update.py
