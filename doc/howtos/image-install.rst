@@ -86,3 +86,58 @@ includes a checksum verification, you can also use the traditional :command:`dd`
 
 Unplug the removable media from your development system and you're ready to plug
 it into your target system.
+
+Installing to internal Media
+============================
+
+With the approach above, the OS always boots from the removable
+media. To install the OS to the internal media, one can:
+
+#. build the ``refkit-installer-image``
+
+#. install that to a removable medium
+
+#. boot from that
+
+#. then install to internal media: once booted into the
+   installer image, enter :command:`image-installer` at a shell prompt
+   and follow the instructions.
+
+Installing directly to internal media without the installer image is
+hardware-specific and not supported at the moment. The advantage of
+the installer image approach is that installation can use the main CPU
+and local hardware like a TPM chip to enable per-machine encryption.
+
+By default, the installer image contains different images that can be
+installed, as configured by the ``INSTALLER_SOURCE_IMAGES`` variable.
+It uses ``dm-verity`` to ensure that the installer image did not get
+corrupted while writing it to the removable media. When the target
+hardware has a TPM 1.2 chip, installation takes over ownership of that
+chip and uses it to encrypt the installed rootfs.
+
+All of this is configurable at build time via ``DISTRO_FEATURES`` and
+``IMAGE_FEATURES``. In addition, the installer script also checks
+environment variables. Developers can find more information about that
+in the source code:
+
+* :file:`meta-refkit/classes/image-installer.bbclass`
+
+* :file:`meta-refkit/recipes-image/images/refkit-installer-image.bb`
+
+The existing :file:`refkit-installer-image.bb` is just an example. The
+expected usage in production is that a custom installer image will
+be created which automatically installs the OS.
+
+There are also example scripts under ``doc/howtos/image-installer``
+that show how to do installation with a TPM in a QEMU virtual
+machine. On a build host, create a build environment for building
+without Docker as explained in the :file:`README.rst`, then enter::
+
+  $ export PATH=<path to intel-iot-refkit>/doc/howtos/image-installer:$PATH
+  $ bitbake refkit-installer-image ovmf swtpm-wrappers
+  $ init-tpm
+  $ runqemu-install # boots into shell prompt, there enter:
+     # image-installer
+     # reboot
+  $ runqemu-internal-disk
+

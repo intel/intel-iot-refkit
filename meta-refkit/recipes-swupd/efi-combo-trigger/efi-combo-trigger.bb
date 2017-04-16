@@ -1,6 +1,7 @@
 DESCRIPTION = "swupd plugin for updating the kernel+initramfs combo in the EFI system partition"
 PV = "1.0"
 LICENSE = "MIT"
+DEPENDS = "glib-2.0"
 
 SRC_URI = " \
     file://efi_combo_updater.c \
@@ -8,7 +9,7 @@ SRC_URI = " \
 "
 LIC_FILES_CHKSUM = "file://${WORKDIR}/efi_combo_updater.c;beginline=6;endline=6;md5=91a396ce9e1d88ba05f7f61134351413"
 
-inherit systemd
+inherit systemd pkgconfig
 
 RDEPENDS_${PN} += "gptfdisk"
 

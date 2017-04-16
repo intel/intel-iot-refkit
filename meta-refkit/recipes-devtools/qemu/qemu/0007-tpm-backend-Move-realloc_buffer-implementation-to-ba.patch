@@ -1,0 +1,71 @@
+From 81cdfb1348a751d08b13f86af554f1a2935614d1 Mon Sep 17 00:00:00 2001
+From: Amarnath Valluri <amarnath.valluri@intel.com>
+Date: Fri, 7 Apr 2017 17:30:29 +0300
+Subject: [PATCH 7/9] tpm-backend: Move realloc_buffer() implementation to base
+ class
+
+Provide base implementation of realloc_buffer(), so that backend implementations
+can resue.
+
+Signed-off-by: Amarnath Valluri <amarnath.valluri@intel.com>
+Upstream-Status: Submitted [http://lists.nongnu.org/archive/html/qemu-devel/2017-04/msg01278.html]
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ backends/tpm.c           |  9 ++++++++-
+ hw/tpm/tpm_passthrough.c | 12 ------------
+ 2 files changed, 8 insertions(+), 13 deletions(-)
+
+diff --git a/backends/tpm.c b/backends/tpm.c
+index 3493df6e..0da73e6c 100644
+--- a/backends/tpm.c
++++ b/backends/tpm.c
+@@ -88,8 +88,15 @@ bool tpm_backend_had_startup_error(TPMBackend *s)
+ size_t tpm_backend_realloc_buffer(TPMBackend *s, TPMSizedBuffer *sb)
+ {
+     TPMBackendClass *k = TPM_BACKEND_GET_CLASS(s);
++    if (!k->ops->realloc_buffer) {
++        size_t wanted_size = 4096; /* Linux tpm.c buffer size */
+ 
+-    assert(k->ops->realloc_buffer);
++        if (sb->size != wanted_size) {
++            sb->buffer = g_realloc(sb->buffer, wanted_size);
++            sb->size = wanted_size;
++        }
++        return sb->size;
++    }
+ 
+     return k->ops->realloc_buffer(sb);
+ }
+diff --git a/hw/tpm/tpm_passthrough.c b/hw/tpm/tpm_passthrough.c
+index 8e11ed3a..1bffb6da 100644
+--- a/hw/tpm/tpm_passthrough.c
++++ b/hw/tpm/tpm_passthrough.c
+@@ -258,17 +258,6 @@ static bool tpm_passthrough_get_startup_error(TPMBackend *tb)
+     return tpm_pt->had_startup_error;
+ }
+ 
+-static size_t tpm_passthrough_realloc_buffer(TPMSizedBuffer *sb)
+-{
+-    size_t wanted_size = 4096; /* Linux tpm.c buffer size */
+-
+-    if (sb->size != wanted_size) {
+-        sb->buffer = g_realloc(sb->buffer, wanted_size);
+-        sb->size = wanted_size;
+-    }
+-    return sb->size;
+-}
+-
+ static void tpm_passthrough_cancel_cmd(TPMBackend *tb)
+ {
+     TPMPassthruState *tpm_pt = TPM_PASSTHROUGH(tb);
+@@ -470,7 +459,6 @@ static const TPMDriverOps tpm_passthrough_driver = {
+     .opts                     = tpm_passthrough_cmdline_opts,
+     .desc                     = tpm_passthrough_create_desc,
+     .create                   = tpm_passthrough_create,
+-    .realloc_buffer           = tpm_passthrough_realloc_buffer,
+     .reset                    = tpm_passthrough_reset,
+     .had_startup_error        = tpm_passthrough_get_startup_error,
+     .cancel_cmd               = tpm_passthrough_cancel_cmd,
+-- 
+2.11.0
+

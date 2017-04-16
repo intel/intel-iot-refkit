@@ -66,7 +66,7 @@ try {
                     build_docker_image(image_name)
                 }
                 def docker_image = docker.image(image_name)
-                run_args = ["-v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
+                run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
                 // Add specifics of this build to build.env
                 def script_env_local = """
