@@ -50,6 +50,9 @@ QEMU_USE_KVM = "${@ 'intel-corei7-64 intel-core2-32 qemux86 qemux86-64' if os.ac
 # Enable flatpak application support.
 require conf/distro/include/flatpak-applications.inc
 
+# Enable ostree update support.
+require conf/distro/include/ostree.inc
+
 REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 
 #
@@ -86,6 +89,14 @@ REFKIT_CI_FLATPAK_SDK_TARGETS = " \
   ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
      'refkit-image-minimal', '', d)} \
 "
+# We'll automatically enable ostree update support for the following
+# targets if ostree support is enabled (by commenting out the corres-
+# ponding require above).
+REFKIT_CI_OSTREE_UPDATE_TARGETS = " \
+  ${@bb.utils.contains('DISTRO_FEATURES', 'ostree', \
+     'refkit-image-minimal', '', d)} \
+"
+
 # Following targets would be executed with do_test_iot_export task
 REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway"
 # Execute automatic tests for following images with corresponding
