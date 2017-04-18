@@ -36,11 +36,10 @@ class IOtvtIntegration(oeRuntimeTest):
         # Setup firewall accept for multicast
         (status, output) = cls.tc.target.run("cat /proc/sys/net/ipv4/ip_local_port_range")
         port_range = output.split()
-        cls.tc.target.run("/usr/sbin/iptables -w -A INPUT -p udp --dport 5683 -j ACCEPT")
-        cls.tc.target.run("/usr/sbin/iptables -w -A INPUT -p udp --dport 5684 -j ACCEPT")
-        cls.tc.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport 5683 -j ACCEPT")
-        cls.tc.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport 5684 -j ACCEPT")
-        cls.tc.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport %s:%s -j ACCEPT" % (port_range[0], port_range[1]))
+
+        cls.tc.target.run("/usr/sbin/nft add chain inet filter iotivity { type filter hook input priority 0\; }")
+        cls.tc.target.run("/usr/sbin/nft add rule inet filter iotivity udp dport {5683, 5684} mark set 1")
+        cls.tc.target.run("/usr/sbin/nft add rule inet filter iotivity ip6 saddr fe80::/10 udp dport {5683, 5684, %s-%s} mark set 1" % (port_range[0], port_range[1]))
 
     @classmethod
     def tearDownClass(cls):

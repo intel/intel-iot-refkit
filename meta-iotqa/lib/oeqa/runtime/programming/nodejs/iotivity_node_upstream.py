@@ -207,11 +207,9 @@ class IotivitynodeRuntimeTest(oeRuntimeTest):
         # Set firewall rules
         (status, output) = self.target.run("cat /proc/sys/net/ipv4/ip_local_port_range")
         port_range = output.split()
-        self.target.run("/usr/sbin/iptables -w -A INPUT -p udp --dport 5683 -j ACCEPT")
-        self.target.run("/usr/sbin/iptables -w -A INPUT -p udp --dport 5684 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport 5683 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport 5684 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport %s:%s -j ACCEPT" % (port_range[0], port_range[1]))
+        self.target.run("/usr/sbin/nft add chain inet filter iotivity { type filter hook input priority 0\; }")
+        self.target.run("/usr/sbin/nft add rule inet filter iotivity udp dport {5683, 5684} mark set 1")
+        self.target.run("/usr/sbin/nft add rule inet filter iotivity ip6 saddr fe80::/10 udp dport {5683, 5684, %s-%s} mark set 1" % (port_range[0], port_range[1]))
 
 
     def test_apprt_iotivitynode(self):
@@ -261,13 +259,9 @@ class IotivitynodeRuntimeTest(oeRuntimeTest):
         @fn tearDown
         @param self
         '''
-        (status, output) = self.target.run("cat /proc/sys/net/ipv4/ip_local_port_range")
-        port_range = output.split()
-        self.target.run("/usr/sbin/iptables -w -D INPUT -p udp --dport 5683 -j ACCEPT")
-        self.target.run("/usr/sbin/iptables -w -D INPUT -p udp --dport 5684 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -D INPUT -s fe80::/10 -p udp -m udp --dport 5683 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -D INPUT -s fe80::/10 -p udp -m udp --dport 5684 -j ACCEPT")
-        self.target.run("/usr/sbin/ip6tables -w -D INPUT -s fe80::/10 -p udp -m udp --dport %s:%s -j ACCEPT" % (port_range[0], port_range[1]))
+
+        self.target.run("/usr/sbin/nft flush chain inet filter iotivity")
+        self.target.run("/usr/sbin/nft delete chain inet filter iotivity")
         sys.stdout.write("\nClean test files in device, eg: tests grunt-build")
         sys.stdout.flush()
         self.target_path = '/usr/lib/node_modules/iotivity-node/'
@@ -295,4 +289,3 @@ class IotivitynodeRuntimeTest(oeRuntimeTest):
 # @}
 # @}
 ##
-
