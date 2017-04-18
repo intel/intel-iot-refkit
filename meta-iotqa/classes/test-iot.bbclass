@@ -27,10 +27,10 @@ inherit testimage
 DEPLOY_DIR_TESTSUITE ?= "${DEPLOY_DIR}/testsuite/${IMAGE_BASENAME}"
 
 # Extra target binaries not installed in the target image, required for image testing.
-IOTQA_TESTIMAGEDEPENDS += "mraa-test read-map shm-util gdb upm-test"
+IOTQA_TESTIMAGEDEPENDS += "mraa-test read-map shm-util upm-test"
 
 # When added to the task dependencies below, they get build before running those tasks.
-IOTQA_TASK_DEPENDS = "${@ ' '.join([x + ':do_build' for x in '${IOTQA_TESTIMAGEDEPENDS}'.split()])}"
+IOTQA_TASK_DEPENDS = "${@ ' '.join([x + ':do_deploy_files' for x in '${IOTQA_TESTIMAGEDEPENDS}'.split()])}"
 
 # When added to TESTIMAGEDEPENDS, they get built also if running do_testimage
 # (see testimage.bbclass) but not when merely building an image.
@@ -104,7 +104,6 @@ python do_test_iot() {
 }
 
 addtask test_iot
-do_test_iot[depends] += "${IOTQA_TASK_DEPENDS} ${PN}:do_build"
 do_test_iot[lockfiles] += "${TESTIMAGELOCK}"
 
 #overwrite copy src dir to dest
@@ -277,6 +276,6 @@ python do_test_iot_export() {
     bb.plain("export test files to ", fname)
 }
 
-addtask test_iot_export
-do_test_iot_export[depends] += "${IOTQA_TASK_DEPENDS} ${PN}:do_build"
+addtask do_test_iot_export after do_image_complete
+do_test_iot_export[depends] += "${IOTQA_TASK_DEPENDS}"
 do_test_iot_export[lockfiles] += "${TESTIMAGELOCK}"
