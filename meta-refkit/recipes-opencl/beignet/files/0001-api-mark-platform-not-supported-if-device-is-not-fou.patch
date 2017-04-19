@@ -1,4 +1,4 @@
-From 0038afdcd8b80b22f58aa0cd2a4154802f715195 Mon Sep 17 00:00:00 2001
+From e7b7f468df7c73187dcf30e02137a70ed3fe44f2 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Mon, 20 Feb 2017 23:21:48 +0200
 Subject: [PATCH] api: mark platform not supported if device is not found.
