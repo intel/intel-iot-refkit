@@ -39,16 +39,6 @@ class RunqemuTests(oeSelfTest):
         self.ovmf_recipe = 'ovmf'
         self.cmd_common = "runqemu ovmf wic slirp nographic serial"
 
-        # Avoid emit the same record multiple times.
-        mainlogger = logging.getLogger("BitBake.Main")
-        mainlogger.propagate = False
-
-        self.write_config(
-"""
-# 10 means 1 second
-SYSLINUX_TIMEOUT = "10"
-""")
-
         if not RunqemuTests.image_is_ready:
             RunqemuTests.deploy_dir_image = get_bb_var('DEPLOY_DIR_IMAGE')
             bitbake(self.refkit_recipe)
