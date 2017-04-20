@@ -16,7 +16,7 @@ SRCREV = "8b04f0be372da8eabdc93d6ae1b81a3c83cba284"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right
-DEPENDS = "${PN}-native clang libdrm mesa ocl-icd"
+DEPENDS = "${PN}-native clang libdrm mesa ocl-icd ncurses"
 DEPENDS_class-native = "clang-native"
 
 # To solve the PCI_ID problem, we use the target from filename for
