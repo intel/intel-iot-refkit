@@ -169,8 +169,23 @@ to not leak it during a runtime attack. In addition, the kernel must
 prevent an attacker from modifying files at runtime, because such
 changes cannot be detected during the next boot.
 
-Secure Boot
-===========
+UEFI Secure Boot
+================
+
+.. note::
+
+This section talks about UEFI signing keys. If the reader is not familiar
+with the keys involved in UEFI Secure Boot, a good blog post about the meaning
+of all UEFI keys can be found in `UEFI Keys`_.
+
+.. _UEFI Keys: https://blog.hansenpartnership.com/the-meaning-of-all-the-uefi-keys/
+
+.. note::
+
+UEFI Secure Boot in Refkit assumes the device is not locked by Microsoft
+(PK/)KEK keys but the users are allowed to enable secure boot with their
+own PK/KEK/DB keys. Also, for the same reason, the ``shim`` UEFI Secure Boot
+approach used in many Linux distributions is not implemented.
 
 The approach taken in images derived from :file:`refkit-image.bbclass`
 is to build a single UEFI application, the so called "UEFI combo
@@ -191,7 +206,36 @@ This UEFI combo application gets loaded directly by the firmware,
 without any intermediate boot loader involved. This approach is fast,
 simple and can be secured by signing the UEFI combo application.
 
-That signing currently has to be done manually as described in the
-`Ostro(TM) OS Secure Boot`_ documentation.
+Signing
+-------
 
-.. _Ostro(TM) OS Secure Boot: https://ostroproject.org/documentation/howtos/uefi-secure-boot.html
+The signing of the UEFI combo application can be enabled by setting
+``secureboot`` image feature for the image/profile that runs on a device
+that has UEFI Secure Boot enabled.
+
+After that, the signing is part of the image build process and the UEFI
+combo application is automatically signed using `sbsigntool`_. If the
+build mode is a development build, the signing uses untrusted/self-signed
+signing certificates provided in ``meta-refkit/files/secureboot/``.
+
+For a final product (in production mode) proper signing keys need to be set.
+This is explained in the example below.
+
+.. _sbsigntool: https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git
+
+Example
+-------
+
+To enable UEFI Secure Boot signing globally for all profiles, set:
+
+``REFKIT_IMAGE_EXTRA_FEATURES += "secureboot"``
+
+in ``conf/local.conf``. To use a custom DB key, additionally set:
+
+``REFKIT_DB_KEY``
+``REFKIT_DB_CERT``
+
+The signing tool uses a 2048bit RSA private key (``REFKIT_DB_KEY``) and a
+PEM formatted X.509 signature (``REFKIT_DB_CERT``). When deploying the DB
+keys on the device, use the DER formatted X.509. See ``meta-refkit/files/secureboot/gen-keys-helper.sh`` for more details on how the test keys can be created.
+
