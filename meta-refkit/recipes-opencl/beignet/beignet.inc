@@ -12,7 +12,7 @@ BBCLASSEXTEND = "native"
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
 PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "8b04f0be372da8eabdc93d6ae1b81a3c83cba284"
+SRCREV = "beaf26ff429bd8660d2103fb682243efeb828ab1"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right

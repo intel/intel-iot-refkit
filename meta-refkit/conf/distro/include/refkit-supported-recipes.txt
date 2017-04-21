@@ -59,6 +59,7 @@ cairo@core
 cantarell-fonts@core
 chrpath@core
 clang@clang-layer
+compiler-rt@clang-layer
 connman-conf@core
 connman@core
 coreutils@core
@@ -155,6 +156,8 @@ libatomic-ops@core
 libcap@core
 libcgroup@core
 libcheck@core
+libcxx@clang-layer
+libcxxabi@clang-layer
 libdrm@core
 libeigen@openembedded-layer
 liberation-fonts@core
@@ -278,9 +281,9 @@ systemd@core
 taglib@core
 tbb@openembedded-layer
 tcp-smack-test@security-smack
+thermald@intel
 thin-provisioning-tools@openembedded-layer
 tiff@core
-thermald@intel
 tpm-tools@security
 tremor@core
 trousers@security
