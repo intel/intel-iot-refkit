@@ -1,7 +1,7 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/qemu:"
 
 # Replace CUSE backend with socket backend.
-SRC_URI_remove_pn-qemu-native = " \
+SRC_URI_remove = " \
     file://0001-Provide-support-for-the-CUSE-TPM.patch \
     file://0002-Introduce-condition-to-notify-waiters-of-completed-c.patch \
     file://0003-Introduce-condition-in-TPM-backend-for-notification.patch \
