@@ -202,9 +202,9 @@ def gather_sources(d):
 def dump_sources(d):
     pn = d.getVar('PN', True)
     # We need to distinguish between different multiconfigs. Below we get pn with
-    # multiconfig prefix, so do the same here.
+    # multiconfig prefix if it is not 'default', so do the same here.
     mc = d.getVar('BB_CURRENT_MC', True)
-    if mc:
+    if mc and mc != 'default':
         pn = 'multiconfig:%s:%s' % (mc, pn)
     filename = d.getVar('FILE', True)
     rows = gather_sources(d)
