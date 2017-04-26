@@ -92,6 +92,7 @@ try {
                     }
                 } // docker_image
                 tester_script = readFile "docker/tester-exec.sh"
+                qemu_script = readFile "docker/run-qemu.exp"
                 testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
                 if ( !is_pr ) {
                     ci_git_commit = readFile("ci_git_commit").trim()
@@ -119,6 +120,7 @@ try {
                     deleteDir() // clean workspace
                     echo "Testing test_${test_device} with image_info: ${one_target_testinfo}"
                     writeFile file: 'tester-exec.sh', text: tester_script
+                    writeFile file: 'run-qemu.exp', text: qemu_script
                     // append newline so that tester-exec.sh can parse it using "read"
                     one_target_testinfo += "\n"
                     // create testinfo.csv on this tester describing one image
@@ -127,7 +129,7 @@ try {
                         withEnv(["CI_BUILD_ID=${ci_build_id}",
                             "MACHINE=${test_machine}",
                             "TEST_DEVICE=${test_device}" ]) {
-                                sh 'chmod a+x tester-exec.sh && ./tester-exec.sh'
+                                sh 'chmod a+x tester-exec.sh run-qemu.exp && ./tester-exec.sh'
                         }
                     } catch (Exception e) {
                         throw e

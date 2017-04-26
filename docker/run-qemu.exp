@@ -1,0 +1,18 @@
+#!/usr/bin/expect
+set SSH_KEY [read [open "~/.ssh/id_rsa.pub" r]]
+set PORT1 [lindex $argv 0]
+set PORT2 [lindex $argv 1]
+set QEMU_MAC [lindex $argv 2]
+set FILENAME [lindex $argv 3]
+
+spawn qemu-system-x86_64 -device virtio-net-pci,netdev=net0,mac=$QEMU_MAC \
+-netdev user,id=net0,hostfwd=tcp::$PORT1-:22,hostfwd=tcp::$PORT2-:23 \
+-drive if=virtio,file=$FILENAME,format=raw -no-reboot -vga vmware \
+-device virtio-rng-pci -drive if=pflash,format=qcow2,file=ovmf.qcow2 \
+-vga std -cpu kvm64 -enable-kvm -m 256 -serial mon:stdio --nographic
+
+set timeout 60
+expect "root@intel-corei7-64:~#"
+send "echo -e '$SSH_KEY' > /home/root/.ssh/authorized_keys\r"
+# Sleep or this script and QEMU will exit and tests can't be run
+sleep 600

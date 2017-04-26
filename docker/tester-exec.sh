@@ -15,6 +15,50 @@
 
 # This script relies on workspace which is cleaned via jenkins method
 
+# function to test an image with QEMU, call point in testimg() function
+test_qemu() {
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/ovmf.qcow2
+
+  # Make port numbers and mac address that won't collide with anything
+  PID=$$
+  RAND_PORT=$((PID%5000)) # Make a number between 0-4999
+  UNIQUE_MAC=$((100000+(PID%900000))) # Make a number with 6 digits
+  PORT1=$((10000+RAND_PORT))
+  PORT2=$((15000+RAND_PORT))
+  while netstat -tna | grep $PORT1 > /dev/null; do
+    ((PORT1++))
+  done
+  while netstat -tna | grep $PORT2 > /dev/null; do
+    ((PORT2++))
+  done
+  QEMU_MAC=52:54:00:${UNIQUE_MAC:0:2}:${UNIQUE_MAC:2:2}:${UNIQUE_MAC:4:2}
+
+  nohup ./run-qemu.exp $PORT1 $PORT2 $QEMU_MAC $FILENAME &>run_qemu.log &
+  QEMU_PID=$!
+
+  # Test when QEMU has booted and added SSH key
+  ssh_exit_code=1
+  ssh_retry=0
+  while [ ! "$ssh_exit_code" = 0 ]; do
+    if [ "$ssh_retry" = 30 ]; then
+      TEST_EXIT_CODE=1
+      return 1
+    fi
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+    -o BatchMode=yes root@127.0.0.1 -p $PORT1 ls
+    ssh_exit_code=$?
+    ((ssh_retry++))
+    sleep 2
+  done
+
+  python iottest/runtest.py \
+  -f iottest/testplan/image-testplan.manifest \
+  -m intel-corei7-64 -t 127.0.0.1:$PORT1 -s 10.0.2.2 --xunit .
+
+  TEST_EXIT_CODE=$?
+  kill $QEMU_PID
+}
+
 # function to test one image, see call point below.
 testimg() {
   declare -i num_masked=0 num_total=0 num_skipped=0 num_na=0 num_failed=0 num_error=0
@@ -65,10 +109,14 @@ testimg() {
   grep -Fvxf ${MASKFILE} ${MANIFEST} > tmp && mv tmp ${MANIFEST}
 
   # Execute with +e to make sure that possibly created log files get
-  # renamed, archived, published even when AFT or some of renaming fails
+  # renamed, archived, published even when DAFT, QEMU or some of renaming fails
   set +e
-  daft ${DEVICE} ${FILENAME} --record
-  AFT_EXIT_CODE=$?
+  if [ "${DEVICE}" = "qemu" ]; then
+    test_qemu
+  else
+    daft ${DEVICE} ${FILENAME} --record
+    TEST_EXIT_CODE=$?
+  fi
 
   # delete symlinks, these point outside of local set and are useless
   find . -type l -print -delete
@@ -105,7 +153,7 @@ testimg() {
   echo "-------------------------------------------------------------------" >> $sumfile
   set -e
 
-  return ${AFT_EXIT_CODE}
+  return ${TEST_EXIT_CODE}
 }
 
 # Start, document env.vars in build log
