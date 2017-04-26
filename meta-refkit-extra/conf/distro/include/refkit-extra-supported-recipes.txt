@@ -1,0 +1,12 @@
+caffe@refkit-extra
+hdf5@refkit-extra
+leveldb@openembedded-layer
+lmdb@refkit-extra
+openblas@refkit-extra
+python3-imageio@refkit-extra
+python3-pillow@refkit-extra
+python3-protobuf@refkit-extra
+python3-pycparser@meta-python
+python3-pyrealsense@refkit-extra
+python3-six@core
+snappy@refkit-extra
