@@ -200,8 +200,10 @@ libxml2@core
 libxslt@core
 linux-firmware@core
 linux-intel@intel
+linux-intel-rt@intel
 linux-libc-headers@core
 linux-yocto@core
+linux-yocto-rt@core
 lms8@intel
 lowpan-tools@networking-layer
 lttng-ust@core
