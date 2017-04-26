@@ -16,18 +16,6 @@
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
 def target_machine = "intel-corei7-64"
-def test_devices = [ "570x", "minnowboardturbot" ]
-
-// mapping [HW_target:build_MACHINE]
-// for tester job to select which MACHINE img to test.
-// note: I'd like to define just one map structure
-// combining info that is now in test_devices[]  and mapping[],
-// but pipeline seems to have no support yet
-// for iterating cleanly over map keys.
-def mapping = [
-  '570x' : 'intel-corei7-64',
-  'minnowboardturbot' : 'intel-corei7-64'
-]
 
 // JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
@@ -104,6 +92,7 @@ try {
                     }
                 } // docker_image
                 tester_script = readFile "docker/tester-exec.sh"
+                qemu_script = readFile "docker/run-qemu.exp"
                 testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
                 if ( !is_pr ) {
                     ci_git_commit = readFile("ci_git_commit").trim()
@@ -117,52 +106,47 @@ try {
 
     // find out combined size of all testinfo files
     testinfo_sumz += testinfo_data["${target_machine}"].length()
+    test_targets = testinfo_data["${target_machine}"].split("\n")
     // skip tester parts if no tests configured
     if ( testinfo_sumz > 0 ) {
         def test_runs = [:]
-        for(int i = 0; i < test_devices.size(); i++) {
-            def test_device = test_devices[i]
-            // only if built for machine that this tester wants
-            if ( target_machine == mapping["${test_device}"] ) {
-                // testinfo_data may contain multiple lines stating different images
-                String[] separated_testinfo = testinfo_data["${target_machine}"].split("\n")
-                for (int m = 0; m < separated_testinfo.length; m++) {
-                    def one_image_testinfo = separated_testinfo[m]
-                    echo "Image #${m} to be tested on test_${test_device} info: ${separated_testinfo[m]}"
-                    test_runs["test_${m}_${test_device}"] = {
-                        node('refkit-tester') {
-                            deleteDir() // clean workspace
-                            echo "Testing test_${test_device} with image_info: ${one_image_testinfo}"
-                            writeFile file: 'tester-exec.sh', text: tester_script
-                            // append newline so that tester-exec.sh can parse it using "read"
-                            one_image_testinfo += "\n"
-                            // create testinfo.csv on this tester describing one image
-                            writeFile file: "testinfo.csv", text: one_image_testinfo
-                            def img = one_image_testinfo.split(",")[0]
-                            try {
-                                withEnv(["CI_BUILD_ID=${ci_build_id}",
-                                    "MACHINE=${mapping["${test_device}"]}",
-                                    "TEST_DEVICE=${test_device}" ]) {
-                                        sh 'chmod a+x tester-exec.sh && ./tester-exec.sh'
-                                }
-                            } catch (Exception e) {
-                                throw e
-                            } finally {
-                                // read tests summary prepared by tester-exec.sh
-                                // Here one tester adds it's summary piece to the global buffer.
-                                global_sum_log += readFile "results-summary-${test_device}.${img}.log"
-                                archiveArtifacts allowEmptyArchive: true,
-                                                 artifacts: '*.log, *.xml'
-                            }
-                            // without locking we may lose tester result set(s)
-                            // if testers run xunit step in nearly same time
-                            lock(resource: "step-xunit") {
-                                step_xunit()
-                            }
-                        } // node
-                    } // test_runs =
-                } // for
-            } // if target_machine == mapping
+        for(int i = 0; i < test_targets.size(); i++) {
+            def one_target_testinfo = test_targets[i]
+            def test_device = one_target_testinfo.split(',')[4]
+            def test_machine = one_target_testinfo.split(',')[3]
+            def img = one_target_testinfo.split(",")[0]
+            test_runs["test_${i}_${test_device}"] = {
+                node('refkit-tester') {
+                    deleteDir() // clean workspace
+                    echo "Testing test_${test_device} with image_info: ${one_target_testinfo}"
+                    writeFile file: 'tester-exec.sh', text: tester_script
+                    writeFile file: 'run-qemu.exp', text: qemu_script
+                    // append newline so that tester-exec.sh can parse it using "read"
+                    one_target_testinfo += "\n"
+                    // create testinfo.csv on this tester describing one image
+                    writeFile file: "testinfo.csv", text: one_target_testinfo
+                    try {
+                        withEnv(["CI_BUILD_ID=${ci_build_id}",
+                            "MACHINE=${test_machine}",
+                            "TEST_DEVICE=${test_device}" ]) {
+                                sh 'chmod a+x tester-exec.sh run-qemu.exp && ./tester-exec.sh'
+                        }
+                    } catch (Exception e) {
+                        throw e
+                    } finally {
+                        // read tests summary prepared by tester-exec.sh
+                        // Here one tester adds it's summary piece to the global buffer.
+                        global_sum_log += readFile "results-summary-${test_device}.${img}.log"
+                        archiveArtifacts allowEmptyArchive: true,
+                                         artifacts: '*.log, *.xml'
+                    }
+                    // without locking we may lose tester result set(s)
+                    // if testers run xunit step in nearly same time
+                    lock(resource: "step-xunit") {
+                        step_xunit()
+                    }
+                } // node
+            } // test_runs =
         } // for i
         stage('Parallel test run') {
             set_gh_status_pending(is_pr, 'Testing')
