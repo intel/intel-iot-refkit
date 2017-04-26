@@ -117,7 +117,7 @@ TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/testsuite/${MACHINE}
 
 # get necessary params from testinfo.csv file written to tester workspace
 # by code in Jenkinsfile. We have just one line for this tester session.
-while IFS=, read _img _tsuite _tdata _mach
+while IFS=, read _img _tsuite _tdata _mach _dev
 do
   [ "${_mach}" = "${MACHINE}" ] && testimg ${_img} ${_tsuite} ${_tdata}
 done < testinfo.csv

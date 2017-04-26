@@ -26,7 +26,7 @@ ISAFW_LA_PLUGIN_IMAGE_WHITELIST = "refkit-image-minimal refkit-initramfs"
 # image files are not needed for that.
 IMAGE_FSTYPES_pn-refkit-image-minimal = ""
 REFKIT_VM_IMAGE_TYPES_pn-refkit-image-minimal = ""
- 
+
 # Test data generation:
 INHERIT += "test-iot"
 TEST_EXPORT_DIR = "iottest"
@@ -74,13 +74,16 @@ REFKIT_CI_ESDK_TARGETS=""
 # Following targets would be executed with do_test_iot_export task
 REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway"
 # Execute automatic tests for following images with corresponding
-# test suite and test files.
+# test suite, test files and devices.
 # Space separated list of tuples, each should in format:
-# <image_name>,<testsuite_name>,<testfiles_name>,$MACHINE
+# <image_name>,<testsuite_name>,<testfiles_name>,$MACHINE,<test_device_name>
 REFKIT_CI_TEST_RUNS=" \
-  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
-  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
-  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE} \
+  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
 "
 
 # Dont use disk space monitor in CI builds, to avoid frequent
