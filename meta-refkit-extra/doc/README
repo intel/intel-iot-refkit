@@ -1,0 +1,10 @@
+This a layer for demos and other things which are built on top of
+Refkit. Do not add dependencies from meta-refkit to this layer.
+
+To enable this layer, enter:
+
+   $ bitbake-layers add-layer meta-refkit-extra
+
+Then add to your local.conf of distribution config this line:
+
+   require conf/distro/include/refkit-extra.conf
