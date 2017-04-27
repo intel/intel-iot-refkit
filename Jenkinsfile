@@ -26,6 +26,10 @@ def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
 def added_commits = ""
+def builder_node = ""
+def builder_wspace = ""
+// reasonable value: keep few recent, dont take risk to fill disk
+int num_build_dirs_to_keep = 4
 
 // Define global environment common for all docker sessions
 def script_env_global = """
@@ -43,6 +47,9 @@ try {
     timestamps {
         node('rk-docker') {
             ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+                // remember node and workspace needed by workspace cleaner
+                builder_node = "${env.NODE_NAME}"
+                builder_wspace = "${env.WORKSPACE}"
                 set_gh_status_pending(is_pr, 'Prepare for build')
                 stage('Cleanup workspace') {
                     deleteDir()
@@ -101,8 +108,22 @@ try {
                     added_commits = readFile("added_commits")
                 }
             } // ws
+            // rotate workspace out of way, rename using CI_BUILD_ID.
+            // Older trees are deleted later in test_runs[], without keeping build waiting.
+            ws("workspace") {
+                sh "mv ${builder_wspace} ${builder_wspace}.ci-prev.${ci_build_id}"
+            }
         } // node
     } // timestamps
+
+    // insert older trees deletion job into tester jobs array
+    test_runs["clean_older_workspaces"] = {
+        node(builder_node) {
+            ws("workspace") {
+                trim_build_dirs(num_build_dirs_to_keep)
+            }
+        }
+    }
 
     test_targets = testinfo_data["${target_machine}"].split("\n")
     for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
@@ -282,4 +303,17 @@ def step_xunit() {
             pattern: 'TEST-*.xml',
             skipNoTestFiles: false,
             stopProcessingIfError: true]]])
+}
+
+// Delete older builder trees.
+// While majority/regular workspaces are named builder-slot-0, (for EXECUTOR=0),
+// Jenkins may create additional trees as builder-slot-0_X.
+// Wildcard covers all such workspaces, dont want some pattern filling disk independently.
+def trim_build_dirs(num_to_keep) {
+    sh """
+dirs=`find ${env.WORKSPACE} -mindepth 1 -maxdepth 1 -type d -name "builder-slot-*.ci-prev.*" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
+if [ -n "\${dirs}" ]; then
+    ionice -c 3 rm -fr \$dirs
+fi
+"""
 }
