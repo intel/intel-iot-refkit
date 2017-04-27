@@ -105,54 +105,54 @@ try {
     } // timestamps
 
     test_targets = testinfo_data["${target_machine}"].split("\n")
-        for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
-            def one_target_testinfo = test_targets[i]
-            def test_device = one_target_testinfo.split(',')[4]
-            def test_machine = one_target_testinfo.split(',')[3]
-            def img = one_target_testinfo.split(",")[0]
-            test_runs["test_${i}_${test_device}"] = {
-                node('refkit-tester') {
-                    deleteDir() // clean workspace
-                    echo "Testing test_${test_device} with image_info: ${one_target_testinfo}"
-                    writeFile file: 'tester-exec.sh', text: tester_script
-                    writeFile file: 'run-qemu.exp', text: qemu_script
-                    // append newline so that tester-exec.sh can parse it using "read"
-                    one_target_testinfo += "\n"
-                    // create testinfo.csv on this tester describing one image
-                    writeFile file: "testinfo.csv", text: one_target_testinfo
-                    try {
-                        withEnv(["CI_BUILD_ID=${ci_build_id}",
-                            "MACHINE=${test_machine}",
-                            "TEST_DEVICE=${test_device}" ]) {
-                                sh 'chmod a+x tester-exec.sh run-qemu.exp && ./tester-exec.sh'
-                        }
-                    } catch (Exception e) {
-                        throw e
-                    } finally {
-                        // read tests summary prepared by tester-exec.sh
-                        // Here one tester adds it's summary piece to the global buffer.
-                        global_sum_log += readFile "results-summary-${test_device}.${img}.log"
-                        archiveArtifacts allowEmptyArchive: true,
-                                         artifacts: '*.log, *.xml'
-                    }
-                    // without locking we may lose tester result set(s)
-                    // if testers run xunit step in nearly same time
-                    lock(resource: "step-xunit") {
-                        step_xunit()
-                    }
-                } // node
-            } // test_runs =
-        } // for i
-        stage('Parallel test run') {
-            set_gh_status_pending(is_pr, 'Testing')
-            timestamps {
+    for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
+        def one_target_testinfo = test_targets[i]
+        def test_device = one_target_testinfo.split(',')[4]
+        def test_machine = one_target_testinfo.split(',')[3]
+        def img = one_target_testinfo.split(",")[0]
+        test_runs["test_${i}_${test_device}"] = {
+            node('refkit-tester') {
+                deleteDir() // clean workspace
+                echo "Testing test_${test_device} with image_info: ${one_target_testinfo}"
+                writeFile file: 'tester-exec.sh', text: tester_script
+                writeFile file: 'run-qemu.exp', text: qemu_script
+                // append newline so that tester-exec.sh can parse it using "read"
+                one_target_testinfo += "\n"
+                // create testinfo.csv on this tester describing one image
+                writeFile file: "testinfo.csv", text: one_target_testinfo
                 try {
-                    parallel test_runs
+                    withEnv(["CI_BUILD_ID=${ci_build_id}",
+                        "MACHINE=${test_machine}",
+                        "TEST_DEVICE=${test_device}" ]) {
+                            sh 'chmod a+x tester-exec.sh run-qemu.exp && ./tester-exec.sh'
+                    }
                 } catch (Exception e) {
-                    currentBuild.result = 'UNSTABLE'
+                    throw e
+                } finally {
+                    // read tests summary prepared by tester-exec.sh
+                    // Here one tester adds it's summary piece to the global buffer.
+                    global_sum_log += readFile "results-summary-${test_device}.${img}.log"
+                    archiveArtifacts allowEmptyArchive: true,
+                                     artifacts: '*.log, *.xml'
                 }
+                // without locking we may lose tester result set(s)
+                // if testers run xunit step in nearly same time
+                lock(resource: "step-xunit") {
+                    step_xunit()
+                }
+            } // node
+        } // test_runs =
+    } // for i
+    stage('Parallel test run') {
+        set_gh_status_pending(is_pr, 'Testing')
+        timestamps {
+            try {
+                parallel test_runs
+            } catch (Exception e) {
+                currentBuild.result = 'UNSTABLE'
             }
         }
+    }
 } catch (Exception e) {
     echo "Error: ${e}"
     if (currentBuild.result == null) {
@@ -175,15 +175,15 @@ try {
         }
     } else {
         // send summary email after non-PR build
-            email = "Git commit hash: ${ci_git_commit} \n\n"
-            email += "Added commits:\n\n${added_commits}\n"
-            email += "Test results:\n\n${global_sum_log}"
-            def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
-            echo "${email}"
-            node('rk-mailer') {
-                writeFile file: 'msg.txt', text: email
-                sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
-            }
+        email = "Git commit hash: ${ci_git_commit} \n\n"
+        email += "Added commits:\n\n${added_commits}\n"
+        email += "Test results:\n\n${global_sum_log}"
+        def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
+        echo "${email}"
+        node('rk-mailer') {
+            writeFile file: 'msg.txt', text: email
+            sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
+        }
     }
 }
 
