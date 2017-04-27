@@ -134,7 +134,7 @@ machine. On a build host, create a build environment for building
 without Docker as explained in the :file:`README.rst`, then enter::
 
   $ export PATH=<path to intel-iot-refkit>/doc/howtos/image-installer:$PATH
-  $ bitbake refkit-installer-image ovmf swtpm-wrappers
+  $ bitbake refkit-installer-image ovmf swtpm-wrappers-native
   $ init-tpm
   $ runqemu-install # boots into shell prompt, there enter:
      # image-installer
