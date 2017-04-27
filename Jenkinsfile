@@ -21,7 +21,7 @@ def target_machine = "intel-corei7-64"
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
-def testinfo_sumz = 0
+def test_runs = [:]
 def testinfo_data = [:]
 def ci_git_commit = ""
 def global_sum_log = ""
@@ -104,13 +104,8 @@ try {
         } // node
     } // timestamps
 
-    // find out combined size of all testinfo files
-    testinfo_sumz += testinfo_data["${target_machine}"].length()
     test_targets = testinfo_data["${target_machine}"].split("\n")
-    // skip tester parts if no tests configured
-    if ( testinfo_sumz > 0 ) {
-        def test_runs = [:]
-        for(int i = 0; i < test_targets.size(); i++) {
+        for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
             def one_target_testinfo = test_targets[i]
             def test_device = one_target_testinfo.split(',')[4]
             def test_machine = one_target_testinfo.split(',')[3]
@@ -158,8 +153,6 @@ try {
                 }
             }
         }
-    } // if testinfo_sumz
-
 } catch (Exception e) {
     echo "Error: ${e}"
     if (currentBuild.result == null) {
@@ -181,8 +174,7 @@ try {
             setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
         }
     } else {
-        // send summary email after non-PR build, if tests were run
-        if ( testinfo_sumz > 0 ) {
+        // send summary email after non-PR build
             email = "Git commit hash: ${ci_git_commit} \n\n"
             email += "Added commits:\n\n${added_commits}\n"
             email += "Test results:\n\n${global_sum_log}"
@@ -192,7 +184,6 @@ try {
                 writeFile file: 'msg.txt', text: email
                 sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
             }
-        }
     }
 }
 
