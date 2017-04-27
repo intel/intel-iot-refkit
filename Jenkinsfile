@@ -32,7 +32,7 @@ def builder_wspace = ""
 int num_build_dirs_to_keep = 4
 
 // Define global environment common for all docker sessions
-def script_env_global = """
+def script_env = """
     export WORKSPACE=\$PWD
     export HOME=\$JENKINS_HOME
     export CURRENT_PROJECT=${current_project}
@@ -41,6 +41,7 @@ def script_env_global = """
     export CI_BUILD_ID=${ci_build_id}
     export GIT_COMMITTER_NAME="IOT Refkit CI"
     export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
+    export TARGET_MACHINE=${target_machine}
 """
 
 try {
@@ -63,21 +64,15 @@ try {
                 def docker_image = docker.image(image_name)
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
-                // Add specifics of this build to build.env
-                def script_env_local = """
-                    export TARGET_MACHINE=${target_machine}
-                """
                 docker_image.inside(run_args) {
                     set_gh_status_pending(is_pr, 'Pre-build tests')
-                    params = ["${script_env_global}", "${script_env_local}",
-                              "docker/pre-build.sh"].join("\n")
+                    params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
                         sh "${params}"
                     }
                     try {
                         set_gh_status_pending(is_pr, 'Building')
-                        params = ["${script_env_global}", "${script_env_local}",
-                                  "docker/build-project.sh"].join("\n")
+                        params = ["${script_env}", "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
                         }
@@ -85,15 +80,13 @@ try {
                         throw e
                     } finally {
                         set_gh_status_pending(is_pr, 'Store images')
-                        params = ["${script_env_global}", "${script_env_local}",
-                                  "docker/publish-project.sh"].join("\n")
+                        params = ["${script_env}", "docker/publish-project.sh"].join("\n")
                         stage('Store images') {
                             sh "${params}"
                         }
                     }
                     set_gh_status_pending(is_pr, 'Post-build tests')
-                    params = ["${script_env_global}", "${script_env_local}",
-                              "docker/post-build.sh"].join("\n")
+                    params = ["${script_env}", "docker/post-build.sh"].join("\n")
                     stage('Post-build tests') {
                         sh "${params}"
                     }
