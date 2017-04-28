@@ -56,7 +56,7 @@ class ImageInstaller(oeSelfTest):
         # clean up which can result in the native tools built earlier in
         # setUpClass being unavailable.
         if not ImageInstaller.image_is_ready:
-            targets = 'refkit-installer-image ovmf swtpm-wrappers'
+            targets = 'refkit-installer-image ovmf swtpm-wrappers-native'
             print('Starting: bitbake %s' % targets)
             result = bitbake(targets)
             print(result.output)
@@ -81,7 +81,7 @@ class ImageInstaller(oeSelfTest):
         self.create_internal_disk()
 
         if tpm:
-            swtpm = glob('tmp-glibc/work/*/swtpm-wrappers/1.0-r0/swtpm_setup_oe.sh')
+            swtpm = glob('tmp-glibc/work/*/swtpm-wrappers-native/1.0-r0/swtpm_setup_oe.sh')
             self.assertEqual(len(swtpm), 1, msg='Expected exactly one swtpm_setup_oe.sh: %s' % swtpm)
             cmd = '%s --tpm-state %s --createek' % (swtpm[0], self.resultdir)
             self.assertEqual(0, runCmd(cmd).status)
