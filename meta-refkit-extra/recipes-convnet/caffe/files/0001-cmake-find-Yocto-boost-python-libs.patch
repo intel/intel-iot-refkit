@@ -1,0 +1,39 @@
+From 91f8bfd7da0d9d59701dffdb2f1ab6552721fe7b Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Wed, 26 Apr 2017 14:43:01 +0300
+Subject: [PATCH] cmake: find Yocto boost python libs.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ cmake/Dependencies.cmake | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
+index 4a5bac4..dab3415 100644
+--- a/cmake/Dependencies.cmake
++++ b/cmake/Dependencies.cmake
+@@ -146,15 +146,15 @@ if(BUILD_python)
+     set(version ${PYTHONLIBS_VERSION_STRING})
+ 
+     STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
+-    find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
+-    set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
++    find_package(Boost 1.46 COMPONENTS "python${boost_py_version}")
++    set(Boost_PYTHON_FOUND ${Boost_PYTHON${boost_py_version}_FOUND})
+ 
+     while(NOT "${version}" STREQUAL "" AND NOT Boost_PYTHON_FOUND)
+       STRING( REGEX REPLACE "([0-9.]+).[0-9]+" "\\1" version ${version} )
+ 
+       STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
+-      find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
+-      set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
++      find_package(Boost 1.46 COMPONENTS "python${boost_py_version}")
++      set(Boost_PYTHON_FOUND ${Boost_PYTHON${boost_py_version}_FOUND})
+ 
+       STRING( REGEX MATCHALL "([0-9.]+).[0-9]+" has_more_version ${version} )
+       if("${has_more_version}" STREQUAL "")
+-- 
+2.9.3
+

@@ -1,0 +1,28 @@
+From 8d9b978681b7c7d5443f5503e2075b007fb460a5 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Fri, 17 Feb 2017 15:35:43 +0200
+Subject: [PATCH 3/6] cmake: fix RPATHS.
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ cmake/Misc.cmake | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/cmake/Misc.cmake b/cmake/Misc.cmake
+index 9dd2609..2150751 100644
+--- a/cmake/Misc.cmake
++++ b/cmake/Misc.cmake
+@@ -28,10 +28,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+   set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH "Default install path" FORCE)
+ endif()
+ 
+-# ---[ RPATH settings
+-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOLEAN "Use link paths for shared library rpath")
+-set(CMAKE_MACOSX_RPATH TRUE)
+-
+ list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/lib __is_systtem_dir)
+ if(${__is_systtem_dir} STREQUAL -1)
+   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+-- 
+2.9.3
+
