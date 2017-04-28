@@ -1,0 +1,48 @@
+#!/usr/bin/expect
+set timeout 100
+set retry 0
+set login 0
+set ip       [lindex $argv 0]
+set cmd      [lindex $argv 1]
+set service  [lindex $argv 2]
+set password [lindex $argv 3]
+
+spawn ssh root@$ip -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=ERROR "$cmd"
+ expect {
+ "Agent registered"
+   {
+    send "config $service --remove\n";
+    if {$retry < 4} {incr retry; sleep 1; send "connect $service\n"; exp_continue} else {send "exit\n"; exit 3}
+   }
+ "Operation timeout"
+   {
+    if {$retry < 4} {incr retry; sleep 1; send "connect $service\n"; exp_continue} else {send "exit\n"; exit 3}
+   }
+ "Operation aborted"
+   {
+    if {$retry < 4} {incr retry; sleep 1; send "connect $service\n"; exp_continue} else {send "exit\n"; exit 3}
+   }
+ "Input/output error"
+   {
+    if {$retry < 4} {incr retry; sleep 1; send "connect $service\n"; exp_continue} else {send "exit\n"; exit 3}
+   }
+ "Retry (yes/no)?"
+   {
+    sleep 1; send "yes\n"; exp_continue
+   }
+ "Passphrase?"
+   {
+    sleep 1; send "$password\n"; exp_continue
+   }
+ "Connected wifi*"
+   {
+    send "exit\n"; exit 2
+   }
+ "connmanctl*"
+   {
+    if {$login==0} {set login 1;send "agent on\n"; exp_continue} else {exp_continue}
+   }
+ eof
+   {}
+ }
+
