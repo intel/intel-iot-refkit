@@ -22,7 +22,7 @@ def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def test_runs = [:]
-def testinfo_data = [:]
+def testinfo_data = ""
 def ci_git_commit = ""
 def global_sum_log = ""
 def added_commits = ""
@@ -93,7 +93,7 @@ try {
                 } // docker_image
                 tester_script = readFile "docker/tester-exec.sh"
                 qemu_script = readFile "docker/run-qemu.exp"
-                testinfo_data["${target_machine}"] = readFile "${target_machine}.testinfo.csv"
+                testinfo_data = readFile "${target_machine}.testinfo.csv"
                 if ( !is_pr ) {
                     ci_git_commit = readFile("ci_git_commit").trim()
                     // This command expects that each new master build is based on a github merge
@@ -118,7 +118,7 @@ try {
         }
     }
 
-    test_targets = testinfo_data["${target_machine}"].split("\n")
+    test_targets = testinfo_data.split("\n")
     for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
         def one_target_testinfo = test_targets[i]
         def test_device = one_target_testinfo.split(',')[4]
