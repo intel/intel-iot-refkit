@@ -51,3 +51,11 @@ _tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -p
 if [ -n "$_tests" ]; then
   oe-selftest --run-tests ${_tests}
 fi
+
+# If something changed during the oe-selftest setup, we should (finally)
+# have two signatures to compare here.
+for target in intel-linux ${_images}; do
+  if ! bitbake-diffsigs -t $target do_build; then
+    echo "$target: nothing changed or bitbake-diffsigs failed"
+  fi
+done
