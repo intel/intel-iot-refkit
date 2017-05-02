@@ -283,6 +283,9 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 #
 #require conf/distro/include/refkit-production.inc
 
+# To enable Wayland/Weston with OpenGL support for images, uncomment following line.
+#require conf/distro/include/refkit-core-wayland.inc
+
 # systemd-bootchart is a useful tool to analyze and optimize a system
 # boot time. The tool is available in IoT Reference OS Kit and needs to be activated
 # by a kernel command-line parameter which requires to build a new
