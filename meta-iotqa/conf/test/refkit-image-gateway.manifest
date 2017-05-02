@@ -1,4 +1,4 @@
 # Tests for gateway profile
-oeqa.runtime.sanity.apprt_nodejs
-oeqa.runtime.sanity.iotivity
-oeqa.runtime.sanity.pulseaudio
+oeqa.runtime.programming.nodejs.apprt_nodejs
+oeqa.runtime.core.iotivity.iotivity
+oeqa.runtime.multimedia.audio.pulseaudio

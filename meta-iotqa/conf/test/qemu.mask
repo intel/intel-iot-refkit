@@ -1,6 +1,6 @@
 # This file contains tests that can't be run on QEMU
 # /docker/tester-exec.sh will use this file to remove tests from a manifest
-oeqa.runtime.sanity.comm_btcheck
-oeqa.runtime.sanity.comm_wifi_connect
-oeqa.runtime.sanity.mraa_gpio
-oeqa.runtime.alsa.alsa
+oeqa.runtime.connectivity.bluetooth.comm_btcheck
+oeqa.runtime.connectivity.services.wifi_connect
+oeqa.runtime.peripherals.mraa.mraa_gpio
+oeqa.runtime.multimedia.audio.alsa
