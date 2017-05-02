@@ -251,8 +251,27 @@ addtask do_uefiapp
 
 addtask do_uefiapp before do_rootfs
 
-# re-run do_rootfs (and signing) if the key names change.
-do_rootfs[vardeps] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','REFKIT_DB_CERT REFKIT_DB_KEY','',d)}'
+# Re-run do_rootfs (and signing) if the key content changes. The name is irrelevant.
+# Also checks that the variables are set at parse time instead of failing during image building.
+do_rootfs[vardeps] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','REFKIT_DB_CERT_HASH REFKIT_DB_KEY_HASH','',d)}'
+python () {
+    import os
+    import hashlib
+
+    for varname in ('REFKIT_DB_CERT', 'REFKIT_DB_KEY'):
+        filename = d.getVar(varname)
+        if filename is None:
+            bb.fatal('%s is not set.' % filename)
+        if not os.path.isfile(filename):
+            bb.fatal('%s=%s is not a file.' % (varname, filename))
+        with open(filename, 'rb') as f:
+            data = f.read()
+        hash = hashlib.sha256(data).hexdigest()
+        d.setVar('%s_HASH' % varname, hash)
+
+        # Must reparse and thus rehash on file changes.
+        bb.parse.mark_dependency(d, filename)
+}
 do_rootfs[depends] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','sbsigntool-native:do_populate_sysroot','',d)}'
 
 ROOTFS_POSTPROCESS_COMMAND += " ${@bb.utils.contains('IMAGE_FEATURES','secureboot','uefiapp_sign;','',d)} "
