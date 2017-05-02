@@ -130,6 +130,10 @@ else
   _bitbake_targets="$BUILD_TARGET"
 fi
 
+# Ensure that we have a local sstate signature for all tasks, even those which do not need
+# to run. This makes it possible to investigate signature changes in post-build.sh.
+bitbake -S none ${_bitbake_targets}
+
 if [ ! -z ${JOB_NAME+x} ]; then
   # CI run: save output to log file
   LOG=$WORKSPACE/bitbake-${TARGET_MACHINE}-${CI_BUILD_ID}.log
