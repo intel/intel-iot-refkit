@@ -127,7 +127,7 @@ try {
         test_runs["test_${i}_${test_device}"] = {
             node('refkit-tester') {
                 deleteDir() // clean workspace
-                echo "Testing test_${test_device} with image_info: ${one_target_testinfo}"
+                echo "image_info: ${one_target_testinfo}"
                 writeFile file: 'tester-exec.sh', text: tester_script
                 writeFile file: 'run-qemu.exp', text: qemu_script
                 // append newline so that tester-exec.sh can parse it using "read"
