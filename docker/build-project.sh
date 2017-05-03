@@ -11,6 +11,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 
+. $(dirname $0)/build-common-util.sh
+
 # Catch errors in pipelines
 set -o pipefail
 
@@ -53,49 +55,13 @@ if [ ! -z ${JOB_NAME+x} ]; then
   popd
 fi
 
-# Initialize auto.conf from local CI preferences if present
-if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
-  cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
-fi
-
-cat >> conf/auto.conf << EOF
-MACHINE = "$TARGET_MACHINE"
-EOF
-if [ -n "$BUILD_CACHE_DIR" ]; then
-	cat >> conf/auto.conf << EOF
-DL_DIR = "${BUILD_CACHE_DIR}/sources"
-EOF
-fi
-
+# create auto.conf using functions in build-common-util.sh
+auto_conf_common
 if [ ! -z ${JOB_NAME+x} ]; then
-  # in CI run only:
-  # Archiver set optionally: Product build has it, PR job does not.
-  if [ ! -z ${CI_ARCHIVER_MODE+x} ]; then
-    cat >> conf/auto.conf << EOF
-INHERIT += "archiver"
-ARCHIVER_MODE[src] = "original"
-ARCHIVER_MODE[diff] = "1"
-ARCHIVER_MODE[recipe] = "1"
-EOF
-  fi
-  # Buildhistory mode set always in CI run
-  cat >> conf/auto.conf << EOF
-INHERIT += "buildhistory"
-BUILDHISTORY_COMMIT = "1"
-INHERIT += "buildhistory-extra"
-BUILDHISTORY_DIR ?= "${BUILDHISTORY_TMP}"
-EOF
-  if [ ! -z ${COORD_BASE_URL+x} ]; then
-    # SSTATE over http
-    echo "SSTATE_MIRRORS ?= \"file://.* ${COORD_BASE_URL}/bb-cache/sstate/PATH\"" >> conf/auto.conf
-  else
-    # SSTATE mirror over NFS
-    echo "SSTATE_MIRRORS ?= \"file://.* file://${BUILD_CACHE_DIR}/sstate/PATH\"" >> conf/auto.conf
-  fi
-else
-  # save sstate to workspace
-  echo "SSTATE_DIR = \"${BUILD_CACHE_DIR}/sstate\"" >> conf/auto.conf
+    # in CI run only:
+    auto_conf_buildhistory
 fi
+
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
