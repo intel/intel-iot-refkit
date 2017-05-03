@@ -28,14 +28,18 @@
 import os
 import unittest
 import re
+import glob
+from shutil import rmtree, copy
 
 from oeqa.selftest.base import oeSelfTest
-from oeqa.utils.commands import runCmd, bitbake, get_bb_var, runqemu
+from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
 
 class SecureBootTests(oeSelfTest):
     """Secure Boot test class."""
 
     ovmf_keys_enrolled = False
+    ovmf_qemuparams = ''
+    ovmf_dir = ''
     test_image = 'refkit-image-common'
 
     @classmethod
@@ -48,9 +52,21 @@ class SecureBootTests(oeSelfTest):
             print('Building ovmf')
             bitbake('ovmf')
 
+            bb_vars = get_bb_vars(['TMPDIR', 'DEPLOY_DIR_IMAGE'])
+
+            SecureBootTests.ovmf_dir = os.path.join(bb_vars['TMPDIR'], 'oeselftest', 'secureboot', 'ovmf')
+            bb.utils.mkdirhier(SecureBootTests.ovmf_dir)
+
+            # Copy (all) OVMF in a temporary location
+            for src in glob.glob('%s/ovmf.*' % bb_vars['DEPLOY_DIR_IMAGE']):
+                copy(src, SecureBootTests.ovmf_dir)
+
+            SecureBootTests.ovmf_qemuparams = '-drive if=pflash,format=qcow2,file=%s/ovmf.secboot.qcow2' % SecureBootTests.ovmf_dir
+
             cmd = ("runqemu "
+                   "qemuparams='%s' "
                    "ovmf-shell-image-enrollkeys wic intel-corei7-64 "
-                   "ovmf.secboot nographic serial slirp")
+                   "nographic serial slirp") % SecureBootTests.ovmf_qemuparams
             print('Running "%s"' % cmd)
             status = runCmd(cmd)
 
@@ -71,7 +87,8 @@ class SecureBootTests(oeSelfTest):
     def tearDownClass(self):
 
         print('Cleaning...')
-        bitbake('ovmf-shell-image-enrollkeys:do_cleanall ovmf:do_cleansstate')
+        bitbake('ovmf-shell-image-enrollkeys:do_cleanall')
+        rmtree(self.ovmf_dir, ignore_errors=True)
 
     def secureboot_with_image(self, signing_key="", efishell=False, boot_timeout=600):
         """Boot the image with UEFI SecureBoot enabled and see the result. """
@@ -102,7 +119,8 @@ class SecureBootTests(oeSelfTest):
 
         try:
             with runqemu(self.test_image, ssh=False,
-                          runqemuparams='ovmf.secboot slirp',
+                          runqemuparams='slirp',
+                          qemuparams=self.ovmf_qemuparams,
                           overrides=overrides,
                           image_fstype='wic') as qemu:
 
