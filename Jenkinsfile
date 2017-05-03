@@ -28,6 +28,7 @@ def global_sum_log = ""
 def added_commits = ""
 def builder_node = ""
 def builder_wspace = ""
+def slot_name = "builder-slot-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_build_dirs_to_keep = 4
 
@@ -47,7 +48,7 @@ def script_env = """
 try {
     timestamps {
         node('rk-docker') {
-            ws("workspace/builder-slot-${env.EXECUTOR_NUMBER}") {
+            ws("workspace/${slot_name}${env.EXECUTOR_NUMBER}") {
                 // remember node and workspace needed by workspace cleaner
                 builder_node = "${env.NODE_NAME}"
                 builder_wspace = "${env.WORKSPACE}"
@@ -113,7 +114,7 @@ try {
     test_runs["clean_older_workspaces"] = {
         node(builder_node) {
             ws("workspace") {
-                trim_build_dirs(num_build_dirs_to_keep)
+                trim_build_dirs(slot_name, num_build_dirs_to_keep)
             }
         }
     }
@@ -302,9 +303,9 @@ def step_xunit() {
 // While majority/regular workspaces are named builder-slot-0, (for EXECUTOR=0),
 // Jenkins may create additional trees as builder-slot-0_X.
 // Wildcard covers all such workspaces, dont want some pattern filling disk independently.
-def trim_build_dirs(num_to_keep) {
+def trim_build_dirs(slotname, num_to_keep) {
     sh """
-dirs=`find ${env.WORKSPACE} -mindepth 1 -maxdepth 1 -type d -name "builder-slot-*.ci-prev.*" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
+dirs=`find ${env.WORKSPACE} -mindepth 1 -maxdepth 1 -type d -name "${slotname}*.ci-prev.*" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
 if [ -n "\${dirs}" ]; then
     ionice -c 3 rm -fr \$dirs
 fi
