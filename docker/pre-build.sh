@@ -11,6 +11,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 
+. $(dirname $0)/build-common-util.sh
+
 # Catch errors in pipelines
 set -o pipefail
 
@@ -29,10 +31,9 @@ set +u
 source refkit-init-build-env ${BUILD_DIR}
 set -u
 
-# Initialize auto.conf from local CI preferences if present
-if [ -f $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc ]; then
-  cat $WORKSPACE/meta-*/conf/distro/include/refkit-ci.inc > conf/auto.conf
-fi
+# create auto.conf using functions in build-common-util.sh
+auto_conf_common
+
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
