@@ -191,15 +191,8 @@ export PART_%(pnum)d_FS=%(filesystem)s
                           '--add-section .initrd=${B}/initrd ' +
                               '--change-section-vma .initrd=0x3000000 ' +
                           glob.glob(d.expand('${DEPLOY_DIR_IMAGE}/linux*.efi.stub'))[0] +
-                          ' ${B}/' + executable + '_tmp' + suffix
+                          ' ${B}/' + executable + suffix
                           ).split())
-        with open(d.expand('${B}/signature.txt'), 'w') as f:
-            f.write('Signature Placeholder.')
-        with open(d.expand('${B}/' + executable + '_tmp' + suffix), 'rb') as combo:
-            with open(d.expand('${B}/signature.txt'), 'rb') as signature:
-                with open(d.expand('${B}/' + executable + suffix), 'wb') as signed_combo:
-                    signed_combo.write(combo.read())
-                    signed_combo.write(signature.read())
         if not os.path.exists(d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT')):
             os.makedirs(d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT'))
         shutil.copyfile(d.expand('${B}/' + executable + suffix), d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT/' + executable))
