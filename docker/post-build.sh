@@ -38,10 +38,10 @@ for img in `grep REFKIT_CI_BUILD_TARGETS ${WORKSPACE}/refkit_ci_vars | perl -pe 
 done
 bitbake -S none ${_images}
 
-# Check intel-linux specifically in addition to images, because it did
+# Check linux-intel specifically in addition to images, because it did
 # rebuild at some point and even though bitbake-diffsigs should
 # recurse to it, that's not guaranteed to work.
-for target in intel-linux ${_images}; do
+for target in linux-intel ${_images}; do
   if ! bitbake-diffsigs -t $target do_build; then
     echo "$target: nothing changed or bitbake-diffsigs failed"
   fi
@@ -54,7 +54,7 @@ fi
 
 # If something changed during the oe-selftest setup, we should (finally)
 # have two signatures to compare here.
-for target in intel-linux ${_images}; do
+for target in linux-intel ${_images}; do
   if ! bitbake-diffsigs -t $target do_build; then
     echo "$target: nothing changed or bitbake-diffsigs failed"
   fi
