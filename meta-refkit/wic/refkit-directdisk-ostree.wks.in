@@ -5,7 +5,7 @@
 # of the image can pull in updates using ostree.
 
 bootloader --ptable gpt
-part --source rootfs --rootfs-dir=${IMAGE_ROOTFS}.ostree/boot --fstype=vfat --fixed-size ${REFKIT_VFAT_MB}M --label primary_uefi --part-type C12A7328-F81F-11D2-BA4B-00A0C93EC93B --align 1024 --use-uuid
-part --source rootfs --rootfs-dir=${IMAGE_ROOTFS}.ostree/boot --fstype=vfat --fixed-size ${REFKIT_VFAT_MB}M --label secondary_uefi --part-type E3C9E316-0B5C-4DB8-817D-F92DF00215AF --align 1024 --use-uuid
+part --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/boot --fstype=vfat --fixed-size ${REFKIT_VFAT_MB}M --label primary_uefi --part-type C12A7328-F81F-11D2-BA4B-00A0C93EC93B --align 1024 --use-uuid
+part --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/boot --fstype=vfat --fixed-size ${REFKIT_VFAT_MB}M --label secondary_uefi --part-type E3C9E316-0B5C-4DB8-817D-F92DF00215AF --align 1024 --use-uuid
 part / --source rootfs --rootfs-dir=${IMAGE_ROOTFS}.ostree ${REFKIT_IMAGE_SIZE} --fstype=ext4 --label rootfs --align 1024 --uuid ${REMOVABLE_MEDIA_ROOTFS_PARTUUID_VALUE}
 ${REFKIT_EXTRA_PARTITION}
