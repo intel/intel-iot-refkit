@@ -139,6 +139,12 @@ inherit refkit-hash-dm-verity-key
 # used only in "development" configuration.
 FEATURE_PACKAGES_common-test = "packagegroup-common-test"
 
+# bluetoothctl is used on "development" configuration to execute some of
+# the test cases for Bluetooth. It is enabled here because adding
+# it to packagegroup-common-test has no effect due to a bug
+# on BAD_RECOMMENDS functionality (YOCTO #11427)
+BAD_RECOMMENDATIONS_remove = "${@ 'bluez5-client' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
+
 # Additional features and packages used by all profile images
 # and the refkit-image-common.bb. Not essential for booting
 # and thus not included in refkit-image-minimal.bb. Product
