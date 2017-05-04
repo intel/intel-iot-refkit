@@ -191,15 +191,8 @@ export PART_%(pnum)d_FS=%(filesystem)s
                           '--add-section .initrd=${B}/initrd ' +
                               '--change-section-vma .initrd=0x3000000 ' +
                           glob.glob(d.expand('${DEPLOY_DIR_IMAGE}/linux*.efi.stub'))[0] +
-                          ' ${B}/' + executable + '_tmp' + suffix
+                          ' ${B}/' + executable + suffix
                           ).split())
-        with open(d.expand('${B}/signature.txt'), 'w') as f:
-            f.write('Signature Placeholder.')
-        with open(d.expand('${B}/' + executable + '_tmp' + suffix), 'rb') as combo:
-            with open(d.expand('${B}/signature.txt'), 'rb') as signature:
-                with open(d.expand('${B}/' + executable + suffix), 'wb') as signed_combo:
-                    signed_combo.write(combo.read())
-                    signed_combo.write(signature.read())
         if not os.path.exists(d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT')):
             os.makedirs(d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT'))
         shutil.copyfile(d.expand('${B}/' + executable + suffix), d.expand('${DEPLOYDIR}/EFI' + suffix + '/BOOT/' + executable))
@@ -227,6 +220,16 @@ python do_uefiapp_setscene () {
     sstate_setscene(d)
 }
 
+uefiapp_sign() {
+    if [ -f ${REFKIT_DB_KEY} ] && [ -f ${REFKIT_DB_CERT} ]; then
+        for i in `find ${DEPLOYDIR} -name '*.efi'`; do
+            sbsign --key ${REFKIT_DB_KEY} --cert ${REFKIT_DB_CERT} $i
+            sbverify --cert ${REFKIT_DB_CERT} $i.signed
+            mv $i.signed $i
+        done
+    fi
+}
+
 uefiapp_deploy() {
   #Let's make sure that only what is needed stays in the /boot dir
   rm -rf ${IMAGE_ROOTFS}/boot/*
@@ -241,6 +244,30 @@ addtask do_uefiapp
 
 addtask do_uefiapp before do_rootfs
 
+# Re-run do_rootfs (and signing) if the key content changes. The name is irrelevant.
+# Also checks that the variables are set at parse time instead of failing during image building.
+do_rootfs[vardeps] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','REFKIT_DB_CERT_HASH REFKIT_DB_KEY_HASH','',d)}'
+python () {
+    import os
+    import hashlib
+
+    for varname in ('REFKIT_DB_CERT', 'REFKIT_DB_KEY'):
+        filename = d.getVar(varname)
+        if filename is None:
+            bb.fatal('%s is not set.' % filename)
+        if not os.path.isfile(filename):
+            bb.fatal('%s=%s is not a file.' % (varname, filename))
+        with open(filename, 'rb') as f:
+            data = f.read()
+        hash = hashlib.sha256(data).hexdigest()
+        d.setVar('%s_HASH' % varname, hash)
+
+        # Must reparse and thus rehash on file changes.
+        bb.parse.mark_dependency(d, filename)
+}
+do_rootfs[depends] += '${@bb.utils.contains('IMAGE_FEATURES','secureboot','sbsigntool-native:do_populate_sysroot','',d)}'
+
+ROOTFS_POSTPROCESS_COMMAND += " ${@bb.utils.contains('IMAGE_FEATURES','secureboot','uefiapp_sign;','',d)} "
 ROOTFS_POSTPROCESS_COMMAND += " uefiapp_deploy; "
 
 # All variables explicitly passed to image-dsk.py.

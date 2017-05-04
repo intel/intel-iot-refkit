@@ -60,6 +60,7 @@ IMAGE_FEATURES[validitems] += " \
     autologin \
     muted \
     ima \
+    secureboot \
     smack \
     swupd \
     dm-verity \
