@@ -2,6 +2,7 @@ adm:x:990:
 appfwtest-commonapp:x:1004:
 audio:x:986:
 cdrom:x:985:
+crontab:x:970:
 dbus:1501
 dbus-x11:1500
 dialout:x:984:

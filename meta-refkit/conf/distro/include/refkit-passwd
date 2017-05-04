@@ -1,4 +1,5 @@
 appfwtest-commonapp:x:1004:1004::/home/appfwtest-commonapp:/sbin/nologin
+crontab:x:970:970::/bin/crontab:/sbin/nologin
 evil-bad-groups:x:1003:1003::/home/evil-bad-groups:/sbin/nologin
 foodine-pythontest:x:1002:1002::/home/foodine-pythontest:/sbin/nologin
 iodine-nodetest:x:1001:1001::/home/iodine-nodetest:/sbin/nologin
