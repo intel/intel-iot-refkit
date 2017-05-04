@@ -57,6 +57,7 @@ fi
 
 # create auto.conf using functions in build-common-util.sh
 auto_conf_common
+auto_conf_archiver
 if [ ! -z ${JOB_NAME+x} ]; then
     # in CI run only:
     auto_conf_buildhistory
