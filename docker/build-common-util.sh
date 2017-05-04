@@ -32,18 +32,21 @@ EOF
             # SSTATE over http
             echo "SSTATE_MIRRORS ?= \"file://.* ${COORD_BASE_URL}/bb-cache/sstate/PATH\"" >> conf/auto.conf
         fi
-        # Archiver set optionally: Product build has it, PR job does not.
-        if [ ! -z ${CI_ARCHIVER_MODE+x} ]; then
-            cat >> conf/auto.conf << EOF
+    else
+      # save sstate to workspace
+      echo "SSTATE_DIR = \"${BUILD_CACHE_DIR}/sstate\"" >> conf/auto.conf
+    fi
+}
+
+auto_conf_archiver() {
+    # Archiver set optionally: Product build has it, PR job does not.
+    if [ ! -z ${CI_ARCHIVER_MODE+x} ]; then
+        cat >> conf/auto.conf << EOF
 INHERIT += "archiver"
 ARCHIVER_MODE[src] = "original"
 ARCHIVER_MODE[diff] = "1"
 ARCHIVER_MODE[recipe] = "1"
 EOF
-        fi
-    else
-      # save sstate to workspace
-      echo "SSTATE_DIR = \"${BUILD_CACHE_DIR}/sstate\"" >> conf/auto.conf
     fi
 }
 
