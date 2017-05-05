@@ -4,6 +4,7 @@ disable_i18n() {
        sed -i -e 's/^I18N=1/# I18N=1/' ${S}/config.make
 }
 disable_i18n_class-target () {
+  :
 }
 
 do_configure_append () {
