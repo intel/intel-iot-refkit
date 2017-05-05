@@ -72,11 +72,6 @@ testimg() {
   tar -xzf ${TEST_SUITE_FILE}
   tar -xzf ${TEST_CASES_FILE} -C iottest/
 
-  # Copy local WLAN settings to iottest over example file and chmod to readable
-  _WLANCONF=./iottest/oeqa/runtime/connectivity/wifi/files/config.ini
-  cp $HOME/.config.ini.wlan ${_WLANCONF}
-  chmod 644 ${_WLANCONF}
-
   FILENAME=${_IMG_NAME}-${MACHINE}-${CI_BUILD_ID}.wic
   set +e
   wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.bmap
@@ -114,6 +109,11 @@ testimg() {
   if [ "${DEVICE}" = "qemu" ]; then
     test_qemu
   else
+    # Copy local WLAN settings to iottest over example file and chmod to readable
+    _WLANCONF=./iottest/oeqa/runtime/connectivity/wifi/files/config.ini
+    cp $HOME/.config.ini.wlan ${_WLANCONF}
+    chmod 644 ${_WLANCONF}
+
     daft ${DEVICE} ${FILENAME} --record
     TEST_EXIT_CODE=$?
   fi
