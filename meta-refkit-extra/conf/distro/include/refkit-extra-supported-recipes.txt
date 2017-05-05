@@ -1,5 +1,6 @@
-acpitables@refkit-extra
 acpica@core
+acpitables@refkit-extra
+btspeaker@refkit-extra
 caffe@refkit-extra
 household-objects-database-msgs@ros-layer
 hdf5@refkit-extra
@@ -19,6 +20,11 @@ python3-protobuf@refkit-extra
 python3-pycparser@meta-python
 python3-pyrealsense@refkit-extra
 python3-six@core
+python-dbus@meta-python
+python-evdev@meta-python
+python-pyalsaaudio@meta-python
+python-pygobject@openembedded-layer
+python-setuptools@core
 robot-state-publisher@ros-layer
 snappy@refkit-extra
 std-srvs@ros-layer

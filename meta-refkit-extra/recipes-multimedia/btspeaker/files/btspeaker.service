@@ -1,0 +1,11 @@
+[Unit]
+Description=BT Speaker Pairing Service
+After=multi-user.target
+
+[Service]
+User=btspeaker
+Type=idle
+ExecStart=/usr/bin/python /home/btspeaker/btspeaker.py
+
+[Install]
+WantedBy=multi-user.target
