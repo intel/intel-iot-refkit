@@ -45,6 +45,7 @@ base-passwd@core
 bash-completion@core
 bash@core
 bc@core
+beignet-550x@refkit
 beignet-570x@refkit
 beignet-minnowmax@refkit
 binutils@core
