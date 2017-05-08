@@ -1,15 +1,18 @@
 # LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
 # changes incompatibly
-LCONF_VERSION = "3"
+LCONF_VERSION = "4"
 
 BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
+# Also update layer.conf's LAYERDEPENDS_refkit when adding layers.
 REFKIT_LAYERS = " \
   ##OEROOT##/meta \
   ##OEROOT##/meta-selftest \
   ##OEROOT##/../meta-intel \
   ##OEROOT##/../meta-refkit \
+  ##OEROOT##/../meta-refkit-gateway \
+  ##OEROOT##/../meta-refkit-computervision \
   ##OEROOT##/../meta-oic \
   ##OEROOT##/../meta-iot-web \
   ##OEROOT##/../meta-iotqa \
@@ -34,6 +37,10 @@ REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-python"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-webserver"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-xfce"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/toolchain-layer"
+
+# Added at the end so that it can adapt to other layers
+# activated earlier.
+REFKIT_LAYERS += "##OEROOT##/../meta-refkit-core"
 
 BBLAYERS ?= "${REFKIT_LAYERS}"
 

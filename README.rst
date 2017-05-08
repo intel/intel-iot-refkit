@@ -7,6 +7,12 @@ the IoT Reference OS Kit for Intel(r) Architecture project.
    Only Linux development hosts are currently supported, as documented
    in the `Yocto Project Quick Start Guide`_
 
+Follow the instructions in this document when trying to get familiar with
+the IoT Reference OS Kit or when basing a new project on it. Alternatively,
+it is also possible to take a subset of the content and add it to other,
+existing projects or distributions. For information about the content, see
+:file:`doc/introduction.rst`.
+
 .. _Yocto Project Quick Start Guide: http://www.yoctoproject.org/docs/current/yocto-project-qs/yocto-project-qs.html#the-linux-distro
 
 Installing Docker on Linux

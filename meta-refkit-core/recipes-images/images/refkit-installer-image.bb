@@ -6,8 +6,6 @@ DESCRIPTION = "IoT Reference OS Kit image with embedded image-installer command 
 # Below, we use the kpartx command to get access to the rootfs files.
 INSTALLER_SOURCE_IMAGES ?= " \
     refkit-image-common:wic \
-    refkit-image-computervision:wic \
-    refkit-image-gateway:wic \
 "
 
 # Allow wic to resize the image as needed by overriding the default fixes size.
