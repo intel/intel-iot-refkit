@@ -82,6 +82,8 @@ if [ -z "$BUILD_TARGET" ]; then
     (REFKIT_CI_SDK_TARGETS) _sufx=":do_populate_sdk" ;;
     (REFKIT_CI_ESDK_TARGETS) _sufx=":do_populate_sdk_ext" ;;
     (REFKIT_CI_TEST_EXPORT_TARGETS) _sufx=":do_test_iot_export" ;;
+    (REFKIT_CI_FLATPAK_RUNTIME_TARGETS) _sufx="-flatpak-runtime:do_test_iot_export" ;;
+    (REFKIT_CI_FLATPAK_SDK_TARGETS) _sufx="-flatpak-sdk" ;;
     (*) continue;;
     esac
     for img in `grep ${ci_var} ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ a-zA-Z0-9_-]//g'`; do

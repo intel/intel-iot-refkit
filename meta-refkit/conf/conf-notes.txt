@@ -9,3 +9,11 @@ Common targets are:
     refkit-image-gateway        (when building an image with tools and
                                  configuration for acting as an IoT sensor 
                                  gateway)
+
+If you enable flatpak applications (see the comments in local.conf on how to
+do this), you can build two additional image variants:
+    <image>-flatpak-runtime     flatpak-enabled version of <image>
+    <image>-flatpak-sdk         flatpak SDK runtime (OSTree repo) for the above
+
+You can use a -flatpak-sdk image variant on your (flatpak-enabled) host
+to build flatpaks for the -flatpak-runtime image variant.
