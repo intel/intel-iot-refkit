@@ -162,6 +162,7 @@ libcxxabi@clang-layer
 libdrm@core
 libeigen@openembedded-layer
 liberation-fonts@core
+libevdev@core
 libexif@core
 libffi@core
 libgcc@core
@@ -171,6 +172,7 @@ libgphoto2@openembedded-layer
 libgudev@core
 libical@core
 libidn@core
+libinput@core
 libjpeg-turbo@core
 libmicrohttpd@soletta
 libmpc@core
@@ -197,6 +199,7 @@ libva-intel-driver@intel
 libva@core
 libvorbis@core
 libwebp@core
+libxkbcommon@core
 libxml2@core
 libxslt@core
 linux-firmware@core
@@ -216,6 +219,7 @@ mmap-smack-test@security-smack
 mpfr@core
 mraa-test@iotqa
 mraa@refkit
+mtdev@core
 multipath-tools@openembedded-layer
 ncurses@core
 netbase@core
@@ -304,8 +308,13 @@ valgrind@core
 viennacl@refkit
 vim@openembedded-layer
 volatile-binds@core
+wayland@core
+wayland-protocols@core
+weston@core
+weston-init@core
 wget@core
 wic-tools@core
 wpa-supplicant@core
+xkeyboard-config@core
 xz@core
 zlib@core
