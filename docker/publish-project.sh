@@ -58,7 +58,7 @@ _DEPL=${_BRESULT}/deploy
 
 # create publishing destination structure and copy
 create_remote_dirs ${RSYNC_PUBLISH_DIR}/builds ${JOB_NAME}/${CI_BUILD_ID}
-[ -d ${_DEPL}/images ] && create_remote_dirs ${_RSYNC_DEST} images && rsync -avS --exclude=README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt ${_DEPL}/images/${TARGET_MACHINE} ${_RSYNC_DEST}/images/
+[ -d ${_DEPL}/images ] && create_remote_dirs ${_RSYNC_DEST} images && rsync -avS ${_DEPL}/images/${TARGET_MACHINE} ${_RSYNC_DEST}/images/
 [ -d ${_DEPL}/licenses ] && create_remote_dirs ${_RSYNC_DEST} licenses && rsync -az --ignore-existing ${_DEPL}/licenses ${_RSYNC_DEST}/
 [ -d ${_DEPL}/sources ] && create_remote_dirs ${_RSYNC_DEST} sources && rsync -av --ignore-existing ${_DEPL}/sources ${_RSYNC_DEST}/
 [ -d ${_DEPL}/tools ] && create_remote_dirs ${_RSYNC_DEST} tools && rsync -av --ignore-existing ${_DEPL}/tools ${_RSYNC_DEST}/
