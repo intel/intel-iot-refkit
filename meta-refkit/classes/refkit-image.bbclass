@@ -192,6 +192,12 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+                             'flatpak-image', '', d)}
+
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'ostree', \
+                             'ostree-image', '', d)}
+
 IMAGE_LINGUAS = " "
 
 LICENSE = "MIT"
@@ -230,7 +236,11 @@ IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
 # By default, the full image is meant to fit into 4*10^9 bytes, i.e.
 # "4GB" regardless whether 1000 or 1024 is used as base. 64M are reserved
 # for potential partitioning overhead.
-WKS_FILE = "refkit-directdisk.wks.in"
+WKS_FILE = " \
+    refkit-directdisk${@bb.utils.contains('IMAGE_FEATURES', 'ostree', \
+                                                 '-ostree', '', d)}.wks.in \
+"
+
 REFKIT_VFAT_MB ??= "64"
 REFKIT_IMAGE_SIZE ??= "--fixed-size 3622M"
 REFKIT_EXTRA_PARTITION ??= ""
@@ -436,7 +446,11 @@ ROOTFS_POSTPROCESS_COMMAND += "refkit_image_patch_os_release; "
 # Instead we pre-configure some defaults in the image and can remove
 # the useless service.
 refkit_image_disable_firstboot () {
-    for i in /etc/systemd /lib/systemd /usr/lib/systemd /bin /usr/bin; do
+    SEARCH_DIRS='/etc/systemd /usr/lib/systemd /usr/bin'
+    if [ "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', '1', '0', d)}" = "0" ]; then
+        SEARCH_DIRS=$SEARCH_DIRS' /lib/systemd /bin'
+    fi
+    for i in ${SEARCH_DIRS}; do
         d="${IMAGE_ROOTFS}$i"
         if [ -d "$d" ] && [ ! -h "$d" ]; then
             for e in $(find "$d" -name systemd-firstboot.service -o -name systemd-firstboot.service.d -o -name systemd-firstboot); do
@@ -494,3 +508,43 @@ EOF
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "refkit_image_system_serialgetty; "
+
+#  Prepare the symlinks required for merged /usr at the time of rootfs creation.
+
+# The links created in rootfs are:
+#/bin --> /usr/sbin
+#/sbin --> /usr/sbin
+#/lib --> /usr/lib
+#/lib64 --> /usr/lib64
+
+# We cannot make these symlinks as part of 'base-files' or some other package.
+# Because at rootfs creation, installation of the package(say kernel) that
+# depends on these root folders/links fails, if package manager installs this
+# package prior to base-files.
+
+# These symbolic links in top level folder should present as long as
+#   - kerenl tools use /lib/{module,firmware}
+#   - shell scripts uses
+#upstream commit waiting for review: 
+# http://lists.openembedded.org/pipermail/openembedded-core/2017-February/133151.html
+create_merged_usr_symlinks() {
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_bindir}
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_sbindir}
+    install -m 0755 -d ${IMAGE_ROOTFS}/${base_libdir}
+    lnr ${IMAGE_ROOTFS}${base_bindir} ${IMAGE_ROOTFS}/bin
+    lnr ${IMAGE_ROOTFS}${base_sbindir} ${IMAGE_ROOTFS}/sbin
+    lnr ${IMAGE_ROOTFS}${base_libdir} ${IMAGE_ROOTFS}/${baselib}
+
+    if [ "${nonarch_base_libdir}" != "${base_libdir}" ]; then
+       install -m 0755 -d ${IMAGE_ROOTFS}/${nonarch_base_libdir}
+       lnr ${IMAGE_ROOTFS}${nonarch_base_libdir} ${IMAGE_ROOTFS}/lib
+    fi
+
+    # create base links for multilibs
+    multi_libdirs="${@d.getVar('MULTILIB_VARIANTS')}"
+    for d in $multi_libdirs; do
+        install -m 0755 -d ${IMAGE_ROOTFS}/${exec_prefix}/$d
+        lnr ${IMAGE_ROOTFS}/${exec_prefix}/$d ${IMAGE_ROOTFS}/$d
+    done
+}
+ROOTFS_PREPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'create_merged_usr_symlinks; ', '',d)}"

@@ -283,6 +283,21 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 #
 #require conf/distro/include/refkit-production.inc
 
+# If you'd like to enable support for flatpak applications and building 
+# flatpak SDK runtime repositories, which you can use on your flatpak-
+# enabled host to build flatpak applications for a flatpak-enabled version
+# of an image, enabled the require line below. You can build a flatpak-
+# enabled version of an image by appending '-flatpak-runtime' to the image
+# name. Simiarly you can build a flatpak SDK runtime for such an image
+# by appending '-flatpak-sdk' to the image name.
+#
+# For instance, to build a flatpak-enabled version of the minimal image and
+# a flatpak SDK runtime for it, use
+#
+#   bitbake refkit-image-minimal-flatpak-runtime refkit-image-minimal-flatpak-sdk
+#
+#require conf/distro/include/flatpak-applications.inc
+
 # systemd-bootchart is a useful tool to analyze and optimize a system
 # boot time. The tool is available in IoT Reference OS Kit and needs to be activated
 # by a kernel command-line parameter which requires to build a new
