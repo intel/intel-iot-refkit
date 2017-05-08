@@ -1,3 +1,0 @@
-# Template settings (relative to OEROOT)
-TEMPLATECONF=${TEMPLATECONF:-../meta-refkit/conf}
-BITBAKEDIR=${BITBAKEDIR:-./bitbake}
