@@ -1,4 +1,4 @@
-# Recipe for compiling beignet for Intel Joule 570x
+# Recipe for compiling beignet for Intel 570x
 
 require beignet.inc
 
