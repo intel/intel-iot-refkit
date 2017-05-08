@@ -283,6 +283,14 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 #
 #require conf/distro/include/refkit-production.inc
 
+# To enable X11 with OpenGL support for images, uncomment following line.
+# This will also pull in packagegroup-core-x11, xterm and twm as minimal
+# baseline and fallback.
+#require conf/distro/include/refkit-core-x11.inc
+
+# To enable Wayland/Weston with OpenGL support for images, uncomment following line.
+#require conf/distro/include/refkit-core-wayland.inc
+
 # systemd-bootchart is a useful tool to analyze and optimize a system
 # boot time. The tool is available in IoT Reference OS Kit and needs to be activated
 # by a kernel command-line parameter which requires to build a new

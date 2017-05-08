@@ -34,5 +34,6 @@ tty:x:5:
 users:x:978:
 utmp:x:987:
 video:x:979:
+weston-launch:x:976:
 wheel:x:989:
 yoyodine-nativetest:x:1000:
