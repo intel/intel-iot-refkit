@@ -43,6 +43,7 @@ def script_env = """
     export GIT_COMMITTER_NAME="IOT Refkit CI"
     export GIT_COMMITTER_EMAIL='refkit-ci@yoctoproject.org'
     export TARGET_MACHINE=${target_machine}
+    export CI_LOG=bitbake-${target_machine}-${ci_build_id}.log
 """
 
 try {

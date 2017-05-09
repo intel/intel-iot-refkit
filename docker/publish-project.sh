@@ -110,7 +110,7 @@ if [ -n "$(find ${_BRESULT}/log -maxdepth 1 -name 'isafw*' -print -quit)" ]; the
     fi
 fi
 
-LOG="$WORKSPACE/bitbake-${TARGET_MACHINE}-${CI_BUILD_ID}.log"
+LOG=$WORKSPACE/$CI_LOG
 if [ -f "${LOG}" ]; then
     xz -v -k ${LOG}
     rsync -avz ${LOG}* ${_RSYNC_DEST}/
