@@ -36,7 +36,6 @@ int num_build_dirs_to_keep = 4
 def script_env = """
     export WORKSPACE=\$PWD
     export HOME=\$JENKINS_HOME
-    export CURRENT_PROJECT=${current_project}
     export BUILD_CACHE_DIR=${env.PUBLISH_DIR}/bb-cache
     export GIT_PROXY_COMMAND=oe-git-proxy
     export CI_BUILD_ID=${ci_build_id}
