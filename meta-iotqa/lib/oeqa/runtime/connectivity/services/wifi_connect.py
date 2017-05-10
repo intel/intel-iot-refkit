@@ -1,5 +1,5 @@
 import os
-from oeqa.runtime.wifi import wifi
+from oeqa.runtime.connectivity.wifi import wifi
 try:
     import ConfigParser
 except:
@@ -7,7 +7,8 @@ except:
 from oeqa.oetest import oeRuntimeTest
 
 ssid_config = ConfigParser.ConfigParser()
-config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
+file_path = os.path.dirname(__file__)
+config_path = os.path.join(os.path.dirname(file_path), "wifi/files/config.ini")
 ssid_config.readfp(open(config_path))
 
 class CommWiFiConect(oeRuntimeTest):
