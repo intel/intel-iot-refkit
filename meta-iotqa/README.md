@@ -12,13 +12,17 @@ and after running `$ docker/local-build.sh` you should have the test files built
 
 Follow the guide on
 [building without docker](https://github.com/intel/intel-iot-refkit#building-without-docker)
-and before building an image add `INHERIT += "test-iot"` to `local.conf`:
-```
-echo 'INHERIT += "test-iot"' >> conf/local.conf
-```
+and before building an image add `INHERIT += "test-iot"` to `conf/local.conf`.
+
 Then build the image with `do_test_iot_export` task eg.:
 ```
 $ bitbake refkit-image-common -c do_test_iot_export
+```
+
+If the task fails, you may need to use `cleanall` task for the image and then
+try again:
+```
+$ bitbake -c cleanall refkit-image-common
 ```
 
 ## Setting up environment for running tests
@@ -37,7 +41,7 @@ After building the tests you can find the test files from
 Extracting the the test files can be done with:
 ```
 $ tar xf iot-testsuite.tar.gz
-$ tar xf iot-testfiles.xxx.tar.gz -C iottest/
+$ tar xf iot-testfiles.intel-corei7.tar.gz -C iottest/
 ```
 
 Running the tests:
