@@ -15,8 +15,12 @@ python () {
 
     privkey = d.getVar('REFKIT_DMVERITY_PRIVATE_KEY')
     if privkey is None:
-        bb.fatal('REFKIT_DMVERITY_PRIVATE_KEY is not set.')
+        # Recipes using this class get disabled automatically when the
+        # require key is not configured, which excludes them from a world build.
+        # Trying to use them raises an error with this skip text as explanation.
+        raise bb.parse.SkipRecipe('REFKIT_DMVERITY_PRIVATE_KEY is not set.')
     if not os.path.isfile(privkey):
+        # An invalid value however is a parse error, always.
         bb.fatal('REFKIT_DMVERITY_PRIVATE_KEY=%s is not a file.' % privkey)
     with open(privkey, 'rb') as f:
         data = f.read()

@@ -3,7 +3,7 @@
 #
 # Upstream-Status: Inappropriate [Downstream configuration] 
 
-DEPENDS_remove_class-native = "lzo-native"
-DEPENDS_remove_class-nativesdk = "lzo-native"
-DEPENDS_append_class-native = " lz4-native"
-DEPENDS_append_class-nativesdk = " lz4-native"
+DEPENDS_remove_class-native_refkit-config = "lzo-native"
+DEPENDS_remove_class-nativesdk_refkit-config = "lzo-native"
+DEPENDS_append_class-native_refkit-config = " lz4-native"
+DEPENDS_append_class-nativesdk_refkit-config = " lz4-native"

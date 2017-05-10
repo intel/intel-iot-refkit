@@ -3,5 +3,5 @@
 # like BUILD_ID (includes ${DATETIME}) get patched to the current values in
 # refkit-image.bbclass.
 
-BUILD_ID = "build-id-to-be-added-during-image-creation"
-OS_RELEASE_FIELDS += "BUILD_ID"
+BUILD_ID_refkit-config = "build-id-to-be-added-during-image-creation"
+OS_RELEASE_FIELDS_append_refkit-config = " BUILD_ID"

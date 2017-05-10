@@ -225,7 +225,7 @@ IMAGE_FSTYPES_append = " ${REFKIT_VM_IMAGE_TYPES}"
 IMAGE_FSTYPES_remove = "live"
 
 # Activate "dsk" image type.
-IMAGE_CLASSES += "${@ 'image-dsk' if ${REFKIT_USE_DSK_IMAGES} else ''}"
+IMAGE_CLASSES += "${@ 'image-dsk' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else ''}"
 
 # By default, the full image is meant to fit into 4*10^9 bytes, i.e.
 # "4GB" regardless whether 1000 or 1024 is used as base. 64M are reserved

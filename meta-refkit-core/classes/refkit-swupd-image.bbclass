@@ -6,7 +6,7 @@ inherit swupd-image
 
 # Activate support for updating EFI system partition when using
 # both meta-swupd and the EFI kernel+initramfs combo.
-IMAGE_INSTALL_append = "${@ ' efi-combo-trigger' if ${REFKIT_USE_DSK_IMAGES} else '' }"
+IMAGE_INSTALL_append = "${@ ' efi-combo-trigger' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else '' }"
 
 # Workaround when both Smack and swupd are used:
 # Setting a label explicitly on the directory prevents it

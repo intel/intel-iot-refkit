@@ -13,6 +13,11 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 require refkit-boot-settings.inc
 
+python () {
+    if not oe.types.boolean(d.getVar('HAVE_CRYPTSETUP') or '0'):
+        raise bb.parse.SkipRecipe('cryptsetup dependency not available')
+}
+
 refkit_dmverity[shellcheck] = "sh"
 refkit_dmverity () {
 

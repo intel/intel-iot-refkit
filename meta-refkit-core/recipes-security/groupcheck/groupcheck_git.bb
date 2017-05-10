@@ -13,7 +13,8 @@ DEPENDS = "systemd"
 
 S = "${WORKDIR}/git"
 
-inherit autotools systemd pkgconfig
+inherit autotools systemd pkgconfig distro_features_check
+REQUIRED_DISTRO_FEATURES = "systemd"
 
 # Depend on a policy ruleset. If no ruleset is specified then use the
 # default configuration.

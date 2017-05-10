@@ -71,7 +71,14 @@ The ``intel-iot-refkit`` repository contains the following layers:
   ``meta-refkit-core``
     Common utility classes and miscellaneous recipes which are not
     profile-specific. The only hard dependency of this layer is
-    ``openembedded-core``.
+    ``openembedded-core``. :file:`meta-refkit-core/conf/layer.conf`
+    automatically detects available layers and enables content
+    based on that. When providing recipes via some other layer,
+    override the  ``HAVE_...`` variables from that :file:`layer.conf`.
+    For example, the ``dm-verity`` support depends on ``cryptsetup``,
+    which could be provided either by adding ``meta-security`` or
+    copying the recipe into a distro-specific layer. In the latter
+    case, ``HAVE_CRYPTSETUP`` has to be set.
 
   ``meta-refkit-computervision/gateway/...``
     Profile layers. See also :file:`profiles.rst`.
@@ -79,6 +86,32 @@ The ``intel-iot-refkit`` repository contains the following layers:
 Note that ``meta-<something>`` is the directory containing the layer
 called ``<something>``, although in practice ``meta-<something>`` and
 "the ``<something>`` layer" are often used interchangeably.
+
+
+Common Features
+---------------
+
+The reusable part of the distro configuration (package configuration,
+default distro features, etc.) is made available to other distros via
+:file:`meta-refkit-core/conf/distro/include/refkit-config.inc`.
+
+To reuse the distro configuration in addition to the layer content:
+
+* Add ``require "conf/distro/include/refkit-config.inc"``, and
+* use the same distro features as the refkit distro with::
+
+     DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
+     DISTRO_FEATURES_DEFAULT_remove = "${REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE}"
+     DISTRO_FEATURES ?= "${DISTRO_FEATURES_DEFAULT} ${DISTRO_FEATURES_LIBC} ${REFKIT_DEFAULT_DISTRO_FEATURES}"
+
+* or choose individual distro features.
+
+These changes can go into file:`local.conf` or a custom distro
+configuration file.
+
+See file:`refkit-config.inc` for a description of the currently
+supported special distro features.
+
 
 Supported Recipes
 -----------------

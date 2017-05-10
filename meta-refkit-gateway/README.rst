@@ -5,7 +5,7 @@ refkit-gateway layer.
 Dependencies
 ============
 
-This layer depends on:
+This layer depends on::
 
    URI: git://git.openembedded.org/bitbake
    branch: master
