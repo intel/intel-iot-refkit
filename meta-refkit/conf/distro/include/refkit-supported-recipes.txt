@@ -86,9 +86,6 @@ efi-combo-trigger@refkit
 efivar@openembedded-layer
 elfutils@core
 encodings@core
-example-app-c@appfw
-example-app-node@appfw
-example-app-python@appfw
 expat@core
 file@core
 findutils@core
@@ -146,7 +143,6 @@ initramfs-framework@core
 initscripts@core
 inputproto@core
 intel-microcode@intel
-iot-app-fw@appfw
 iot-rest-api-server@iotweb
 iotivity-node@iotweb
 iotivity-simple-client@oic
