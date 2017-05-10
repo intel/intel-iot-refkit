@@ -150,6 +150,8 @@ BBFILES ?= ""
         # it looks for the locked signature file in that directory.
         env = os.environ.copy()
         env['BUILDDIR'] = self.poky_dir
+        # We must use our forked yocto-compat-layer.py.
+        env['PATH'] = '%s/scripts:%s' % (self.layers['meta-refkit'], env['PATH'])
         self.build_options = {'env': env, 'cwd': self.poky_dir}
 
     def tearDownLocal(self):
