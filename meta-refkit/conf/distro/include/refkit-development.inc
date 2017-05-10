@@ -1,6 +1,3 @@
-# Use the pre-generated keys for IMA signing.
-IMA_EVM_KEY_DIR = "${IMA_EVM_BASE}/data/debug-keys"
-
 # Use the pre-generated OpenSSL keys for dm-verity signing with
 # well-known password "refkit" passed directly via the command line.
 # Other openssl -passin variants (for example, file:<path to password file>)

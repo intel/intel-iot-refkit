@@ -139,9 +139,7 @@ i2c-minnowmax-board@quark-bsp
 i2c-quark-board@quark-bsp
 icu@core
 iftop@networking-layer
-ima-evm-utils@integrity
 init-ifupdown@core
-initramfs-framework-ima@integrity
 initramfs-framework-refkit-dm-verity@refkit
 initramfs-framework-refkit-luks@refkit
 initramfs-framework@core
