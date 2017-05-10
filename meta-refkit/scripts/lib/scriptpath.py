@@ -21,7 +21,7 @@ import os
 import os.path
 
 def add_oe_lib_path():
-    basepath = os.path.abspath(os.path.dirname(__file__) + '/../..')
+    basepath = os.path.abspath(os.path.dirname(__file__) + '/../../../openembedded-core')
     newpath = basepath + '/meta/lib'
     sys.path.insert(0, newpath)
 
