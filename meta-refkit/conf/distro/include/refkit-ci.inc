@@ -35,9 +35,6 @@ TEST_TARGET = "simpleremote"
 # SDK defaults:
 SDKMACHINE ?= "x86_64"
 
-# HOSTTOOLS setup:
-HOSTTOOLS_remove = "hostname ip vi"
-
 # Generate source mirror tarballs:
 BB_GENERATE_MIRROR_TARBALLS = "1"
 

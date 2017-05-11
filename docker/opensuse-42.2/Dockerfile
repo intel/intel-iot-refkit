@@ -10,6 +10,7 @@ RUN zypper --no-color --non-interactive ref -f && \
     zypper --no-color --non-interactive install --no-recommends python gcc \
             gcc-c++ git chrpath make wget python-xml diffstat makeinfo \
             python-curses patch socat libSDL-devel tar which unzip \
+            net-tools iproute2 vim \
             python3 python3-curses glibc-locale syslinux
 
 ENV JENKINS_HOME /var/lib/jenkins
