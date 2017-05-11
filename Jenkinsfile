@@ -146,9 +146,12 @@ try {
                 } finally {
                     // read tests summary prepared by tester-exec.sh
                     // Here one tester adds it's summary piece to the global buffer.
-                    global_sum_log += readFile "results-summary-${test_device}.${img}.log"
-                    archiveArtifacts allowEmptyArchive: true,
-                                     artifacts: '*.log, *.xml'
+                    // Grab lock as we deal with global data from multiple workers
+                    lock(resource: "global_data") {
+                        global_sum_log += readFile "results-summary-${test_device}.${img}.log"
+                        archiveArtifacts allowEmptyArchive: true,
+                                         artifacts: '*.log, *.xml'
+                    }
                 }
                 // without locking we may lose tester result set(s)
                 // if testers run xunit step in nearly same time
