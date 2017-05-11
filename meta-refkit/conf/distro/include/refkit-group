@@ -20,7 +20,6 @@ nobody:x:65534:
 nogroup:x:65533:
 pulse:x:1122:
 restful:x:991:
-rfkill:x:50:
 root:x:0:
 sshd:x:992:
 systemd-bus-proxy:x:993:
