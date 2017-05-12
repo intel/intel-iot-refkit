@@ -36,6 +36,11 @@ EOF
       # save sstate to workspace
       echo "SSTATE_DIR = \"${BUILD_CACHE_DIR}/sstate\"" >> conf/auto.conf
     fi
+    # lower compression levels in a PR build, to save build time
+    if [ -z ${CI_ARCHIVER_MODE+x} ]; then
+        echo "ZIP_COMPRESSION_LEVEL ?= \"-1\"" >> conf/auto.conf
+        echo "XZ_COMPRESSION_LEVEL ?= \"-0\"" >> conf/auto.conf
+    fi
 }
 
 auto_conf_archiver() {
