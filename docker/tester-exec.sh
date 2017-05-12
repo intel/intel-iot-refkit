@@ -73,7 +73,7 @@ testimg() {
   tar -xzf ${TEST_CASES_FILE} -C iottest/
 
   # Copy local WLAN settings to iottest over example file and chmod to readable
-  _WLANCONF=./iottest/oeqa/runtime/sanity/files/config.ini
+  _WLANCONF=./iottest/oeqa/runtime/connectivity/wifi/files/config.ini
   cp $HOME/.config.ini.wlan ${_WLANCONF}
   chmod 644 ${_WLANCONF}
 

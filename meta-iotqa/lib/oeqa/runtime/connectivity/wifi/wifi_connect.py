@@ -1,5 +1,5 @@
 import os
-from oeqa.runtime.wifi import wifi
+from . import wifi
 try:
     import ConfigParser
 except:
