@@ -22,7 +22,7 @@ cd $WORKSPACE
 # use +u to avoid exit caused by unbound variables use in init scripts
 set +u
 # note, BUILD_DIR is also undef in CI case, but is set in local-build case.
-source refkit-init-build-env ${BUILD_DIR}
+source oe-init-build-env ${BUILD_DIR}
 set -u
 
 # create auto.conf using functions in build-common-util.sh
