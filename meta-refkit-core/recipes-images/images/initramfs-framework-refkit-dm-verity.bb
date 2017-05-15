@@ -106,6 +106,8 @@ python do_install () {
                             stderr=subprocess.STDOUT)
 }
 
+# Skip this recipe if the key isn't set.
+REFKIT_DM_VERITY_KEY_NEEDED = "1"
 inherit refkit-hash-dm-verity-key
 do_install[vardeps] += "REFKIT_DMVERITY_PRIVATE_KEY_HASH"
 
