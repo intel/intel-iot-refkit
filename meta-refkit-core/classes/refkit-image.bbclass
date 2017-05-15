@@ -36,6 +36,7 @@ IMAGE_INSTALL = " \
 # SWUPD_BUNDLES = "tools-debug"
 # BUNDLE_CONTENTS[tools-debug] = "${FEATURE_PACKAGES_tools-debug}"
 REFKIT_IMAGE_PKG_FEATURES = " \
+    common-test \
     connectivity \
     iotivity \
     nodejs-runtime \
