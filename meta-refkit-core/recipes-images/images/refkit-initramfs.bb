@@ -1,17 +1,13 @@
-# IoT Reference OS Kit initramfs image. Derived from core-image-minimal-initramfs,
-# with initramfs-framework instead of initramfs-live-boot and
-# initramfs-live-install.
-#
-# Debugging tips for local.conf:
-# SYSLINUX_PROMPT = "100" - show menu for 10 seconds
-# AUTO_SYSLINUXMENU = "1" - automatically generate menu with choice between graphics and serial boot
-# SYSLINUX_TIMEOUT = "100" - boot after waiting for 10 seconds
-
-DESCRIPTION = "Small image capable of booting a device. The kernel includes \
-the Minimal RAM-based Initial Root Filesystem (initramfs), which finds the \
-first 'init' program more efficiently."
+SUMMARY = "IoT Reference OS Kit initramfs image"
+DESCRIPTION = "Finds the boot partition via PARTUUID, optionally supports IMA, LUKS, dm-verity."
 
 PACKAGE_INSTALL = "busybox base-passwd ${ROOTFS_BOOTSTRAP_INSTALL} ${FEATURE_INSTALL}"
+
+require refkit-boot-settings.inc
+
+# Do not build by default, some relevant settings (like encryption keys)
+# might be missing. If it is needed, it will get pulled in indirectly.
+EXCLUDE_FROM_WORLD = "1"
 
 # e2fs: loads fs modules and adds ext2/ext3/ext4=<device>:<path> boot parameter
 #       for mounting additional partitions
@@ -23,6 +19,11 @@ PACKAGE_INSTALL += "initramfs-module-udev"
 #        meta/recipes-core/initrdscripts/initramfs-framework/debug for details
 # Could be removed in more minimal product image.
 PACKAGE_INSTALL += "initramfs-module-debug"
+
+# Create variants of this recipe for each image mode. Each variant
+# depends on a specific variant of initramfs-framework-refkit-dm-verity.
+IMAGE_MODE_VALID = "${REFKIT_IMAGE_MODE_VALID}"
+inherit image-mode-variants
 
 # Do not pollute the initrd image with rootfs features
 IMAGE_FEATURES = ""
@@ -44,7 +45,7 @@ FEATURE_PACKAGES_luks = "initramfs-framework-refkit-luks"
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'dm-verity', '', d)} \
 "
-FEATURE_PACKAGES_dm-verity = "initramfs-framework-refkit-dm-verity"
+FEATURE_PACKAGES_dm-verity = "initramfs-framework-refkit-dm-verity${IMAGE_MODE_SUFFIX}"
 
 IMAGE_LINGUAS = ""
 

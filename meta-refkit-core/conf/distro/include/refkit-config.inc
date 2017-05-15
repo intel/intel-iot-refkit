@@ -14,6 +14,16 @@
 # Turns DISTRO_FEATURES into the corresponding overrides.
 require conf/distro/include/refkit-overrides.inc
 
+# refkit images distinguish between development and production mode.
+# Features that are useful only for development and dangerous
+# when used on real devices are not enabled in production mode (example:
+# using pre-generated signing keys shipped with the layer).
+#
+# This has to be set globally because some helper recipes
+# like the refkit initramfs need to know about all supported modes.
+REFKIT_IMAGE_MODE ??= ""
+REFKIT_IMAGE_MODE_VALID ??= "development production"
+
 # OE-core 7355a3c4f665e066925ea6327ac72365ab1f2f39 added a PACKAGECONFIG
 # to configure cairo/python3-cairo and enabled it by default. It used to
 # be unconditionally disabled and that worked OK for us so we'll restore
@@ -87,10 +97,10 @@ REFKIT_USE_DSK_IMAGES ?= "${@bb.utils.contains_any('MACHINE', 'intel-core2-32 in
 # we don't need syslinux and grub-efi and can avoid building them.
 DEPENDS_remove_pn-wic-tools_refkit-config = "${@ 'syslinux grub-efi' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else '' }"
 
-# Use systemd exclusively, when enabled. We have to add the class
-# unconditionally and then check in it once it gets inherited. Only at
-# that time are the DISTRO_FEATURES finalized.
-INHERIT += "refkit-systemd-init"
+# systemd is in the default distro features here, but choosing the
+# init manager and disabling the sysvinit distro feature has to
+# be done in the base configuration, because it cannot be done
+# conditionally. See refkit.conf.
 
 REFKIT_DEFAULT_DISTRO_FEATURES = " \
     bluez5 \

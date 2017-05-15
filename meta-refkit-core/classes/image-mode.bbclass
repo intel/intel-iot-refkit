@@ -50,6 +50,8 @@ python () {
         bb.fatal('An image can only be built in exactly one mode: IMAGE_MODE=%s' % image_mode)
     mode = mode.pop()
     valid = d.getVar('IMAGE_MODE_VALID') or ''
+    if not valid:
+        bb.fatal('No image modes defined for this image, therefore IMAGE_MODE=%s has no effect.' % image_mode)
     if mode not in valid.split():
         bb.fatal('Invalid image mode: IMAGE_MODE=%s (not in %s)' % (image_mode, valid))
 }

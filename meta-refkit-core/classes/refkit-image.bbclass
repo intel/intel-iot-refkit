@@ -82,6 +82,7 @@ IMAGE_FEATURES[validitems] += " \
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'ima', 'ima', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'smack', 'smack', '', d)} \
+    ${@ 'muted' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else 'autologin' } \
     ${REFKIT_IMAGE_EXTRA_FEATURES} \
 "
 REFKIT_IMAGE_EXTRA_FEATURES ?= ""
@@ -145,6 +146,7 @@ REFKIT_IMAGE_FEATURES_COMMON ?= " \
     ssh-server-openssh \
     alsa \
     sensors \
+    ${@ 'common-test' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' } \
 "
 REFKIT_IMAGE_INSTALL_COMMON ?= ""
 
@@ -243,6 +245,26 @@ WIC_CREATE_EXTRA_ARGS += " -D"
 
 inherit core-image extrausers image-buildinfo image-mode
 
+# Refkit images use the image modes defined by REFKIT_IMAGE_MODE_VALID.
+# We cannot set IMAGE_MODE_VALID and IMAGE_MODE globally, because that would
+# also affect other images where those modes are not valid.
+#
+# We also need to handle the case where REFKIT_IMAGE_MODE* is not
+# at all (parsing/using outside of our distro) and set empty defaults
+# in that case to keep the image-mode.bbclass sanity checks happy.
+IMAGE_MODE ??= "${@ d.getVar('REFKIT_IMAGE_MODE') or '' }"
+IMAGE_MODE_VALID = "${@ d.getVar('REFKIT_IMAGE_MODE_VALID') or '' }"
+
+# By inheriting image-mode-variants.bbclass we ensure that each refkit
+# image recipe also becomes available as a variant where the
+# IMAGE_MODE is fixed (e.g. refkit-image-common-production).  Note
+# that this uses BBCLASSEXTEND and relies on setting IMAGE_MODE_VALID
+# globally, because we need the matching refkit-initramfs.
+#
+# It is possible to add to BBCLASSEXTEND, but it is not possible to create
+# variants of variants.
+inherit image-mode-variants
+
 BUILD_ID ?= "${DATETIME}"
 # Do not re-trigger builds just because ${DATETIME} changed.
 BUILD_ID[vardepsexclude] += "DATETIME"
@@ -254,7 +276,7 @@ IMAGE_NAME = "${IMAGE_BASENAME}-${MACHINE}-${BUILD_ID}"
 # core-image-minimal-initramfs.bbappend). All machines must
 # boot with a suitable initramfs, because IMA initialization is done
 # in it.
-REFKIT_INITRAMFS ?= "refkit-initramfs"
+REFKIT_INITRAMFS ?= "${@ 'refkit-initramfs' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else 'refkit-initramfs-development' }"
 INITRD_IMAGE_intel-core2-32 = "${REFKIT_INITRAMFS}"
 INITRD_IMAGE_intel-corei7-64 = "${REFKIT_INITRAMFS}"
 INITRD_IMAGE_intel-quark = "${REFKIT_INITRAMFS}"

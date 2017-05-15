@@ -10,6 +10,7 @@ REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES += "computervision"
 
 # Feature "computervision-test" is included if "development" version of the
 # image is compiled.
+REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES += "${@ '' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else 'computervision-test'}"
 
 # Example for customization in local.conf when building
 # refkit-image-computervision.bb:

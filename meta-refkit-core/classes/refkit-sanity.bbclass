@@ -1,14 +1,3 @@
-# Check that the user has explicitly chosen how to build images.
-REFKIT_IMAGE_BUILD_MODE_SELECTED ?= ""
-addhandler refkit_sanity_check_eventhandler
-refkit_sanity_check_eventhandler[eventmask] = "bb.event.SanityCheck"
-python refkit_sanity_check_eventhandler() {
-    if not d.getVar('REFKIT_IMAGE_BUILD_MODE_SELECTED', True):
-        import os
-        bb.fatal('''"conf/local.conf" must be explicitly edited to select between building
-production and development images. More details about the choices in that file.''')
-}
-
 # /run, /proc, /var/volatile and /dev only get mounted at runtime.
 REFKIT_QA_IMAGE_SYMLINK_WHITELIST = " \
     /dev/null \

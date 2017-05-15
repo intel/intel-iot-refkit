@@ -97,14 +97,10 @@ default distro features, etc.) is made available to other distros via
 
 To reuse the distro configuration in addition to the layer content:
 
-* Add ``require "conf/distro/include/refkit-config.inc"``, and
-* use the same distro features as the refkit distro with::
-
-     DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
-     DISTRO_FEATURES_DEFAULT_remove = "${REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE}"
-     DISTRO_FEATURES ?= "${DISTRO_FEATURES_DEFAULT} ${DISTRO_FEATURES_LIBC} ${REFKIT_DEFAULT_DISTRO_FEATURES}"
-
-* or choose individual distro features.
+* Add ``require "conf/distro/include/refkit-config.inc"``, *and*
+* use enable same distro features as the refkit distro (in particular, systemd)
+  with ``require "conf/distro/include/enable-refkit-config.inc``,
+* *or* choose individual distro features to match your needs.
 
 These changes can go into file:`local.conf` or a custom distro
 configuration file.

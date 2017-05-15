@@ -11,6 +11,12 @@ LICENSE = "MIT"
 DEPENDS = "openssl-native"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
+# We depend on secret keys, which (in refkit) get set depending on IMAGE_MODE.
+# Therefore create variants of this recipe for each image mode. refkit-initramfs.bb pulls
+# in the variant that matches its own image mode.
+IMAGE_MODE_VALID = "${REFKIT_IMAGE_MODE_VALID}"
+inherit image-mode-variants
+
 require refkit-boot-settings.inc
 
 python () {

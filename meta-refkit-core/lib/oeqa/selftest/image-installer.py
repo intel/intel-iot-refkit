@@ -56,6 +56,9 @@ class ImageInstaller(oeSelfTest):
         # clean up which can result in the native tools built earlier in
         # setUpClass being unavailable.
         if not ImageInstaller.image_is_ready:
+            # The tests depend on images done in "development" mode, so set that here
+            # temporarily in a way that it overrides some other IMAGE_MODE setting in local.conf.
+            self.append_config('IMAGE_MODE_forcevariable = "development"')
             targets = 'refkit-installer-image ovmf swtpm-wrappers-native'
             print('Starting: bitbake %s' % targets)
             result = bitbake(targets)
@@ -149,10 +152,9 @@ class ImageInstaller(oeSelfTest):
 
     def test_install_fixed_password(self):
         """Test image installation under qemu without virtual TPM, using a fixed password"""
-        fixed_password = get_bb_var('REFKIT_DISK_ENCRYPTION_PASSWORD')
-        if not fixed_password:
-            self.skipTest('REFKIT_DISK_ENCRYPTION_PASSWORD not set')
-        self.do_install(fixed_password=fixed_password)
+        # Same fixed password as the one used for development images
+        # (see refkit-boot-settings.inc).
+        self.do_install(fixed_password="refkit")
 
     def test_install_tpm(self):
         """Test image installation under qemu without virtual TPM, using a fixed password"""

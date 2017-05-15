@@ -234,7 +234,7 @@ BB_DISKMON_DIRS ?= "\
 # CONF_VERSION is increased each time build/conf/ changes incompatibly and is used to
 # track the version of this file when it was generated. This can safely be ignored if
 # this doesn't mean anything to you.
-CONF_VERSION = "2"
+CONF_VERSION = "3"
 
 #
 # ISAFW: https://github.com/01org/isafw
@@ -268,20 +268,13 @@ SUPPORTED_RECIPES_CHECK = "fatal"
 # the following line.
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
-# An explicit choice must be made between building IoT Reference OS Kit
-# development images and production images.
-
-# IoT Reference OS Kit development images get built when uncommenting the
-# following line. Do not do this in production! The resulting images
-# are not secure.
-#
-#require conf/distro/include/refkit-development.inc
-
-# When building production images, configure IMA signing
-# as described in meta-integrity/README.md if IMA is enabled
-# and uncomment the following line.
-#
-#require conf/distro/include/refkit-production.inc
+# When using the REFKIT_IMAGE_MODE = "development" as suggested here,
+# refkit images by default enable certain development features (like
+# auto-login as root on local consoles) and use the pre-generated
+# private/public keys included in this layer. Real production
+# images should use REFKIT_IMAGE_MODE = "production" and must set their
+# own keys.
+REFKIT_IMAGE_MODE ?= "development"
 
 # To enable X11 with OpenGL support for images, uncomment following line.
 # This will also pull in packagegroup-core-x11, xterm and twm as minimal
