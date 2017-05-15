@@ -241,7 +241,7 @@ WIC_CREATE_EXTRA_ARGS += " -D"
 # the classes. In particular IMAGE_FSTYPES is relevant because it causes
 # other classes to be imported.
 
-inherit core-image extrausers image-buildinfo
+inherit core-image extrausers image-buildinfo image-mode
 
 BUILD_ID ?= "${DATETIME}"
 # Do not re-trigger builds just because ${DATETIME} changed.
