@@ -227,6 +227,8 @@ uefiapp_sign() {
             sbverify --cert ${REFKIT_DB_CERT} $i.signed
             mv $i.signed $i
         done
+    else
+        bbfatal "REFKIT_DB_KEY and REFKIT_DB_CERT must be set to file names for the signing key when using the 'secureboot' image feature."
     fi
 }
 
@@ -253,8 +255,8 @@ python () {
 
     for varname in ('REFKIT_DB_CERT', 'REFKIT_DB_KEY'):
         filename = d.getVar(varname)
-        if filename is None:
-            bb.fatal('%s is not set.' % filename)
+        if not filename:
+            continue
         if not os.path.isfile(filename):
             bb.fatal('%s=%s is not a file.' % (varname, filename))
         with open(filename, 'rb') as f:
