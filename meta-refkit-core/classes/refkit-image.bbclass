@@ -405,14 +405,15 @@ local_autologin () {
 }
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('IMAGE_FEATURES', 'autologin', 'local_autologin;', '', d)}"
 
-# Extends the /etc/motd message that is shown on each login.
-# Normally it is empty.
-REFKIT_EXTRA_MOTD ?= ""
-python extra_motd () {
-    with open(d.expand('${IMAGE_ROOTFS}${sysconfdir}/motd'), 'a') as f:
-        f.write(d.getVar('REFKIT_EXTRA_MOTD', True))
+# Use image-mode.bbclass to add a warning to /etc/motd.
+IMAGE_MODE_MOTD_NOT_PRODUCTION () {
+*********************************************
+*** This is a ${IMAGE_MODE} image! ${@ ' ' * (19 - len(d.getVar('IMAGE_MODE')))} ***
+*** Do not use in production.             ***
+*********************************************
 }
-ROOTFS_POSTPROCESS_COMMAND += "${@'extra_motd;' if d.getVar('REFKIT_EXTRA_MOTD', True) else ''}"
+IMAGE_MODE_MOTD = "${IMAGE_MODE_MOTD_NOT_PRODUCTION}"
+IMAGE_MODE_MOTD[production] = ""
 
 # Ensure that the os-release file contains values matching the current image creation build.
 # We do not want to rebuild the the os-release package for that, because that would
