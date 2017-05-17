@@ -107,9 +107,7 @@ class BaseOsTest(oeRuntimeTest):
             "hci_intel: probe of INT33E1:00 failed with error -2",
             "Error changing net interface name 'usb0' to",
             "*ERROR* dp aux hw did not signal timeout",
-            "*ERROR* dp_aux_ch not done status 0xa1450064",
-            # Bug 11105, in Refkit bugzilla
-            "file /var/lib/alsa/asound.state lock error"
+            "*ERROR* dp_aux_ch not done status 0xa1450064"
             ]
         self.longMessage = True
         cmd = "journalctl -ab"
