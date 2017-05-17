@@ -239,16 +239,17 @@ def re_creat_dir(path):
 
 
 #package test suite as tarball
-def pack_tarball(d, tdir, fname):
+def pack_tarball(d, tdir, fname, arcname):
     import tarfile
     tar = tarfile.open(fname, "w:gz")
-    tar.add(tdir, arcname=os.path.basename(tdir))
+    tar.add(tdir, arcname=arcname)
     tar.close()
 
 #bitbake task - export iot test suite
 python do_test_iot_export() {
     import shutil
     deploydir = "deploy"
+    testsuitedir = "iottest"
     exportdir = d.getVar("TEST_EXPORT_DIR", True)
     if not exportdir:
         exportdir = "iottest"
@@ -263,7 +264,7 @@ python do_test_iot_export() {
     outdir = d.getVar("DEPLOY_DIR_TESTSUITE", True)
     bb.utils.mkdirhier(outdir)
     fname = os.path.join(outdir, "iot-testsuite.tar.gz")
-    pack_tarball(d, exportdir, fname)
+    pack_tarball(d, exportdir, fname, testsuitedir)
     bb.plain("export test suite to ", fname)
     re_creat_dir(deploydir)
     shutil.copytree(os.path.join(d.getVar("DEPLOY_DIR", True), "files"), os.path.join(deploydir,"files"))
@@ -272,7 +273,7 @@ python do_test_iot_export() {
     bb.utils.mkdirhier(filesdir)
     dump_builddata(d, filesdir)
     fname = os.path.join(outdir, "iot-testfiles.%s.tar.gz" % machine)
-    pack_tarball(d, deploydir, fname)
+    pack_tarball(d, deploydir, fname, deploydir)
     bb.plain("export test files to ", fname)
 }
 

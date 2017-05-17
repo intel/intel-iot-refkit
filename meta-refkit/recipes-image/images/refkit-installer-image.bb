@@ -191,20 +191,24 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             fatal "sgdisk $output has failed - damaged disk?"
         fi
 
-        # Read partition description from rootfs.
-        if ! . "$input_mountpoint/boot/emmc-partitions-data"; then
-            fatal "reading $input_mountpoint/boot/emmc-partitions-data failed"
-        fi
+        PART_COUNT=$(execute sgdisk -p "$input" | tail -1 | awk '{print $1}')
 
         # Create partitions.
-        pnum=0
         gdisk_pnum=1
-        while [ "$pnum" -lt "$PART_COUNT" ]; do
-            eval size="\$PART_${pnum}_SIZE"
-            eval uuid="\$PART_${pnum}_UUID"
-            eval type_id="\$PART_${pnum}_TYPE"
-            eval lname="\$PART_${pnum}_NAME"
-            eval fs="\$PART_${pnum}_FS"
+        while [ "$gdisk_pnum" -le "$PART_COUNT" ]; do
+            size=$(execute sgdisk -i $gdisk_pnum "$input" | grep ^"Partition size" | cut -d : -f 2 | awk '{print $1}')
+            type_id=$(execute sgdisk -i $gdisk_pnum "$input" | grep ^"Partition GUID code" | cut -d : -f 2 | awk '{print $1}')
+            lname=$(execute sgdisk -i $gdisk_pnum "$input" | grep ^"Partition name" | cut -d : -f 2 | awk '{print $1}' | tr -d \')
+
+            # The target rootfs needs a PARTUUID and that must match with
+            # what is built in the UEFI combo app we are installing. The only
+            # requirement about the built in PARTUUID is that it differs from
+            # what the current rootfs has.
+            if [ "$lname" = "rootfs" ]; then
+                uuid=$(execute strings "$input_mountpoint"/boot/EFI_internal_storage/BOOT/boot*.efi | grep PARTUUID | sed -e 's/.*PARTUUID=\([a-zA-Z0-9-]*\).*/\1/')
+            else
+                uuid=$(execute sgdisk -i $gdisk_pnum "$input" | grep ^"Partition unique GUID" | cut -d : -f 2 | awk '{print $1}')
+            fi
 
             if [ "$gdisk_pnum" -eq "$PART_COUNT" ]; then
                 # Make the last partition take the rest of the space
@@ -213,7 +217,7 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                     fatal "creating rootfs partition failed"
                 fi
             else
-                if ! execute sgdisk -n "$gdisk_pnum:+0:+${size}M" -c "$gdisk_pnum:$lname" \
+                if ! execute sgdisk -n "$gdisk_pnum:+0:+${size}s" -c "$gdisk_pnum:$lname" \
                        -t "$gdisk_pnum:$type_id" -u "$gdisk_pnum:$uuid" -- "$output"; then
                     fatal "creating vfat partition $gdisk_pnum failed"
                 fi
@@ -232,7 +236,6 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                 populate "$output" "$gdisk_pnum" "" "$input_mountpoint"
             fi
 
-            pnum=$(expr $pnum + 1)
             gdisk_pnum=$(expr $gdisk_pnum + 1)
         done
         cleanup_install_image

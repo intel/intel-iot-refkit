@@ -99,7 +99,7 @@ $ mkdir -p $HOME/work
 $ cd $HOME/work
 $ git clone --recursive https://github.com/intel/intel-iot-refkit.git
 $ cd intel-iot-refkit
-$ source refkit-init-build-env
+$ source oe-init-build-env
 
 Edit ``conf/local.conf`` to select whether to build the production or the development image.
 More details about the choices in that file.
