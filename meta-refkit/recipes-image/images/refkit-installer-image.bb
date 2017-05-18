@@ -47,18 +47,16 @@ REFKIT_INSTALLER_UEFI_COMBO () {
 
         # Might be with or without p in the middle (sda1 vs mmcblk0p1).
         partition=
-        for i in $output*$gdisk_pnum; do
+        for i in $output$gdisk_pnum $output'p'$gdisk_pnum; do
             if [ -e "$i" ]; then
                 if [ "$partition" ]; then
                     fatal "partition #$gdisk_pnum in $output not unique?!"
                 fi
                 partition=$i
-            else
-                fatal "$output*$gdisk_pnum not found in $output"
             fi
         done
         if [ ! "$partition" ]; then
-            fatal "could not identify parition #$gdisk_pnum in $output"
+            fatal "could not identify partition #$gdisk_pnum in $output"
         fi
 
         if [ "$uuid" ]; then
