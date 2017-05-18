@@ -28,7 +28,7 @@ def global_sum_log = ""
 def added_commits = ""
 def builder_node = ""
 def builder_wspace = ""
-def slot_name = "builder-slot-"
+def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_build_dirs_to_keep = 4
 
@@ -48,7 +48,7 @@ def script_env = """
 try {
     timestamps {
         node('rk-docker') {
-            ws("workspace/${slot_name}${env.EXECUTOR_NUMBER}") {
+            ws("workspace/${slot_name}${ci_build_id}") {
                 // remember node and workspace needed by workspace cleaner
                 builder_node = "${env.NODE_NAME}"
                 builder_wspace = "${env.WORKSPACE}"
@@ -102,11 +102,6 @@ try {
                     added_commits = readFile("added_commits")
                 }
             } // ws
-            // rotate workspace out of way, rename using CI_BUILD_ID.
-            // Older trees are deleted later in test_runs[], without keeping build waiting.
-            ws("workspace") {
-                sh "mv ${builder_wspace} ${builder_wspace}.ci-prev.${ci_build_id}"
-            }
         } // node
     } // timestamps
 
@@ -301,12 +296,17 @@ def step_xunit() {
 }
 
 // Delete older builder trees.
-// While majority/regular workspaces are named builder-slot-0, (for EXECUTOR=0),
-// Jenkins may create additional trees as builder-slot-0_X.
-// Wildcard covers all such workspaces, dont want some pattern filling disk independently.
+// While majority/regular workspaces are named ci-CI_BUILD_ID,
+// Jenkins may create additional trees as ci-build-CI_BUILD_ID_<NUM>
+// Regex with underscore should cover all such workspaces.
 def trim_build_dirs(slotname, num_to_keep) {
     sh """
-dirs=`find ${env.WORKSPACE} -mindepth 1 -maxdepth 1 -type d -name "${slotname}*.ci-prev.*" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
+# tmpdirs in separate pass
+dirs=`find . -mindepth 1 -maxdepth 1 -type d -regex ".*/${slotname}[0-9_-]*-build-[0-9_]*.*tmp\$" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
+if [ -n "\${dirs}" ]; then
+    ionice -c 3 rm -fr \$dirs
+fi
+dirs=`find . -mindepth 1 -maxdepth 1 -type d -regex ".*/${slotname}[0-9_-]*-build-[0-9_]*\$" |sort -n |head -n -${num_to_keep} |tr '\n' ' '`
 if [ -n "\${dirs}" ]; then
     ionice -c 3 rm -fr \$dirs
 fi
