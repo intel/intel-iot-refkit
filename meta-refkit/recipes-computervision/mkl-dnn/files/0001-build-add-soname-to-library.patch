@@ -1,0 +1,53 @@
+From 6d3ebb1241459ca360a83b8f68b781b34e1b3877 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Wed, 17 May 2017 16:37:38 +0300
+Subject: [PATCH] build: add soname to library.
+
+Create library with a proper soname. Also fix a typo in PROJECT_VERSION
+definition.
+
+Upstream-status: Submitted [https://github.com/01org/mkl-dnn/pull/60]
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+
+---
+ CMakeLists.txt     | 7 ++++++-
+ src/CMakeLists.txt | 2 ++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b9a92cb..e28a1a7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -16,9 +16,14 @@
+ 
+ cmake_minimum_required(VERSION 2.8)
+ 
++# version handling is done with old style
++if(POLICY CMP0048)
++    cmake_policy(SET CMP0048 OLD)
++endif()
++
+ set(PROJECT_NAME "Intel(R) MKL-DNN")
+ set(PROJECT_FULL_NAME "Intel(R) Math Kernel Library for Deep Neural Networks (Intel(R) MKL-DNN)")
+-set(PROJECT_VERSION, "0.7")
++set(PROJECT_VERSION "0.7")
+ 
+ set(LIB_NAME mkldnn)
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index fa804f4..c559533 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -35,6 +35,8 @@ add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
+ target_link_libraries(${TARGET_NAME} ${${TARGET_NAME}_LINKER_LIBS})
+ set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 11)
+ set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
++set_property(TARGET ${TARGET_NAME} PROPERTY VERSION "${PROJECT_VERSION}.0")
++set_property(TARGET ${TARGET_NAME} PROPERTY SOVERSION "0")
+ 
+ install(TARGETS ${TARGET_NAME} DESTINATION lib)
+ install(FILES ${HEADERS} DESTINATION include)
+-- 
+2.9.4
+
