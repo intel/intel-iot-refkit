@@ -47,18 +47,16 @@ REFKIT_INSTALLER_UEFI_COMBO () {
 
         # Might be with or without p in the middle (sda1 vs mmcblk0p1).
         partition=
-        for i in $output*$gdisk_pnum; do
+        for i in $output$gdisk_pnum $output'p'$gdisk_pnum; do
             if [ -e "$i" ]; then
                 if [ "$partition" ]; then
                     fatal "partition #$gdisk_pnum in $output not unique?!"
                 fi
                 partition=$i
-            else
-                fatal "$output*$gdisk_pnum not found in $output"
             fi
         done
         if [ ! "$partition" ]; then
-            fatal "could not identify parition #$gdisk_pnum in $output"
+            fatal "could not identify partition #$gdisk_pnum in $output"
         fi
 
         if [ "$uuid" ]; then
@@ -146,6 +144,9 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             if ! execute cp -r "$rootfs/boot/EFI_internal_storage" "$output_mountpoint/EFI"; then
                 fatal "copying EFI files failed"
             fi
+            if ! execute cp "$rootfs/boot/rmc.db" "$output_mountpoint/"; then
+                fatal "copying RMC db failed"
+            fi
         fi
         if ! sync; then
             fatal "syncing data failed"
@@ -160,13 +161,14 @@ REFKIT_INSTALLER_UEFI_COMBO () {
 
         confirm_install || return 1
 
+        input_loopdev=
         input_mountpoint=
         input_mounted=
 
         cleanup_install_image () {
             [ "$input_mounted" ] && execute umount "$input_mountpoint"
             [ "$input_mountpoint" ] && rmdir "$input_mountpoint"
-            [ "$input" ] && execute kpartx -d "$input"
+            [ "$input_loopdev" ] && execute kpartx -d "$input_loopdev" && losetup -d "$input_loopdev"
             remove_cleanup cleanup_install_image
         }
         add_cleanup cleanup_install_image
@@ -176,6 +178,8 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         loopdev=$(execute kpartx -sav "$input" | tail -1 | sed -e 's/^\(add map \)*\([^ ]*\).*/\2/')
         if [ ! "$loopdev" ]; then
             fatal "kpartx failed for $input"
+        else
+            input_loopdev="/dev/${loopdev%%p[0-9]}"
         fi
         if ! input_mountpoint=$(mktemp -dt input-rootfs.XXXXXX); then
             fatal "could not create mount point"
