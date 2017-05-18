@@ -161,13 +161,14 @@ REFKIT_INSTALLER_UEFI_COMBO () {
 
         confirm_install || return 1
 
+        input_loopdev=
         input_mountpoint=
         input_mounted=
 
         cleanup_install_image () {
             [ "$input_mounted" ] && execute umount "$input_mountpoint"
             [ "$input_mountpoint" ] && rmdir "$input_mountpoint"
-            [ "$input" ] && execute kpartx -d "$input"
+            [ "$input_loopdev" ] && execute kpartx -d "$input_loopdev" && losetup -d "$input_loopdev"
             remove_cleanup cleanup_install_image
         }
         add_cleanup cleanup_install_image
@@ -177,6 +178,8 @@ REFKIT_INSTALLER_UEFI_COMBO () {
         loopdev=$(execute kpartx -sav "$input" | tail -1 | sed -e 's/^\(add map \)*\([^ ]*\).*/\2/')
         if [ ! "$loopdev" ]; then
             fatal "kpartx failed for $input"
+        else
+            input_loopdev="/dev/${loopdev%%p[0-9]}"
         fi
         if ! input_mountpoint=$(mktemp -dt input-rootfs.XXXXXX); then
             fatal "could not create mount point"
