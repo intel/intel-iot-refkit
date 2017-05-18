@@ -223,12 +223,10 @@ def run_proxy_args() {
 
 def build_user_args() {
     dir(pwd([tmp:true])+"/.build_user_args") {
-         // get jenkins user uid/gid
-        sh "id -u > jenkins_uid"
+        // get jenkins user uid/gid
+        sh "id -u > jenkins_uid && id -g > jenkins_gid"
         jenkins_uid = readFile("jenkins_uid").trim()
-        sh "id -g > jenkins_gid"
         jenkins_gid = readFile("jenkins_gid").trim()
-        deleteDir()
     }
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
 }
