@@ -144,6 +144,9 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             if ! execute cp -r "$rootfs/boot/EFI_internal_storage" "$output_mountpoint/EFI"; then
                 fatal "copying EFI files failed"
             fi
+            if ! execute cp "$rootfs/boot/rmc.db" "$output_mountpoint/"; then
+                fatal "copying RMC db failed"
+            fi
         fi
         if ! sync; then
             fatal "syncing data failed"
