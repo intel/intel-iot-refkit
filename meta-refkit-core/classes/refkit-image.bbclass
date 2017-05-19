@@ -441,12 +441,14 @@ IMAGE_MODE_MOTD[production] = ""
 # Ensure that the os-release file contains values matching the current image creation build.
 # We do not want to rebuild the the os-release package for that, because that would
 # also trigger image rebuilds when nothing else changed.
-#
-# FIXME: make this work with both ${IMAGE_ROOTFS}/etc/ and ${IMAGE_ROOTFS}/usr/lib
 refkit_image_patch_os_release () {
-    sed -i \
-        -e 's/build-id-to-be-added-during-image-creation/${BUILD_ID}/' \
-        ${IMAGE_ROOTFS}/etc/os-release
+    for dir in /etc ${sysconfdir} ${libdir}; do
+        if [ -f ${IMAGE_ROOTFS}$dir/os-release ]; then
+            sed -i \
+                -e 's/build-id-to-be-added-during-image-creation/${BUILD_ID}/' \
+                ${IMAGE_ROOTFS}$dir/os-release
+        fi
+    done
 }
 refkit_image_patch_os_release[vardepsexclude] = " \
     BUILD_ID \
