@@ -227,8 +227,13 @@ IMAGE_FSTYPES_append = " ${REFKIT_VM_IMAGE_TYPES}"
 # getting image-live.bbclass inherited.
 IMAGE_FSTYPES_remove = "live"
 
-# Activate "dsk" image type.
-IMAGE_CLASSES += "${@ 'image-dsk' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else ''}"
+# Activate "dsk" image type? Otherwise emulate loading of the EFI_PROVIDER class
+# as done in live-vm-common.bbclass.
+#
+# Either way, when using MACHINE=intel-corei7-64, the result is an image
+# that needs UEFI to boot.
+IMAGE_CLASSES += "${@ 'image-dsk' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else \
+                       bb.utils.contains('MACHINE_FEATURES', 'efi', d.getVar('EFI_PROVIDER') or '', '', d) }"
 
 # Inherit after setting variables that get evaluated when importing
 # the classes. In particular IMAGE_FSTYPES is relevant because it causes
