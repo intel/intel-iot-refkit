@@ -492,7 +492,8 @@ ROOTFS_POSTPROCESS_COMMAND += "refkit_image_disable_firstboot; "
 # less flexible (has to be the same for all images, while here it
 # can be set differently for different images).
 refkit_image_system_serialgetty() {
-    if [ $(echo '${SERIAL_CONSOLES}' | wc -w) -gt 1 ]; then
+    if [ $(echo '${SERIAL_CONSOLES}' | wc -w) -gt 1 ] &&
+       [ -f '${IMAGE_ROOTFS}${systemd_system_unitdir}/serial-getty@.service' ]; then
         # Make it possible to override the baud rate by moving
         # 115200,38400,9600 into the BAUDRATE environment variable.
         # Default is set here, but also overridden for each console
