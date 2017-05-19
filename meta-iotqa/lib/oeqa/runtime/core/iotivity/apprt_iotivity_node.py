@@ -1,8 +1,6 @@
 import os
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType='EFT', FeatureID='IOTOS-764')
 class SanityTestIotivityNode(oeRuntimeTest):
     """
     @class SanityTestIotivityNode

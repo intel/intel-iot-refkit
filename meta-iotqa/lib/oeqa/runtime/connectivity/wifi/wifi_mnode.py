@@ -8,13 +8,11 @@ except:
  import configparser as ConfigParser
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
 ssid_config = ConfigParser.ConfigParser()
 config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
 ssid_config.readfp(open(config_path))
 
-@tag(TestType="EFT")
 class CommWiFiMNode(oeRuntimeTest):
     """
     @class CommWiFiMNode
@@ -58,7 +56,6 @@ class CommWiFiMNode(oeRuntimeTest):
         self.wifi1 = wifi.WiFiFunction(self.targets[0])
         self.wifi2 = wifi.WiFiFunction(self.targets[1])
 
-    @tag(FeatureID="IOTOS-457")
     def test_wifi_ssh(self):
         '''One device ssh to another via WiFi
         @fn test_wifi_ssh
@@ -68,7 +65,6 @@ class CommWiFiMNode(oeRuntimeTest):
         # Check wifi1 to ssh to wifi2
         self.wifi1.ipv4_ssh_to(self.wifi2.get_wifi_ipv4())
 
-    @tag(FeatureID="IOTOS-457")
     def test_wifi_scp_file(self):
         '''One device scp a file to another device via WiFi
         @fn test_wifi_scp_file
@@ -87,7 +83,6 @@ class CommWiFiMNode(oeRuntimeTest):
         else:
             self.assertEqual(0, 1, msg="md5sum checking fail: original %s, remote is %s" % (md5sum1, md5sum2))
 
-    @tag(FeatureID="IOTOS-458")
     def test_wifi_scp_multiple_files(self):
         '''Stability: one device scp thousands of small files
            to another
@@ -115,7 +110,6 @@ class CommWiFiMNode(oeRuntimeTest):
         else:
             self.assertEqual(0, 1, msg="1000 file scp fail: original number %s, new number %s" % (file_number_old, file_number_new))
 
-    @tag(FeatureID="IOTOS-458")
     def test_wifi_scp_big_file(self):
         '''Stability: one device scp 500M size file to another
         @fn test_wifi_scp_big_file
@@ -140,7 +134,6 @@ class CommWiFiMNode(oeRuntimeTest):
         else:
             self.assertEqual(0, 1, msg="md5sum checking fail: original %s, remote is %s" % (md5sum1.split()[0], md5sum2.split()[0]))
 
-    @tag(FeatureID="IOTOS-458")
     def test_wifi_avaliable_after_longtime_idle(self):
         '''Stability: check if wifi is still workable after a long time idle
         @fn test_wifi_avaliable_after_longtime_idle

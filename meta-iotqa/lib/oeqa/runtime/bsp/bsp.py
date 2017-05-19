@@ -1,14 +1,11 @@
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT")
 
 class BspTest(oeRuntimeTest):
     """ BSP testing
     @class BsPTest
     """
 
-    @tag(FeatureID="IOTOS-638")
     def test_bsp_version(self):
         """ check the image bsp version
         @fn test_bsp_version

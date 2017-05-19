@@ -1,8 +1,6 @@
 import string
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT", FeatureID="IOTOS-462")
 class CommDaemonTest(oeRuntimeTest):
     """
     @class CommDaemonTest

@@ -1,8 +1,6 @@
 import subprocess
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType='FVT', FeatureID='IOTOS-343')
 class SanityTestRestApi(oeRuntimeTest):
     """
     @class SanityTestRestApi

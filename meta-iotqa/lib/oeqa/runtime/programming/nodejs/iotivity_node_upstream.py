@@ -6,7 +6,6 @@ import fileinput
 
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 from oeqa.runtime.nodejs.get_source import get_test_module_repo
 
 
@@ -155,7 +154,6 @@ def update_suite_js():
         new_line = line.replace('30000', '90000')
         print(new_line.strip('\n'))
 
-@tag(TestType='EFT', FeatureID='IOTOS-764')
 class IotivitynodeRuntimeTest(oeRuntimeTest):
     '''
     @class IotivitynodeRuntimeTest
@@ -216,7 +214,6 @@ class IotivitynodeRuntimeTest(oeRuntimeTest):
         self.target.run("/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 -p udp -m udp --dport %s:%s -j ACCEPT" % (port_range[0], port_range[1]))
 
 
-    @tag(CasesNumber=23)
     def test_apprt_iotivitynode(self):
         '''
         Execute the iotivity-node upstream test cases.

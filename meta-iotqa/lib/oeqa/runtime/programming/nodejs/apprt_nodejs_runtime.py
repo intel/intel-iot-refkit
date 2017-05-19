@@ -6,7 +6,6 @@ import subprocess
 import ConfigParser
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 from apprt_nodejs_runtime_log_parser import print_test_results
 from apprt_nodejs_runtime_log_parser import parse_test_cases
@@ -207,7 +206,6 @@ def choose_test_files_and_tar(local_nodejs_path, node_version):
     return p.returncode
 
 
-@tag(TestType='EFT', FeatureID='IOTOS-332')
 class NodejsRuntimeTest(oeRuntimeTest):
     """
     @class NodejsRuntimeTest
@@ -402,7 +400,6 @@ class NodejsRuntimeTest(oeRuntimeTest):
                 (self.target_node_path, self.target_node_version))
             sys.stdout.flush()
 
-    @tag(CasesNumber=1048)
     def test_apprt_nodejs_runtime(self):
         '''
         Execute the node.js upstream test cases.

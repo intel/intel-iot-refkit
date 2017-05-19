@@ -4,9 +4,7 @@ import string
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import run_as, add_group, add_user, remove_user
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT", FeatureID="IOTOS-498,IOTOS-450,IOTOS-1019,IOTOS-1004")
 class IOtvtClient(oeRuntimeTest):
     """
     @class IOtvtClient
