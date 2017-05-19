@@ -205,3 +205,14 @@ BBFILES ?= ""
                 self.fail('Including refkit-config.inc changed signatures.\n%s' % msg)
         finally:
             sys.path = old_path
+
+    @_poky_builddir
+    def test_refkit_computervision(self):
+        """
+        A full image build test of the computer vision image.
+        Poky uses sysvinit. Actually building an image runs
+        also postinst and various rootfs manipulation code,
+        and some of that might assume that systemd is used.
+        """
+        self.add_refkit_layers()
+        bitbake('refkit-image-computervision')
