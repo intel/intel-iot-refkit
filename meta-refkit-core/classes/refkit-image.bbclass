@@ -230,15 +230,6 @@ IMAGE_FSTYPES_remove = "live"
 # Activate "dsk" image type.
 IMAGE_CLASSES += "${@ 'image-dsk' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else ''}"
 
-# By default, the full image is meant to fit into 4*10^9 bytes, i.e.
-# "4GB" regardless whether 1000 or 1024 is used as base. 64M are reserved
-# for potential partitioning overhead.
-WKS_FILE = "refkit-directdisk.wks.in"
-REFKIT_VFAT_MB ??= "64"
-REFKIT_IMAGE_SIZE ??= "--fixed-size 3622M"
-REFKIT_EXTRA_PARTITION ??= ""
-WIC_CREATE_EXTRA_ARGS += " -D"
-
 # Inherit after setting variables that get evaluated when importing
 # the classes. In particular IMAGE_FSTYPES is relevant because it causes
 # other classes to be imported.
