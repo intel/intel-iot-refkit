@@ -384,16 +384,18 @@ python() {
 # for packaging, the preferred way to avoid logging is
 # to not install systemd-journald at all.
 refkit_image_muted () {
-    sed -i -e 's/^#\(MaxLevelStore=\).*/\1emerg/'\
-           -e 's/^\(ForwardToSyslog=yes\)/#\1/' \
-           ${IMAGE_ROOTFS}${sysconfdir}/systemd/journald.conf
+    if [ -f ${IMAGE_ROOTFS}${sysconfdir}/systemd/journald.conf ]; then
+        sed -i -e 's/^#\(MaxLevelStore=\).*/\1emerg/'\
+               -e 's/^\(ForwardToSyslog=yes\)/#\1/' \
+               ${IMAGE_ROOTFS}${sysconfdir}/systemd/journald.conf
+    fi
 
     # Remove systemd-getty-generator to avoid (serial-)getty services
     # being created for kernel detected consoles.
-    rm ${IMAGE_ROOTFS}${systemd_unitdir}/system-generators/systemd-getty-generator
+    rm -f ${IMAGE_ROOTFS}${systemd_unitdir}/system-generators/systemd-getty-generator
 
     # systemd installs getty@tty1.service by default so remove it too
-    rm -r ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants
+    rm -rf ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants
 }
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('IMAGE_FEATURES', 'muted', 'refkit_image_muted;', '', d)}"
 
