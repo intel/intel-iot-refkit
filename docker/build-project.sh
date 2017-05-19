@@ -103,8 +103,7 @@ bitbake -S none ${_bitbake_targets}
 
 if [ ! -z ${JOB_NAME+x} ]; then
   # CI run: save output to log file
-  LOG=$WORKSPACE/bitbake-${TARGET_MACHINE}-${CI_BUILD_ID}.log
-  bitbake ${_bitbake_targets} 2>&1 | tee -a $LOG
+  bitbake ${_bitbake_targets} 2>&1 | tee -a $WORKSPACE/$CI_LOG
 else
   bitbake ${_bitbake_targets}
 fi
