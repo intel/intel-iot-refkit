@@ -207,12 +207,51 @@ BBFILES ?= ""
             sys.path = old_path
 
     @_poky_builddir
-    def test_refkit_computervision(self):
+    def test_common_poky_config(self):
         """
-        A full image build test of the computer vision image.
+        A full image build test of the common image,
+        without the refkit-config.inc.
+
         Poky uses sysvinit. Actually building an image runs
         also postinst and various rootfs manipulation code,
         and some of that might assume that systemd is used.
         """
         self.add_refkit_layers()
-        bitbake('refkit-image-computervision')
+
+        # We need an image that we can log into, so zap the root password.
+        self.append_config('''
+REFKIT_IMAGE_EXTRA_FEATURES_append = "empty-root-password"
+''')
+        bitbake('refkit-image-common')
+        with runqemu('refkit-image-common',
+                     ssh=False,
+                     image_fstype='wic',
+                     runqemuparams='ovmf slirp') as qemu:
+            cmd = 'id'
+            status, output = qemu.run_serial(cmd)
+            self.assertTrue(status, 'Failed to log in:\n%s' % output)
+            self.assertTrue(output.startswith('uid=0(root)'))
+
+    @_poky_builddir
+    def test_common_refkit_config(self):
+        """
+        A full image build test of the common image,
+        with the refkit-config.inc.
+        """
+        self.add_refkit_layers()
+
+        # "development" mode automatically enables auto-login, so we can actually run
+        # and log into the virtual machine.
+        self.append_config('''
+require conf/distro/include/enable-refkit-config.inc
+REFKIT_IMAGE_MODE = "development"
+''')
+        bitbake('refkit-image-common')
+        with runqemu('refkit-image-common',
+                     ssh=False,
+                     image_fstype='wic',
+                     runqemuparams='ovmf slirp') as qemu:
+            cmd = 'id'
+            status, output = qemu.run_serial(cmd)
+            self.assertTrue(status, 'Failed to log in:\n%s' % output)
+            self.assertTrue(output.startswith('uid=0(root)'))
