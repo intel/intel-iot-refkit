@@ -424,7 +424,13 @@ REFKIT_LOCAL_GETTY ?= " \
     ${IMAGE_ROOTFS}${systemd_system_unitdir}/getty@.service \
 "
 local_autologin () {
-    sed -i -e 's/^\(ExecStart *=.*getty \)/\1--autologin root /' ${REFKIT_LOCAL_GETTY}
+    for service in ${REFKIT_LOCAL_GETTY}; do
+        if [ -f $service ]; then
+            sed -i -e 's/^\(ExecStart *=.*getty \)/\1--autologin root /' $service
+        else
+            bbfatal "systemd service file $service (from REFKIT_LOCAL_GETTY) not found"
+        fi
+    done
 }
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('IMAGE_FEATURES', 'autologin', 'local_autologin;', '', d)}"
 
