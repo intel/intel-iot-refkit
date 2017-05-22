@@ -1,3 +1,5 @@
+acpitables@refkit-extra
+acpica@core
 caffe@refkit-extra
 household-objects-database-msgs@ros-layer
 hdf5@refkit-extra
