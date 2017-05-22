@@ -90,13 +90,6 @@ KERNEL_FEATURES_append_refkit-config = " \
 # Defined here because it influences several different recipes.
 REFKIT_USE_DSK_IMAGES ?= "${@bb.utils.contains_any('MACHINE', 'intel-core2-32 intel-corei7-64 intel-quark', 'True', 'False', d)}"
 
-# When using UEFI-based dsk-style image format created by wic,
-# we don't need syslinux and grub-efi and can avoid building them.
-# Strictly speaking, this is not a global distro change and we
-# cannot be sure that it works for all images. We list it here
-# to keep it next to the global REFKIT_USE_DSK_IMAGES.
-DEPENDS_remove_pn-wic-tools_refkit-config = "${@ 'syslinux grub-efi' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else '' }"
-
 PREFERRED_PROVIDER_virtual/opencl-headers_refkit-config = "opencl-headers"
 PREFERRED_PROVIDER_virtual/opencl-headers-cxx_refkit-config = "opencl-headers-cxx"
 
