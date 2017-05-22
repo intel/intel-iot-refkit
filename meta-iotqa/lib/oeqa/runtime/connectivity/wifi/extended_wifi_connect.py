@@ -1,7 +1,7 @@
 import time
 import os
 import string
-from oeqa.runtime.wifi import wifi
+from oeqa.runtime.connectivity.wifi import wifi
 try:
  import ConfigParser
 except:
@@ -10,12 +10,12 @@ from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 
 ssid_config = ConfigParser.ConfigParser()
-config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
+config_path = os.path.join(os.path.dirname(__file__), "files/extended_config.ini")
 ssid_config.readfp(open(config_path))
 
-class CommWiFiConect(oeRuntimeTest):
+class ExtendedWifiConnectTest(oeRuntimeTest):
     """
-    @class CommWiFiConect
+    @class ExtendedWifiConnectTest
     """
     def setUp(self):
         ''' initialize wifi class
