@@ -12,7 +12,7 @@ BBCLASSEXTEND = "native"
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
 PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "beaf26ff429bd8660d2103fb682243efeb828ab1"
+SRCREV = "6804cca263edd11fd03b2d7f5b7ba034d9a013c3"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right
@@ -23,11 +23,6 @@ DEPENDS_class-native = "clang-native"
 # installing the library.
 
 CL_HW_TARGET ?= "${@d.getVar('PN').split('-')[1]}"
-
-# built-in kernels depend on libocl's headers (e.g. ocl_as.h) yet there is no
-# dependency specified for that in beignet's build system. This causes race
-# condition when libgbe.so is compiled for the target.
-PARALLEL_MAKE = ""
 
 inherit cmake pkgconfig
 
