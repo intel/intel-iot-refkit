@@ -278,6 +278,7 @@ opkg-utils@core
 orc@core
 os-release@core
 ovmf@core
+packagegroup-.*@refkit.*
 pango@core
 pciutils@core
 perl@core
@@ -307,6 +308,7 @@ randrproto@core
 read-map@iotqa
 readline@core
 recordproto@core
+refkit.*image.*@refkit.*
 renderproto@core
 resourceproto@core
 rgb@core
