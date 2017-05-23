@@ -117,6 +117,7 @@ include selftest.inc
         'PREMIRRORS',
         'PRSERV_HOST',
         'SUPPORTED_RECIPES',
+        'QEMU_USE_KVM',
         )
 
     @classmethod
