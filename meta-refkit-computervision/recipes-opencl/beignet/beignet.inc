@@ -24,12 +24,7 @@ DEPENDS_class-native = "clang-native"
 
 CL_HW_TARGET ?= "${@d.getVar('PN').split('-')[1]}"
 
-inherit cmake pkgconfig
-
-# There is no python in sysroot -> look for it on the build host.
-# WARNING: remove CLang from the host otherwise it might get into use
-#          instead of the one from meta-clang.
-OECMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "BOTH"
+inherit cmake pkgconfig pythonnative
 
 EXTRA_OECMAKE = " -DSTANDALONE_GBE_COMPILER_DIR=${STAGING_BINDIR_NATIVE} -DLLVM_LIBRARY_DIR=${STAGING_LIBDIR} -DBEIGNET_INSTALL_DIR=${libdir}/beignet-${CL_HW_TARGET}"
 EXTRA_OECMAKE_class-native = " -DBEIGNET_INSTALL_DIR=/usr/lib/beignet -DLLVM_LIBRARY_DIR=${STAGING_LIBDIR_NATIVE}"
