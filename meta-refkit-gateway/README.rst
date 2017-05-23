@@ -18,6 +18,17 @@ This layer depends on::
    layers: refkit-core
    branch: master
 
+   URI: https://git.yoctoproject.org/git/meta-oic
+   layers: oic
+   branch: master
+
+   URI: https://github.com/ostroproject/meta-iot-web.git
+   layers: iotweb
+   branch: master
+
+   URI: http://git.openembedded.org/meta-openembedded
+   layers: openembedded-layer
+   branch: master
 
 Patches
 =======
