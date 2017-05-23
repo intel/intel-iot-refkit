@@ -36,17 +36,14 @@ class IotvtClientTest(oeRuntimeTest):
         print ("\npatient... simpleclient needs long time for its observation")
         time.sleep(10)
         # If there is no 'Observe is used', give a retry.
-        (status, output) = cls.tc.target.run('cat /tmp/output')
-        if "Observe is used." in output:
-            pass
-        else:
+        (status, output) = cls.tc.target.run('grep "Observe is used."  /tmp/output')
+        if status != 0:
             cls.tc.target.run("killall simpleserver")
             cls.tc.target.run("killall simpleclient")
             time.sleep(2)
             (status, output) = cls.tc.target.run(server_cmd)
             cls.tc.target.run(client_cmd)
             time.sleep(10)
-        # Retry ends.
 
     @classmethod
     def tearDownClass(cls):
@@ -55,54 +52,34 @@ class IotvtClientTest(oeRuntimeTest):
         cls.tc.target.run("killall simpleserver")
         cls.tc.target.run("killall simpleclient")
 
+    def _test_findstring(self, sstr):
+        (status, __) = self.target.run('grep "%s" /tmp/output' % sstr)
+        self.assertEqual(status, 0, msg="Failed to find \"%s\" in file" % sstr)
+
     def test_findresource(self):
         '''Check if client is able to discover resource from server
         '''
-        (status, output) = self.target.run('cat /tmp/output')
-        ret = 0
-        if "DISCOVERED Resource" in output:
-            pass
-        else:
-           ret = 1
-        self.assertEqual(ret, 0, msg="Error messages: %s" % output)
+        self._test_findstring("DISCOVERED Resource")
 
     def test_get_request_status(self):
         '''Check if GET request finishes successfully
         '''
-        (status, output) = self.target.run('cat /tmp/output')
-        ret = 0
-        if "GET request was successful" in output:
-            pass
-        else:
-           ret = 1
-        self.assertEqual(ret, 0, msg="Error messages: %s" % output)
+        self._test_findstring("GET request was successful")
 
     def test_put_request_status(self):
         '''Check if PUT request finishes successfully
         '''
-        (status, output) = self.target.run('cat /tmp/output')
-        ret = 0
-        if "PUT request was successful" in output:
-            pass
-        else:
-           ret = 1
-        self.assertEqual(ret, 0, msg="Error messages: %s" % output)
+        self._test_findstring("PUT request was successful")
 
     def test_server_status(self):
         '''Check if server doesn't crash after timeout
         '''
         time.sleep(2)
         # check if simpleserver is there
-        (status, output) = self.target.run('ps')
-        self.assertEqual(output.count("simpleserver"), 1, msg="Error messages: %s" % output)
+        (status, __) = self.target.run('ps | grep simpleserver | grep -v grep')
+        self.assertEqual(status, 0, msg="simpleserver is not running")
 
     def test_observer(self):
         '''Check if Observe is used
         '''
-        (status, output) = self.target.run('cat /tmp/output')
-        ret = 0
-        if "Observe is used." in output:
-            pass
-        else:
-           ret = 1
-        self.assertEqual(ret, 0, msg="Error messages: %s" % output)
+        self._test_findstring("Observe is used.")
