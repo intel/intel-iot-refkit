@@ -175,11 +175,6 @@ FEATURE_PACKAGES_bluetooth-audio = "packagegroup-bluetooth-audio"
 # because it is the most common source code management tool.
 FEATURE_PACKAGES_tools-develop = "packagegroup-core-buildessential git"
 
-# Add bash because it is more convenient to use than dash.
-# This does not change /bin/sh due to re-organized update-alternative
-# priorities.
-FEATURE_PACKAGES_tools-interactive = "packagegroup-tools-interactive bash"
-
 # OE-core treats "valgrind" as part of tools-profile aka
 # packagegroup-core-tools-profile.bb. We do not enable that set of tools
 # in IoT Reference OS Kit because not all of them work and/or make sense, but valgrind
