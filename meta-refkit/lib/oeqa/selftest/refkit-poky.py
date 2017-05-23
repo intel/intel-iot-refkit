@@ -45,14 +45,37 @@ class RefkitPokyMeta(type):
                 - proper declaration of dependencies (because 'yocto-compat-layer.py --dependency' adds those)
                 - parse and dependencies ('bitbake -S none world' must work)
                 """
-                cmd = "yocto-compat-layer.py --dependency %s -- %s" % (' '.join(self.layers.values()),
-                                                                       self.layers[refkit_layer])
-                result = runCmd(cmd, **self.build_options)
+                # We must use our forked yocto-compat-layer.py.
+                cmd = "%s/scripts/yocto-compat-layer.py --dependency %s -- %s" % (
+                    self.layers['meta-refkit'],
+                    ' '.join(self.layers.values()),
+                    self.layers[refkit_layer])
+                # "world" does not include images. We need to enable them explicitly, otherwise
+                # their dependencies won't be checked. Only "development" mode is guaranteed to
+                # work out-of-the-box. However, images change their signatures when adding
+                # layers (get_layer_revs depends in BBLAYERS), so we have to limit this to
+                # images defined in the layer that we are adding. This can be more than
+                # one. The default is "refkit-image-<layer suffix>", so the two images
+                # are just listed to be explicit.
+                self.append_config('''
+REFKIT_IMAGE_MODE_VALID = "development production"
+REFKIT_IMAGE_MODE = "development"
+%s
+''' %
+                                   '\n'.join(['EXCLUDE_FROM_WORLD_forcevariable_pn-%s = ""' % x for x in
+                                              {
+                                                  'meta-refkit-computervision': ['refkit-image-computervision'],
+                                                  'meta-refkit-gateway': ['refkit-image-gateway'],
+                                              }.get(refkit_layer, [refkit_layer.replace('meta-refkit', 'refkit-image')])
+                                          ]))
+
+
+                result = runCmd(cmd)
+
                 # yocto-compat-layer.py does not return error codes (YOCTO #11482), so we have to guess.
                 if 'INFO: FAILED' in result.output:
-                    # There's no point in dumping the full command, because the environment for
-                    # invoking it wouldn't be right anyway.
                     self.fail(result.output)
+                self.log.info('%s:\n%s' % (cmd, result.output))
             return test
 
         layers = {}
@@ -146,46 +169,39 @@ BBFILES ?= ""
             os.symlink(os.path.join(self.layers['meta-refkit-core'], 'lib', target),
                        os.path.join(lib, target))
 
-        # BUILDDIR must be set for "yocto-compat-layer.py" to work:
-        # it looks for the locked signature file in that directory.
         env = os.environ.copy()
-        env['BUILDDIR'] = self.poky_dir
         # We must use our forked yocto-compat-layer.py.
         env['PATH'] = '%s/scripts:%s' % (self.layers['meta-refkit'], env['PATH'])
-        self.build_options = {'env': env, 'cwd': self.poky_dir}
+
+        # Enter the build directory.
+        self.old_env = os.environ.copy()
+        self.old_cwd = os.getcwd()
+        self.old_testinc_path = self.testinc_path
+        self.old_testinc_bblayers_path = self.testinc_bblayers_path
+        os.environ['BUILDDIR'] = self.poky_dir
+        os.chdir(self.poky_dir)
+        self.testinc_path = os.path.join(self.poky_dir, "conf/selftest.inc")
+        self.testinc_bblayers_path = os.path.join(self.poky_dir, "conf/bblayers.inc")
+
 
     def tearDownLocal(self):
         """Remove temporary build directory."""
-        pass
+        # We intentionally do not remove "refkit-poky" here.
+        # One can enter it after running a test to examine its state
+        # or rerun commands.
         # shutil.rmtree(self.poky_dir)
 
-    def _poky_builddir(func):
-        """Wraps a test function so that it uses the Poky build directory (cwd, config files, BUILDDIR, etc.)."""
-        def enter_poky_builddir(self):
-            old_env = os.environ.copy()
-            old_cwd = os.getcwd()
-            old_testinc_path = self.testinc_path
-            old_testinc_bblayers_path = self.testinc_bblayers_path
-            try:
-                os.environ['BUILDDIR'] = self.poky_dir
-                os.chdir(self.poky_dir)
-                self.testinc_path = os.path.join(self.poky_dir, "conf/selftest.inc")
-                self.testinc_bblayers_path = os.path.join(self.poky_dir, "conf/bblayers.inc")
+        # Leave build directory.
+        os.environ = self.old_env
+        os.chdir(self.old_cwd)
+        self.testinc_path = self.old_testinc_path
+        self.testinc_bblayers_path = self.old_testinc_bblayers_path
 
-                return func(self)
-            finally:
-                os.environ = old_env
-                os.chdir(old_cwd)
-                self.testinc_path = old_testinc_path
-                self.testinc_bblayers_path = old_testinc_bblayers_path
-
-        return enter_poky_builddir
 
     def add_refkit_layers(self):
         """Add all layers also active in the parent refkit build dir."""
         self.append_bblayers_config('BBLAYERS += "%s"' % (' '.join([self.layers[x] for x in self.layers.keys() if x not in self.poky_layers])))
 
-    @_poky_builddir
     def test_refkit_conf_signature(self):
         """Ensure that including the refkit config does not change the signature of other layers."""
         old_path = sys.path
@@ -206,7 +222,6 @@ BBFILES ?= ""
         finally:
             sys.path = old_path
 
-    @_poky_builddir
     def test_common_poky_config(self):
         """
         A full image build test of the common image,
@@ -232,7 +247,6 @@ REFKIT_IMAGE_EXTRA_FEATURES_append = "empty-root-password"
             self.assertTrue(status, 'Failed to log in:\n%s' % output)
             self.assertTrue(output.startswith('uid=0(root)'))
 
-    @_poky_builddir
     def test_common_refkit_config(self):
         """
         A full image build test of the common image,
