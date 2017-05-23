@@ -143,10 +143,12 @@ class ImageInstaller(oeSelfTest):
                 status, output = qemu.run_serial(cmd)
                 self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
 
+    @testcase(1834)
     def test_install_no_tpm(self):
         """Test image installation under qemu without virtual TPM"""
         self.do_install()
 
+    @testcase(1835)
     def test_install_fixed_password(self):
         """Test image installation under qemu without virtual TPM, using a fixed password"""
         fixed_password = get_bb_var('REFKIT_DISK_ENCRYPTION_PASSWORD')
@@ -154,6 +156,7 @@ class ImageInstaller(oeSelfTest):
             self.skipTest('REFKIT_DISK_ENCRYPTION_PASSWORD not set')
         self.do_install(fixed_password=fixed_password)
 
+    @testcase(1836)
     def test_install_tpm(self):
-        """Test image installation under qemu without virtual TPM, using a fixed password"""
+        """Test image installation under qemu with virtual TPM, using a fixed password"""
         self.do_install(tpm=True)
