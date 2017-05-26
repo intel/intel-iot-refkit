@@ -75,15 +75,10 @@ testimg() {
   FILENAME=${_IMG_NAME}-${MACHINE}-${CI_BUILD_ID}.wic
   set +e
   wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.bmap
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.xz -O - | unxz - > ${FILENAME}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}
   if [ ! -s ${FILENAME} ]; then
-    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.zip
-    if [ -s ${FILENAME}.zip ]; then
-      unzip ${FILENAME}.zip
-    else
-      echo "ERROR: No file ${FILENAME}.xz or ${FILENAME}.zip found, can not continue."
-      exit 1
-    fi
+    echo "ERROR: No file ${FILENAME} found, can not continue."
+    exit 1
   fi
   set -e
 
