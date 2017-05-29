@@ -15,11 +15,6 @@ EXCLUDE_FROM_WORLD = "1"
 # used to detect boot devices automatically
 PACKAGE_INSTALL += "initramfs-module-udev"
 
-# debug: adds debug boot parameters like 'shell' and 'debug', see
-#        meta/recipes-core/initrdscripts/initramfs-framework/debug for details
-# Could be removed in more minimal product image.
-PACKAGE_INSTALL += "initramfs-module-debug"
-
 # Create variants of this recipe for each image mode. Each variant
 # depends on a specific variant of initramfs-framework-refkit-dm-verity.
 IMAGE_MODE_VALID = "${REFKIT_IMAGE_MODE_VALID}"
@@ -33,6 +28,7 @@ IMAGE_FEATURES[validitems] += " \
     ima \
     luks \
     dm-verity \
+    debug \
 "
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'ima', 'ima', '', d)} \
@@ -46,6 +42,13 @@ IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'dm-verity', '', d)} \
 "
 FEATURE_PACKAGES_dm-verity = "initramfs-framework-refkit-dm-verity${IMAGE_MODE_SUFFIX}"
+
+# debug: adds debug boot parameters like 'shell' and 'debug', see
+#        meta/recipes-core/initrdscripts/initramfs-framework/debug for details
+IMAGE_FEATURES += " \
+    ${@ 'debug' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' } \
+"
+FEATURE_PACKAGES_debug = "initramfs-module-debug"
 
 IMAGE_LINGUAS = ""
 
