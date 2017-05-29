@@ -281,6 +281,9 @@ INITRD_IMAGE_intel-core2-32 = "${REFKIT_INITRAMFS}"
 INITRD_IMAGE_intel-corei7-64 = "${REFKIT_INITRAMFS}"
 INITRD_IMAGE_intel-quark = "${REFKIT_INITRAMFS}"
 
+# Enable emergency shell in initramfs-framework.
+APPEND_append = "${@ ' init_fatal_sh' if (d.getVar('IMAGE_MODE') or '') == 'development' else ''}"
+
 # The expected disk layout is not compatible with the HDD format:
 # HDD places the rootfs as loop file in a VFAT partition (UEFI),
 # while the rootfs is expected to be in its own partition.
