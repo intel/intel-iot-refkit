@@ -19,10 +19,13 @@ LIC_FILES_CHKSUM = "file://LICENSE.GPLv3;md5=9eef91148a9b14ec7f9df333daebc746 \
 
 # The original upstream is git://kernel.ubuntu.com/jk/sbsigntool but it has
 # not been maintained and many patches have been backported in this repo.
-SRC_URI = "gitsm://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git;protocol=git \
+SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git;protocol=https;name=sbsigntools \
+           git://github.com/rustyrussell/ccan.git;protocol=https;destsuffix=git/lib/ccan.git;name=ccan \
           "
 
-SRCREV  = "efbb550858e7bd3f43e64228d22aea440ef6a14d"
+SRCREV_sbsigntools  ?= "efbb550858e7bd3f43e64228d22aea440ef6a14d"
+SRCREV_ccan         ?= "b1f28e17227f2320d07fe052a8a48942fe17caa5"
+SRCREV_FORMAT       =  "sbsigntools_ccan"
 
 DEPENDS = "binutils-native gnu-efi-native help2man-native openssl-native util-linux-native"
 
