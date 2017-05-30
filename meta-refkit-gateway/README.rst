@@ -26,10 +26,6 @@ This layer depends on::
    layers: iotweb
    branch: master
 
-   URI: http://git.openembedded.org/meta-openembedded
-   layers: openembedded-layer
-   branch: master
-
 Patches
 =======
 
