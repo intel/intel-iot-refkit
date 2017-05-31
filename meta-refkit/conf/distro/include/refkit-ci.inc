@@ -35,9 +35,6 @@ TEST_TARGET = "simpleremote"
 # SDK defaults:
 SDKMACHINE ?= "x86_64"
 
-# HOSTTOOLS setup:
-HOSTTOOLS_remove = "hostname ip vi"
-
 # Generate source mirror tarballs:
 BB_GENERATE_MIRROR_TARBALLS = "1"
 
@@ -54,7 +51,7 @@ REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 #
 REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
 # NB: run image-installer last until YOCTO #11443 gets fixed.
-REFKIT_CI_POSTBUILD_SELFTESTS="secureboot image-installer"
+REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit-poky image-installer"
 #
 # Automated build targets
 # Those targets should be space separated list of items,

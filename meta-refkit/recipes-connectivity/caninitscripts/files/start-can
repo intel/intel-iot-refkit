@@ -1,8 +1,0 @@
-#!/bin/sh
-
-source /etc/can-init
-
-ip link set can0 type can bitrate $BITRATE
-ip link set can0 up type can
-
-exit 0
