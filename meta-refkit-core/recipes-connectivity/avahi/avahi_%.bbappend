@@ -12,11 +12,10 @@ FILES_${PN}_append_refkit-config = " \
 "
 
 # add firewall support
-RDEPENDS_${PN}_append_refkit-firewall += " iptables"
+RDEPENDS_${PN}_append_refkit-firewall += " nftables"
 
 SRC_URI_append_refkit-firewall = "\
-    file://${PN}-ipv4.conf \
-    file://${PN}-ipv6.conf \
+    file://avahi.ruleset \
 "
 
 do_install_append_refkit-config() {
@@ -25,15 +24,11 @@ do_install_append_refkit-config() {
 
 }
 do_install_append_refkit-firewall() {
-    install -d ${D}${systemd_unitdir}/system/avahi-daemon.socket.d
-    install -m 0644 ${WORKDIR}/${PN}-ipv4.conf ${D}${systemd_unitdir}/system/avahi-daemon.socket.d
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', 'true', 'false', d)}; then
-        install -m 0644 ${WORKDIR}/${PN}-ipv6.conf ${D}${systemd_unitdir}/system/avahi-daemon.socket.d
-    fi
+    install -d ${D}${libdir}/firewall/services
+    install -m 0644 ${WORKDIR}/avahi.ruleset ${D}${libdir}/firewall/services/
+
 }
 
 FILES_${PN}_append_refkit-firewall = " \
-    ${systemd_unitdir}/system/avahi-daemon.socket.d/${PN}-ipv4.conf \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', \
-        '${systemd_unitdir}/system/avahi-daemon.socket.d/${PN}-ipv6.conf', '', d)} \
+    ${libdir}/firewall/services/avahi.ruleset \
 "
