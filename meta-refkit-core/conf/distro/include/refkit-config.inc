@@ -133,6 +133,10 @@ PACKAGECONFIG_pn-gstreamer1.0-plugins-bad_refkit-config ?= ""
 # Enable OpenCL.
 PACKAGECONFIG_append_pn-opencv_refkit-config = " opencl"
 
+# Use nftables instead of iptables.
+PACKAGECONFIG_remove_pn-connman_refkit-config = "iptables"
+PACKAGECONFIG_append_pn-connman_refkit-config = " nftables"
+
 #########################################################################
 # Changes that normally are better suited for a .bbappend have
 # to be done here if the corresponding .bb file is not guaranteed
