@@ -10,3 +10,5 @@ RDEPENDS_${PN} = "\
     bluez5-obex \
     connman \
     "
+# Poky doesn't feature systemd so add libnss-myhostname conditionally
+RDEPENDS_${PN}_append_refkit-config = " libnss-myhostname"
