@@ -137,8 +137,8 @@ i2c-quark-board@quark-bsp
 icu@core
 iftop@networking-layer
 init-ifupdown@core
-initramfs-framework-refkit-dm-verity@refkit-core
 initramfs-framework-refkit-dm-verity-development@refkit-core
+initramfs-framework-refkit-dm-verity@refkit-core
 initramfs-framework-refkit-luks@refkit-core
 initramfs-framework@core
 initscripts@core
@@ -168,6 +168,7 @@ libcgroup@core
 libcheck@core
 libcxx@clang-layer
 libcxxabi@clang-layer
+libdevmapper@openembedded-layer
 libdmx@core
 libdrm@core
 libeigen@openembedded-layer
