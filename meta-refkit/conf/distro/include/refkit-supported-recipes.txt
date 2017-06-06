@@ -97,6 +97,7 @@ fontconfig@core
 fontsproto@core
 formfactor@core
 freetype@core
+fuse@filesystems-layer
 gawk@core
 gcc-runtime@core
 gcc@core
