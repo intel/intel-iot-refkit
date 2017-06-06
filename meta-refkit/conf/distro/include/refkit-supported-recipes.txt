@@ -142,8 +142,10 @@ gmp@core
 gnome-desktop-testing@core
 gnu-config@core
 gnu-efi@core
+gnupg@core
 gnutls@core
 gobject-introspection@core
+gpgme@core
 gptfdisk@core
 grep@core
 gstreamer1.0-plugins-bad@core
@@ -195,6 +197,7 @@ kmod@core
 krb5@openembedded-layer
 libaio@core
 libarchive@core
+libassuan@core
 libatomic-ops@core
 libcap@core
 libccd@ros-layer
@@ -222,6 +225,7 @@ libice@core
 libidn@core
 libinput@core
 libjpeg-turbo@core
+libksba@core
 libmicrohttpd@soletta
 libmpc@core
 libnl@core
@@ -312,6 +316,7 @@ ncurses@core
 netbase@core
 nettle@core
 nodejs@iotweb
+npth@core
 object-recognition-msgs@ros-layer
 ocl-icd@refkit-computervision
 octomap-msgs@ros-layer
@@ -331,6 +336,7 @@ packagegroup-.*@refkit.*
 pango@core
 pciutils@core
 perl@core
+pinentry@core
 pixman@core
 pkgconfig@core
 pluginlib@ros-layer
