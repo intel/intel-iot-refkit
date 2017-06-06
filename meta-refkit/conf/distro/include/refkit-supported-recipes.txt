@@ -284,6 +284,7 @@ openssl@core
 opkg-utils@core
 orc@core
 os-release@core
+ostree@refkit-core
 ovmf@core
 packagegroup-.*@refkit.*
 pango@core
