@@ -331,6 +331,7 @@ opkg-utils@core
 orc@core
 orocos-kdl@ros-layer
 os-release@core
+ostree@flatpak-layer
 ovmf@core
 packagegroup-.*@refkit.*
 pango@core
