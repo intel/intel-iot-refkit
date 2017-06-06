@@ -92,6 +92,7 @@ file@core
 findutils@core
 fixesproto@core
 flac@core
+flatpak@refkit-core
 flex@core
 font-util@core
 fontconfig@core
@@ -158,6 +159,7 @@ iptables@core
 iputils@core
 iso-codes@core
 json-c@core
+json-glib@core
 kbd@core
 kbproto@core
 keymaps@core
