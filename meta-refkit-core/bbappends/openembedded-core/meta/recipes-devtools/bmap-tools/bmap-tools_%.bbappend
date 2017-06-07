@@ -1,1 +1,1 @@
-require ${@bb.utils.contains('DISTRO_FEATURES', 'refkit-config', 'bmap-tools-deploy.inc', '', d)}
+require ${@ oe.utils.any_distro_features(d, "refkit-config", "bmap-tools-deploy.inc")}
