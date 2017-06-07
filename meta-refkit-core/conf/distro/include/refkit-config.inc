@@ -103,9 +103,8 @@ BAD_RECOMMENDATIONS_append_refkit-config = " bluez5-client"
 ########################################################################
 # Changes that can be done via PACKAGECONFIG are meant to be done
 # here instead of via .bbappends. SECURITY_* changes go into
-# refkit_security_flags.inc. Everything else is in .bbappends,
-# except when this could lead to a .bbappend without a corresponding
-# .bb file.
+# refkit_security_flags.inc. Everything else is in .bbappends
+# under the "bbappends" directory hierarchy.
 #######################################################################
 
 # Prefer systemd way of creating getty@.service symlinks using
@@ -136,35 +135,3 @@ PACKAGECONFIG_append_pn-opencv_refkit-config = " opencl"
 # Use nftables instead of iptables.
 PACKAGECONFIG_remove_pn-connman_refkit-config = "iptables"
 PACKAGECONFIG_append_pn-connman_refkit-config = " nftables"
-
-#########################################################################
-# Changes that normally are better suited for a .bbappend have
-# to be done here if the corresponding .bb file is not guaranteed
-# to be present (i.e. outside of OE-core).
-#########################################################################
-
-# Temporary workaround (needs to be fixed in meta-security once the
-# necessary patch "net-tools: enable native and nativesdk variant"
-# is in OE-core): swtpm_setup.sh needs netstat command.
-DEPENDS_append_pn-swtpm-wrappers-native_refkit-config = " net-tools-native"
-
-# The upstream recipe does not start tcsd automatically, but we
-# want that because the installer image calls the TPM tools
-# without starting tcsd first (it shouldn't have to!), and
-# without tcsd already running, the tools just fail. A better
-# solution would be socket-activation, but tcsd does not support
-# that. Does not matter, tcsd is only installed when needed.
-SYSTEMD_AUTO_ENABLE_forcevariable_pn-trousers_refkit-config = "enable"
-
-# usbutils depends directly on libusb1, not the obsolete compatibility. This removes dependency on libusb-compat.
-DEPENDS_remove_pn-libgphoto2_refkit-config = "virtual/libusb0"
-DEPENDS_append_pn-libgphoto2_refkit-config = " libusb1"
-
-# remove readline dependency from nftables
-DEPENDS_remove_pn-nftables_refkit-config = "readline"
-EXTRA_OECONF_append_pn-nftables_refkit-config = " --without-cli"
-
-# make nftables require a settings package
-VIRTUAL-RUNTIME_nftables-settings ?= "nftables-settings-default"
-RDEPENDS_nftables_append_refkit-config = " ${VIRTUAL-RUNTIME_nftables-settings}"
-
