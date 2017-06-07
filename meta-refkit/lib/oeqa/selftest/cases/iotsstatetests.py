@@ -7,10 +7,9 @@ import glob
 import subprocess
 
 import oeqa.utils.ftools as ftools
-from oeqa.selftest.base import oeSelfTest
+from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_test_layer
-from oeqa.selftest.sstate import SStateBase
-from oeqa.utils.decorators import testcase
+from oeqa.selftest.cases.sstate import SStateBase
 import oeqa.utils.ftools as ftools
 
 class SStateTests(SStateBase):
@@ -23,7 +22,7 @@ class SStateTests(SStateBase):
         the two MACHINE values.
         Also, when building for multiple machines which share tune flag specific packages,
         those packages also need to have identical signatures.
-        Based on oeqa.selftest.sstatetests.SStateTests.test_sstate_allarch_samesigs and
+        Based on oeqa.selftest.cases.sstatetests.SStateTests.test_sstate_allarch_samesigs and
         extended to cover all IoT Reference OS Kit machines.
         """
 

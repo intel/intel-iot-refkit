@@ -31,10 +31,10 @@ import re
 import glob
 from shutil import rmtree, copy
 
-from oeqa.selftest.base import oeSelfTest
+from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
 
-class SecureBootTests(oeSelfTest):
+class SecureBootTests(OESelftestTestCase):
     """Secure Boot test class."""
 
     ovmf_keys_enrolled = False
