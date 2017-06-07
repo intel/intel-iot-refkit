@@ -212,8 +212,6 @@ NOISO = "1"
 REFKIT_QB_DRIVE_TYPE = "/dev/vd"
 QB_DRIVE_TYPE = "${REFKIT_QB_DRIVE_TYPE}"
 
-inherit image_types_extra
-
 # Replace the default "live" (aka HDDIMG) images with whole-disk images
 REFKIT_VM_IMAGE_TYPES ?= ""
 IMAGE_FSTYPES_append = " ${REFKIT_VM_IMAGE_TYPES}"
