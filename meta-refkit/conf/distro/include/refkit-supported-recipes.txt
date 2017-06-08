@@ -121,6 +121,7 @@ gnome-desktop-testing@core
 gnu-config@core
 gnu-efi@core
 gnupg@core
+gnupg1@refkit-core
 gnutls@core
 gobject-introspection@core
 gpgme@core
