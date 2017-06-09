@@ -1,7 +1,7 @@
-From dc4f9ab92cbcb5b0224ce81d00c91824c0df89fd Mon Sep 17 00:00:00 2001
+From d8a1015699c7c5600f1cc9f1e60cb4911cc17973 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Tue, 28 Feb 2017 16:38:26 +0200
-Subject: [PATCH 6/6] classify-demo: added a demo app for classifying images.
+Subject: [PATCH 6/7] classify-demo: added a demo app for classifying images.
 
 This is a modification of the existing classify.py script in the same
 folder. The modified script is meant to be suitable for interactive use,
@@ -19,7 +19,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
 
 diff --git a/python/classify-demo.py b/python/classify-demo.py
 new file mode 100755
-index 0000000..f411c98
+index 00000000..f411c98d
 --- /dev/null
 +++ b/python/classify-demo.py
 @@ -0,0 +1,167 @@
@@ -191,5 +191,5 @@ index 0000000..f411c98
 +if __name__ == '__main__':
 +    main(sys.argv)
 -- 
-2.9.3
+2.13.3
 
