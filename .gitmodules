@@ -8,8 +8,8 @@
 	branch = master
 [submodule "meta-intel"]
 	path = meta-intel
-	url = https://git.yoctoproject.org/git/meta-intel
-	branch = master
+	url = https://git.yoctoproject.org/git/meta-intel-contrib
+	branch = sgw/rocko
 [submodule "meta-oic"]
 	path = meta-oic
 	url = https://git.yoctoproject.org/git/meta-oic
