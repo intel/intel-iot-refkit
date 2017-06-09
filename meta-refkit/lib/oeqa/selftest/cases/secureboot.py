@@ -66,7 +66,7 @@ class SecureBootTests(OESelftestTestCase):
             cmd = ("runqemu "
                    "qemuparams='%s' "
                    "ovmf-shell-image-enrollkeys wic intel-corei7-64 "
-                   "nographic serial slirp") % SecureBootTests.ovmf_qemuparams
+                   "nographic slirp") % SecureBootTests.ovmf_qemuparams
             print('Running "%s"' % cmd)
             status = runCmd(cmd)
 
