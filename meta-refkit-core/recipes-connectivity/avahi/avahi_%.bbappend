@@ -5,7 +5,7 @@ RRECOMMENDS_avahi-daemon_remove_libc-glibc_refkit-config = " libnss-mdns"
 RRECOMMENDS_${PN}_remove_libc-glibc_refkit-config = " libnss-mdns"
 
 # provide libdns_sd.so and dns_sd.h header
-EXTRA_OECONF_append_refkit-config = "--enable-compat-libdns_sd"
+EXTRA_OECONF_append_refkit-config = " --enable-compat-libdns_sd"
 
 FILES_${PN}_append_refkit-config = " \
     ${libdir}/libdns_sd.* \

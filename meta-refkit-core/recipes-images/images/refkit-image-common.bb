@@ -26,7 +26,7 @@ REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_IMAGE_COMMON_EXTRA_INSTALL}"
 #
 # Example for customization in local.conf when building refkit-image-common.bb:
 # IMAGE_BASENAME_pn-refkit-image-common = "my-refkit-image-reference"
-# REFKIT_IMAGE_COMMON_EXTRA_INSTALL_append = "my-own-package"
-# REFKIT_IMAGE_COMMON_EXTRA_FEATURES_append = "dev-pkgs"
+# REFKIT_IMAGE_COMMON_EXTRA_INSTALL_append = " my-own-package"
+# REFKIT_IMAGE_COMMON_EXTRA_FEATURES_append = " dev-pkgs"
 
 inherit refkit-image

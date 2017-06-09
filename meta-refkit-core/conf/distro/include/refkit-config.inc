@@ -107,7 +107,7 @@ BAD_RECOMMENDATIONS_append_refkit-config = " bluez5-client"
 # Prefer systemd way of creating getty@.service symlinks using
 # systemd-getty-generator (instead of the Yocto default
 # systemd-serialgetty that creates everything in do_install).
-PACKAGECONFIG_append_pn-systemd_refkit-config = "serial-getty-generator"
+PACKAGECONFIG_append_pn-systemd_refkit-config = " serial-getty-generator"
 
 # OE-core 7355a3c4f665e066925ea6327ac72365ab1f2f39 added a PACKAGECONFIG
 # to configure cairo/python3-cairo and enabled it by default. It used to
