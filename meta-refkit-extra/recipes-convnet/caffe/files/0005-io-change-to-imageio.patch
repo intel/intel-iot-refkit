@@ -1,4 +1,4 @@
-From b5a475cbabd67a7c31c01698f55814895f194730 Mon Sep 17 00:00:00 2001
+From e727942d11a05cfc5c382fadb68d78b41821c387 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Fri, 24 Feb 2017 16:07:09 +0200
 Subject: [PATCH 5/6] io: change to imageio.
@@ -17,7 +17,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/python/caffe/io.py b/python/caffe/io.py
-index e1759be..ebccca2 100644
+index 966c164..83b8783 100644
 --- a/python/caffe/io.py
 +++ b/python/caffe/io.py
 @@ -1,7 +1,5 @@
@@ -70,5 +70,5 @@ index e1759be..ebccca2 100644
          scale = tuple(np.array(new_dims, dtype=float) / np.array(im.shape[:2]))
          resized_im = zoom(im, scale + (1,), order=interp_order)
 -- 
-2.9.3
+2.9.4
 

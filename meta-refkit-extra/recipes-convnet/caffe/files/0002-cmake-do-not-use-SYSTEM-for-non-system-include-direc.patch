@@ -1,4 +1,4 @@
-From 9e698ecf0b354a87ea0bf79ee42a4e6ec09c7669 Mon Sep 17 00:00:00 2001
+From 54a596d118c0cab807c0d21629648c4363290c8e Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Fri, 17 Feb 2017 14:43:21 +0200
 Subject: [PATCH 2/6] cmake: do not use SYSTEM for non-system include
@@ -6,24 +6,14 @@ Subject: [PATCH 2/6] cmake: do not use SYSTEM for non-system include
 
 Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
 ---
- cmake/Dependencies.cmake | 8 ++++----
- cmake/ProtoBuf.cmake     | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ cmake/Dependencies.cmake | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
-index 00de565..0b861af 100644
+index 45bd93b..0279769 100644
 --- a/cmake/Dependencies.cmake
 +++ b/cmake/Dependencies.cmake
-@@ -6,7 +6,7 @@ set(Caffe_COMPILE_OPTIONS "")
- 
- # ---[ Boost
- find_package(Boost 1.46 REQUIRED COMPONENTS system thread filesystem)
--include_directories(SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
-+include_directories(PUBLIC ${Boost_INCLUDE_DIR})
- add_definitions(-DBOOST_ALL_NO_LIB)
- list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
- list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
-@@ -66,14 +66,14 @@ else()
+@@ -62,14 +62,14 @@ else()
    endif()
  endif()
  
@@ -40,7 +30,7 @@ index 00de565..0b861af 100644
    list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
    list(APPEND Caffe_LINKER_LIBS PUBLIC ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
    add_definitions(-DUSE_HDF5)
-@@ -201,7 +201,7 @@ endif()
+@@ -197,7 +197,7 @@ endif()
  
  if(USE_NCCL)
    include("cmake/External/nccl.cmake")
@@ -49,19 +39,6 @@ index 00de565..0b861af 100644
    list(APPEND Caffe_LINKER_LIBS ${NCCL_LIBRARIES})
    add_definitions(-DUSE_NCCL)
  endif()
-diff --git a/cmake/ProtoBuf.cmake b/cmake/ProtoBuf.cmake
-index 2527195..dc6285b 100644
---- a/cmake/ProtoBuf.cmake
-+++ b/cmake/ProtoBuf.cmake
-@@ -8,7 +8,7 @@ if(MSVC)
- else()
-   find_package( Protobuf REQUIRED )
- endif()
--include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
-+include_directories(${PROTOBUF_INCLUDE_DIR})
- list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
- list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
- 
 -- 
-2.9.3
+2.9.4
 
