@@ -5,8 +5,10 @@ AUTHOR = "Brendan Le Foll, Tom Ingleby, Dmitry Rozhkov"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=66493d54e65bfc12c7983ff2e884f37f"
 
-SRC_URI = "git://github.com/intel-iot-devkit/mraa.git;protocol=http;tag=v${PV} \
-           "
+SRCREV = "8ddbcde84e2d146bc0f9e38504d6c89c14291480"
+PV = "1.7.0-git${SRCPV}"
+
+SRC_URI = "git://github.com/intel-iot-devkit/${BPN}.git;protocol=http"
 
 S = "${WORKDIR}/git"
 
