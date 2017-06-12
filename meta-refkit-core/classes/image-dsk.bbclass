@@ -66,7 +66,7 @@ IMAGE_DEPENDS_dsk += " \
 # when adding swupd bundle support, because there virtual images
 # without active .dsk are used to generate the rootfs for other
 # images with .dsk format.
-INITRD_LIVE_append = "${@ ('${DEPLOY_DIR_IMAGE}/' + d.getVar('INITRD_IMAGE', expand=True) + '-${MACHINE}.cpio.gz') if d.getVar('INITRD_IMAGE', True) else ''}"
+INITRD_LIVE_append = " ${@ ('${DEPLOY_DIR_IMAGE}/' + d.getVar('INITRD_IMAGE', expand=True) + '-${MACHINE}.cpio.gz') if d.getVar('INITRD_IMAGE', True) else ''}"
 
 PACKAGES = " "
 EXCLUDE_FROM_WORLD = "1"

@@ -1,6 +1,6 @@
 require recipes-core/ovmf/ovmf-shell-image.bb
 
-WKS_SEARCH_PATH_append = ":${COREBASE}/meta/recipes-core/ovmf"
+WKS_SEARCH_PATH_append = " :${COREBASE}/meta/recipes-core/ovmf"
 
 QB_DRIVE_TYPE = "/dev/vd"
 

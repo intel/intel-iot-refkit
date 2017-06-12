@@ -252,7 +252,7 @@ python () {
 # all /etc files are marked as CONFFILES (perhaps by adding that as
 # default for all packages), then we can use ROOTFS_POSTINSTALL_COMMAND
 # again.
-ROOTFS_POSTUNINSTALL_COMMAND_append = "stateless_mangle_rootfs;"
+ROOTFS_POSTUNINSTALL_COMMAND_append = " stateless_mangle_rootfs;"
 
 python stateless_mangle_rootfs () {
     pn = d.getVar('PN', True)

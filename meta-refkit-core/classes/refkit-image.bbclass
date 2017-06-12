@@ -123,8 +123,8 @@ REFKIT_DM_VERITY_PARTITION () {
 part --source dm-verity --uuid ${REFKIT_DM_VERITY_PARTUUID} --label rootfs
 }
 REFKIT_EXTRA_PARTITION .= "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', d.getVar('REFKIT_DM_VERITY_PARTITION'), '', d) }"
-APPEND_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' dmverity=PARTUUID=${REFKIT_DM_VERITY_PARTUUID}', '', d) }"
-WICVARS_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' \
+APPEND_append = " ${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' dmverity=PARTUUID=${REFKIT_DM_VERITY_PARTUUID}', '', d) }"
+WICVARS_append = " ${@ bb.utils.contains('IMAGE_FEATURES', 'dm-verity', ' \
     REFKIT_DMVERITY_PRIVATE_KEY \
     REFKIT_DMVERITY_PRIVATE_KEY_HASH \
     REFKIT_DMVERITY_PASSWORD \
@@ -273,7 +273,7 @@ INITRD_IMAGE_intel-corei7-64 = "${REFKIT_INITRAMFS}"
 INITRD_IMAGE_intel-quark = "${REFKIT_INITRAMFS}"
 
 # Enable emergency shell in initramfs-framework.
-APPEND_append = "${@ ' init_fatal_sh' if (d.getVar('IMAGE_MODE') or '') == 'development' else ''}"
+APPEND_append = " ${@ ' init_fatal_sh' if (d.getVar('IMAGE_MODE') or '') == 'development' else ''}"
 
 # The expected disk layout is not compatible with the HDD format:
 # HDD places the rootfs as loop file in a VFAT partition (UEFI),
@@ -290,7 +290,7 @@ REMOVABLE_MEDIA_ROOTFS_PARTUUID_VALUE = "12345678-9abc-def0-0fed-cba987654321"
 INT_STORAGE_ROOTFS_PARTUUID_VALUE = "12345678-9abc-def0-0fed-cba987654320"
 
 # Enable/disable IMA also in per-image boot parameters.
-APPEND_append = "${@bb.utils.contains('IMAGE_FEATURES', 'ima', ' rootflags=i_version', ' no-ima', d)}"
+APPEND_append = " ${@bb.utils.contains('IMAGE_FEATURES', 'ima', ' rootflags=i_version', ' no-ima', d)}"
 
 # Conditionally include the class only if distro features indicate that
 # integrity support is enabled. We cannot include unconditionally
@@ -318,7 +318,7 @@ ima_evm_sign_rootfs_prepend () {
 #
 # The Edison BSP does not support APPEND, some other solution is needed
 # for that machine.
-APPEND_append = "${@bb.utils.contains('IMAGE_FEATURES', 'smack', '', ' security=none', d)}"
+APPEND_append = " ${@bb.utils.contains('IMAGE_FEATURES', 'smack', '', ' security=none', d)}"
 
 # Use what RMC gives, not the defaults in meta-intel machine configs
 APPEND_remove_intel-corei7-64 = "console=ttyS0,115200"

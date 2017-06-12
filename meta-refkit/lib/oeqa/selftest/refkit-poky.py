@@ -236,7 +236,7 @@ BBFILES ?= ""
 
         # We need an image that we can log into, so zap the root password.
         self.append_config('''
-REFKIT_IMAGE_EXTRA_FEATURES_append = "empty-root-password"
+REFKIT_IMAGE_EXTRA_FEATURES_append = " empty-root-password"
 ''')
         bitbake('refkit-image-common')
         with runqemu('refkit-image-common',
