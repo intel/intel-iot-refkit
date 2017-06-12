@@ -256,6 +256,12 @@ IMAGE_MODE_VALID = "${@ d.getVar('REFKIT_IMAGE_MODE_VALID') or '' }"
 # variants of variants.
 inherit image-mode-variants
 
+# Enable flatpak image variant and repository generation.
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+              'flatpak-image-variants', '', d)}
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+              'flatpak-repository', '', d)}
+
 BUILD_ID ?= "${DATETIME}"
 # Do not re-trigger builds just because ${DATETIME} changed.
 BUILD_ID[vardepsexclude] += "DATETIME"
