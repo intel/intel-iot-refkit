@@ -1,4 +1,4 @@
-From 8d9b978681b7c7d5443f5503e2075b007fb460a5 Mon Sep 17 00:00:00 2001
+From 6f192a3a6e23a3828d3c6e790a5960a779fdf898 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Fri, 17 Feb 2017 15:35:43 +0200
 Subject: [PATCH 3/6] cmake: fix RPATHS.
@@ -24,5 +24,5 @@ index 9dd2609..2150751 100644
  if(${__is_systtem_dir} STREQUAL -1)
    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 -- 
-2.9.3
+2.9.4
 

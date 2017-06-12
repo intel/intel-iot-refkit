@@ -44,7 +44,7 @@ SRC_URI = " \
     file://0006-classify-demo-added-a-demo-app-for-classifying-image.patch \
     file://0001-cmake-find-Yocto-boost-python-libs.patch \
 "
-SRCREV = "f3ba72c520165d7c403a82770370f20472685d63"
+SRCREV = "557a2af29d7df25b62e640e138aca2b31bbe0dc8"
 
 SRC_URI[ilsvrc12.md5sum] = "f963098ea0e785a968ca1eb634003a90"
 SRC_URI[ilsvrc12.sha256sum] = "e35c0c1994a21f7d8ed49d01881ce17ab766743d3b0372cdc0183ff4d0dfc491"

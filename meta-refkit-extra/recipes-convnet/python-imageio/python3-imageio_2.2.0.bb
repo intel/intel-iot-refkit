@@ -4,10 +4,10 @@ LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=295e673459dd7498500c971c98831367"
 
 SRC_URI = " \
-    https://github.com/imageio/imageio/archive/v${PV}.tar.gz \
+    https://github.com/imageio/imageio/archive/v${PV}.tar.gz;downloadfilename=${PN}-${PV}.tar.gz \
 "
-SRC_URI[md5sum] = "61bb19fa36d966c2dc85521948b338c9"
-SRC_URI[sha256sum] = "d7d411c25e2b46af99b6bbca7eb00cc9847981db12f467f6c8d9e7d7a80b277b"
+SRC_URI[md5sum] = "c375999eb6f96e9b7375940607d639ed"
+SRC_URI[sha256sum] = "086cf1f171d4307f488cf38c82e4cf191f8260e425112bfa825f746b75e98d60"
 
 S = "${WORKDIR}/imageio-${PV}"
 

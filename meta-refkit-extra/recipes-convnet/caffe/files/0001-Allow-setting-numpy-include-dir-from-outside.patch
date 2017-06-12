@@ -1,4 +1,4 @@
-From 3a0407e127559d2349f0217c6c5cf7751dd1aeba Mon Sep 17 00:00:00 2001
+From 61ff2374eaae494e1bedeb8cc49be25236a93b9f Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Tue, 25 Oct 2016 12:09:19 +0300
 Subject: [PATCH 1/6] Allow setting numpy include dir from outside.
@@ -39,5 +39,5 @@ index a671494..38ebb32 100644
  caffe_clear_vars(__result __output __error_value __values __ver_check __error_value)
 -
 -- 
-2.9.3
+2.9.4
 
