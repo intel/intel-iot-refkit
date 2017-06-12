@@ -87,6 +87,7 @@ REFKIT_IMAGE_MODE_VALID ??= "development production"
 KERNEL_FEATURES_append_refkit-config = " \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' features/device-mapper/dm-verity.scc', '', d) } \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', ' features/tpm/tpm.scc', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'refkit-firewall', ' features/nf_tables/nf_tables.scc', '', d) } \
 "
 
 # Use UEFI-based "dsk" image format for machines supporting UEFI.
