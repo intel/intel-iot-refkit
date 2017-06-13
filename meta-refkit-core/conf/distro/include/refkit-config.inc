@@ -55,7 +55,6 @@ REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-config"
 # Remove currently unsupported distro features from global defaults
 REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE += "x11 3g"
 
-
 ########################################################################
 # additional includes
 ########################################################################
