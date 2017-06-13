@@ -109,6 +109,7 @@ fcl@ros-layer
 file@core
 findutils@core
 fixesproto@core
+flac@core
 flatpak@flatpak-layer
 flatpak-image-runtime@flatpak-layer
 flex@core
