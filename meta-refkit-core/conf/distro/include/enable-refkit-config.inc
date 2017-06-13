@@ -17,3 +17,4 @@ DISTRO_FEATURES_DEFAULT_remove = "${REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE}"
 DISTRO_FEATURES ?= "${DISTRO_FEATURES_DEFAULT} ${DISTRO_FEATURES_LIBC} ${REFKIT_DEFAULT_DISTRO_FEATURES}"
 
 require conf/distro/include/usrmerge.inc
+require conf/distro/include/flatpak.inc
