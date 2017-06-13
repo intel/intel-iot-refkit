@@ -121,8 +121,8 @@ include selftest.inc
 
     @classmethod
     def setUpClass(cls):
-        super(TestRefkitPoky, cls).setUpClass()
         """Queries the local configuration to find the relevant directories."""
+        super(TestRefkitPokyBase, cls).setUpClass()
         cls.build_dir = os.getcwd()
         cls.poky_dir = os.path.join(cls.build_dir, 'refkit-poky')
         cls.poky_conf_dir = os.path.join(cls.poky_dir, 'conf')
