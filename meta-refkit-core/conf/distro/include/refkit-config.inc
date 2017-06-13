@@ -127,7 +127,7 @@ PACKAGECONFIG_append_pn-ovmf_refkit-config = " secureboot"
 PACKAGECONFIG_pn-gstreamer1.0-plugins-bad_refkit-config ?= ""
 
 # Enable OpenCL.
-PACKAGECONFIG_append_pn-opencv_refkit-config = " opencl"
+PACKAGECONFIG_append_pn-opencv_refkit-config = " opencl dnn"
 
 #########################################################################
 # Changes that normally are better suited for a .bbappend have
