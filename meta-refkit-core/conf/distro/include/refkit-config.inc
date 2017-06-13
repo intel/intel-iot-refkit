@@ -135,8 +135,14 @@ PACKAGECONFIG_append_pn-ovmf_df-refkit-config = " secureboot"
 # only build minimal gstreamer1.0-plugins-bad
 PACKAGECONFIG_pn-gstreamer1.0-plugins-bad_df-refkit-config ?= ""
 
-# Enable OpenCL.
-PACKAGECONFIG_append_pn-opencv_df-refkit-config = " opencl"
+# Enable OpenCL and DNN modules.
+PACKAGECONFIG_append_pn-opencv_df-refkit-config = " opencl dnn"
+
+#########################################################################
+# Changes that normally are better suited for a .bbappend have
+# to be done here if the corresponding .bb file is not guaranteed
+# to be present (i.e. outside of OE-core).
+#########################################################################
 
 # Use nftables instead of iptables.
 PACKAGECONFIG_remove_pn-connman_df-refkit-config = "iptables"
