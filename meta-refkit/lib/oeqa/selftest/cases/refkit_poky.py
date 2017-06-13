@@ -31,6 +31,24 @@ import sys
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
 
+def find_layers():
+    layers = {}
+    result = runCmd('bitbake-layers show-layers')
+    for layer, path, pri in re.findall(r'^(\S+) +([^\n]*?) +(\d+)$', result.output, re.MULTILINE):
+        layers[layer] = path
+    # meta-poky should not be active. We expect it next to the meta-refkit layer.
+    if not 'meta-poky' in layers:
+        layers['meta-poky'] = os.path.join(os.path.dirname(layers['meta-refkit']), 'meta-yocto', 'meta-poky')
+    return layers
+
+class RefkitLayers():
+    """
+    Locates existing layers as part of the class construction. Useful for
+    sharing that information across different other classes.
+    """
+
+    layers = find_layers()
+
 class RefkitPokyMeta(type):
     """
     Generates different instances of test_compat_meta_<layer> for each refkit layer.
@@ -77,20 +95,12 @@ REFKIT_IMAGE_MODE = "development"
                 self.logger.info('%s:\n%s' % (cmd, result.output))
             return test
 
-        layers = {}
-        result = runCmd('bitbake-layers show-layers')
-        for layer, path, pri in re.findall(r'^(\S+) +([^\n]*?) +(\d+)$', result.output, re.MULTILINE):
-            layers[layer] = path
-        # meta-poky should not be active. We expect it next to the meta-refkit layer.
-        if not 'meta-poky' in layers:
-            layers['meta-poky'] = os.path.join(os.path.dirname(layers['meta-refkit']), 'meta-yocto', 'meta-poky')
-        dict['layers'] = layers
-        for refkit_layer in [x for x in layers.keys() if x.startswith('meta-refkit')]:
+        for refkit_layer in [x for x in RefkitLayers.layers.keys() if x.startswith('meta-refkit')]:
             test_name = 'test_compat_%s' % refkit_layer.replace('-', '_')
             dict[test_name] = gen_test(refkit_layer)
         return type.__new__(mcs, name, bases, dict)
 
-class TestRefkitPoky(OESelftestTestCase, metaclass=RefkitPokyMeta):
+class TestRefkitPokyBase(OESelftestTestCase, RefkitLayers):
     """
     Tests content from refkit against Poky. We do not want to depend on the
     combined poky repo, though, so Poky in this context is OE-core + meta-poky.
@@ -203,6 +213,13 @@ BBFILES ?= ""
         """Add all layers also active in the parent refkit build dir."""
         self.append_bblayers_config('BBLAYERS += "%s"' % (' '.join([self.layers[x] for x in self.layers.keys() if x not in self.poky_layers and (not filter or x in filter)])))
 
+
+class TestRefkitPokySignatures(TestRefkitPokyBase, metaclass=RefkitPokyMeta):
+    """
+    Test that signatures are not changed. Most of the tests are generated
+    dynamically by RefkitPokyMeta.
+    """
+
     def test_refkit_conf_signature(self):
         """Ensure that including the refkit config does not change the signature of other layers."""
         old_path = sys.path
@@ -222,6 +239,12 @@ BBFILES ?= ""
                 self.fail('Including refkit-config.inc changed signatures.\n%s' % msg)
         finally:
             sys.path = old_path
+
+
+class TestRefkitPokyBuilds(TestRefkitPokyBase):
+    """
+    Test actual image building with Poky as base distribution.
+    """
 
     def test_common_poky_config(self):
         """
