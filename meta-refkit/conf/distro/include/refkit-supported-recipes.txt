@@ -93,6 +93,7 @@ findutils@core
 fixesproto@core
 flac@core
 flatpak@refkit-core
+flatpak-image-runtime@refkit-core
 flex@core
 font-util@core
 fontconfig@core
