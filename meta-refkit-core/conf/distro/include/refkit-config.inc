@@ -28,9 +28,6 @@ REFKIT_DEFAULT_DISTRO_FEATURES = " \
     pulseaudio \
     systemd \
     tpm1.2 \
-    flatpak \
-    usrmerge \
-    pam \
 "
 
 # ptests are useful for QA. Enabling them in the distro creates
@@ -130,9 +127,6 @@ PACKAGECONFIG_pn-gstreamer1.0-plugins-bad_refkit-config ?= ""
 
 # Enable OpenCL.
 PACKAGECONFIG_append_pn-opencv_refkit-config = " opencl"
-
-# Enable D-Bus session bus support, needed by flatpak.
-PACKAGECONFIG_append_pn-dbus_refkit-config = " user-session"
 
 #########################################################################
 # Changes that normally are better suited for a .bbappend have
