@@ -1,7 +1,15 @@
 caffe@refkit-extra
+household-objects-database-msgs@ros-layer
 hdf5@refkit-extra
 leveldb@openembedded-layer
 lmdb@refkit-extra
+manipulation-msgs@ros-layer
+moveit-kinematics@ros-layer
+moveit-planners-ompl@ros-layer
+moveit-ros-manipulation@ros-layer
+moveit-ros-move-group@ros-layer
+moveit-simple-controller-manager@ros-layer
+ompl@ros-layer
 openblas@refkit-extra
 python3-imageio@refkit-extra
 python3-pillow@refkit-extra
@@ -10,4 +18,9 @@ python3-pycparser@meta-python
 python3-pyrealsense@refkit-extra
 python3-six@core
 refkit-ros-tests@refkit-extra
+robot-state-publisher@ros-layer
 snappy@refkit-extra
+std-srvs@ros-layer
+tf2-kdl@ros-layer
+uarmmetal-moveit-config@refkit-extra
+uarmmetal-support@refkit-extra
