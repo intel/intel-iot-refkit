@@ -15,7 +15,7 @@ SRCREV = "8f563cfcc07a9f9d7cdcf0319cffda6d23745303"
 
 DEPENDS = "systemd"
 
-inherit autotools pkgconfig systemd flatpak-config
+inherit autotools pkgconfig required-systemd flatpak-config
 
 S = "${WORKDIR}/git"
 
