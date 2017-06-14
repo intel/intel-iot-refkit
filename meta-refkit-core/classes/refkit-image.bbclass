@@ -213,7 +213,7 @@ REFKIT_QB_DRIVE_TYPE = "/dev/vd"
 QB_DRIVE_TYPE = "${REFKIT_QB_DRIVE_TYPE}"
 
 # Replace the default "live" (aka HDDIMG) images with whole-disk images
-REFKIT_VM_IMAGE_TYPES ?= ""
+REFKIT_VM_IMAGE_TYPES ??= ""
 IMAGE_FSTYPES_append = " ${REFKIT_VM_IMAGE_TYPES}"
 
 # unconditionally set in x86-base.inc so we just remove it to avoid

@@ -45,7 +45,7 @@ require conf/distro/include/refkit-development.inc
 QEMU_USE_KVM = "${@ 'intel-corei7-64 intel-core2-32 qemux86 qemux86-64' if os.access('/dev/kvm', os.R_OK|os.W_OK) else '' }"
 
 XZ_INTEGRITY_CHECK = "sha256"
-REFKIT_VM_IMAGE_TYPES = "wic.xz wic.bmap"
+REFKIT_VM_IMAGE_TYPES ?= "wic.xz wic.bmap"
 
 #
 # pre/post-build oe-selftests started by CI builder, whitespace-separated.
