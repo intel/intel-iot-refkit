@@ -38,3 +38,6 @@
 [submodule "meta-yocto"]
 	path = meta-yocto
 	url = https://git.yoctoproject.org/git/meta-yocto
+[submodule "meta-ros"]
+	path = meta-ros
+	url = https://github.com/bmwcarit/meta-ros.git
