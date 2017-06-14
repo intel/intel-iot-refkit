@@ -15,7 +15,7 @@ SRCREV = "1a49029f9d8fbee0338665522cf7432ae7485841"
 PV = "0.9.3+git${SRCPV}"
 S = "${WORKDIR}/git"
 
-inherit autotools pkgconfig gettext systemd gobject-introspection
+inherit autotools pkgconfig gettext required-systemd gobject-introspection
 
 DEPENDS = " \
     glib-2.0 json-glib libsoup-2.4 libarchive elfutils fuse \
