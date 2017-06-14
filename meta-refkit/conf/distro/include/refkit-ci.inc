@@ -64,6 +64,7 @@ REFKIT_CI_BUILD_TARGETS=" \
   refkit-image-minimal \
   refkit-image-computervision \
   refkit-image-gateway \
+  refkit-image-industrial \
   refkit-installer-image \
   swtpm-wrappers-native \
   ovmf \
