@@ -61,7 +61,7 @@ REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit-poky refkit-license-check image
 # Following targets would be used to perform default build task.
 # When adding new profile images, add them to refkit-installer-image.bb
 # and they will get pulled into the build indirectly.
-REFKIT_CI_BUILD_TARGETS="refkit-image-minimal refkit-installer-image swtpm-wrappers-native ovmf"
+REFKIT_CI_BUILD_TARGETS="refkit-image-minimal refkit-installer-image swtpm-wrappers-native ovmf!
 
 # Following targets would be executed with do_populate_sdk task
 REFKIT_CI_SDK_TARGETS=""
@@ -70,7 +70,11 @@ REFKIT_CI_SDK_TARGETS=""
 # as possible.
 REFKIT_CI_ESDK_TARGETS=""
 # Following targets would be executed with do_test_iot_export task
-REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway"
+REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway \
+${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+    'refkit-image-gateway-flatpak-runtime', '', d)} \
+"
+
 # Execute automatic tests for following images with corresponding
 # test suite, test files and devices.
 # Space separated list of tuples, each should in format:
