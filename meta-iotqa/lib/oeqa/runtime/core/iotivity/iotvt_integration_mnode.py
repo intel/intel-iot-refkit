@@ -6,9 +6,7 @@ from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import get_files_dir
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import run_as, add_group, add_user, remove_user
-from oeqa.utils.decorators import tag
 
-@tag(TestType="EFT", FeatureID="IOTOS-754,IOTOS-1019,IOTOS-1004")
 class IOtvtIntegrationMNode(oeRuntimeTest):
     """
     @class IOtvtIntegrationMNode

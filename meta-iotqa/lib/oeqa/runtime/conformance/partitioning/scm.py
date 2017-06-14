@@ -1,7 +1,5 @@
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT", FeatureID="IOTOS-722")
 
 class ScmTest(oeRuntimeTest):
     """ Misc/scm testing

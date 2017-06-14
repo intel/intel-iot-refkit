@@ -33,12 +33,14 @@ computer vision production image without GPLv3 components."""
 # Especially the dual-licensing rules are not very accurate due to the way
 # Bitbake recipes express dual-licensing and multi-licensing.
 
-from oeqa.selftest.base import oeSelfTest
+from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
-import licensecheck
 import glob
+import sys
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../../../')
+import licensecheck
 
-class LicensingTest(oeSelfTest):
+class LicensingTest(OESelftestTestCase):
     """Licensing test class."""
 
     def _analyzePackages(self, packageNames, whitelistFile, prohibited):

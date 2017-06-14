@@ -5,7 +5,6 @@ import sys
 import subprocess
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 def inst_cp_module_mqtt():
     '''
@@ -28,7 +27,6 @@ def inst_cp_module_mqtt():
             print('Install node modules failed! Please check it!' + \
                 inst_mqtt.stdout.read().decode('utf-8'))
 
-@tag(TestType='EFT', FeatureID='IOTOS-1160')
 class mqttTest(oeRuntimeTest):
     """
     @class mqttTest

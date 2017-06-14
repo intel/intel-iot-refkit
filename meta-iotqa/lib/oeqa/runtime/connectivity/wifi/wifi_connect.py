@@ -10,7 +10,7 @@ ssid_config = ConfigParser.ConfigParser()
 config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
 ssid_config.readfp(open(config_path))
 
-class CommWiFiConect(oeRuntimeTest):
+class WifiConnectTest(oeRuntimeTest):
 
     def setUp(self):
         '''

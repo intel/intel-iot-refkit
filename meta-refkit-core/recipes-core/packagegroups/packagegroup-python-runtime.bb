@@ -4,5 +4,5 @@ LICENSE = "MIT"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    python-modules \
+    python3-modules \
 "

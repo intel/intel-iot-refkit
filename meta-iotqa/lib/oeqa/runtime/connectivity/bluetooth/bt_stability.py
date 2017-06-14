@@ -5,9 +5,7 @@ from oeqa.runtime.bluetooth import bluetooth
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import get_files_dir
-from oeqa.utils.decorators import tag
 
-@tag(TestType="EFT")
 class BTStabilityTest(oeRuntimeTest):
     """
     @class BTStabilityTest
@@ -20,7 +18,6 @@ class BTStabilityTest(oeRuntimeTest):
         '''
         self.bt = bluetooth.BTFunction(self.target)
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_onoff_multiple_time(self):
         '''bluetoothctl to power on/off for multiple times
         @fn test_bt_onoff_multiple_time
@@ -34,7 +31,6 @@ class BTStabilityTest(oeRuntimeTest):
             if i % 20 == 0:
                 print ("Finish %d times, successful." % i)
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_visable_onoff_multiple_time(self):
         '''bluetoothctl to turn discoverable on/off for multiple times
         @fn test_bt_visable_onoff_multiple_time

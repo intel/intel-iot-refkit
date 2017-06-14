@@ -3,7 +3,7 @@
 # have this configurable, here it only depends on the "refkit-config"
 # distro feature.
 DEPENDS_remove_refkit-config = "readline gdbm db"
-PACKAGES_remove_refkit-config = "${PN}-readline"
-PROVIDES_remove_refkit-config = "${PN}-readline"
+PACKAGES_remove_refkit-config = "${PN}-readline ${PN}-gdbm ${PN}-db"
+PROVIDES_remove_refkit-config = "${PN}-readline ${PN}-gdbm ${PN}-db"
 RRECOMMENDS_${PN}-core_remove_refkit-config = "${PN}-readline"
-RDEPENDS_${PN}-modules_remove_refkit-config = "${PN}-readline"
+RDEPENDS_${PN}-modules_remove_refkit-config = "${PN}-readline ${PN}-gdbm ${PN}-db"

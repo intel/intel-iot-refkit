@@ -3,10 +3,8 @@
 #\Author: Wang, Jing <jing.j.wang@intel.com>
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 import re
 
-@tag(TestType="FVT", FeatureID="IOTOS-638")
 class BaseOsTest(oeRuntimeTest):
     '''Base os health check
     @class BaseOsTest

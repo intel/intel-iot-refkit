@@ -9,10 +9,8 @@ import sys
 import shutil
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 
-@tag(TestType='FVT', FeatureID='IOTOS-343')
 class RESTAPITest(oeRuntimeTest):
     '''
     The test case checks whether the REST APIs works well.

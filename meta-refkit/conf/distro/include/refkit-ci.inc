@@ -51,7 +51,7 @@ REFKIT_VM_IMAGE_TYPES = "wic.xz wic.zip wic.bmap wic.xz.sha256sum"
 #
 REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
 # NB: run image-installer last until YOCTO #11443 gets fixed.
-REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit-poky refkit-license-check image-installer"
+REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit_poky refkit_license_check image_installer"
 #
 # Automated build targets
 # Those targets should be space separated list of items,

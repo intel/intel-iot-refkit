@@ -1,8 +1,6 @@
 import os
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType='FVT', FeatureID='IOTOS-332,IOTOS-1068')
 class SanityTestNodejs(oeRuntimeTest):
     """
     @class SanityTestNodejs
