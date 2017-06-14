@@ -1,0 +1,119 @@
+From 25484577d6a7ad0266fe50415d3b123ef19783e8 Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Tue, 14 Mar 2017 15:57:18 +0200
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates kdl_parser to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros/kdl_parser/pull/2]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ CMakeLists.txt                    | 8 ++++----
+ include/kdl_parser/kdl_parser.hpp | 8 ++++----
+ src/kdl_parser.cpp                | 9 +++++----
+ 3 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5c96e55..1acad20 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10,9 +10,9 @@ find_package(catkin REQUIRED
+ )
+ find_package(orocos_kdl REQUIRED)
+ find_package(Eigen3 REQUIRED)
+-find_package(TinyXML REQUIRED)
++find_package(TinyXML2 REQUIRED)
+ 
+-include_directories(include ${EIGEN3_INCLUDE_DIR} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
++include_directories(include ${EIGEN3_INCLUDE_DIR} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML2_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+ 
+ link_directories(${catkin_LIBRARY_DIRS})
+ link_directories(${orocos_kdl_LIBRARY_DIRS})
+@@ -24,12 +24,12 @@ catkin_package(
+   LIBRARIES ${PROJECT_NAME} ${KDL_LIBRARY}
+   INCLUDE_DIRS include
+   CATKIN_DEPENDS roscpp rosconsole urdf
+-  DEPENDS orocos_kdl TinyXML
++  DEPENDS orocos_kdl TinyXML2
+ )
+ 
+ add_library(${PROJECT_NAME} src/kdl_parser.cpp)
+ target_link_libraries(${PROJECT_NAME}
+-  ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES} ${catkin_LIBRARIES}
++  ${TinyXML2_LIBRARIES} ${orocos_kdl_LIBRARIES} ${catkin_LIBRARIES}
+ )
+ 
+ add_executable(check_kdl_parser src/check_kdl_parser.cpp )
+diff --git a/include/kdl_parser/kdl_parser.hpp b/include/kdl_parser/kdl_parser.hpp
+index 68a6456..3dd89d3 100644
+--- a/include/kdl_parser/kdl_parser.hpp
++++ b/include/kdl_parser/kdl_parser.hpp
+@@ -40,7 +40,7 @@
+ #include <kdl/tree.hpp>
+ #include <string>
+ #include <urdf_model/model.h>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ 
+ namespace kdl_parser{
+ 
+@@ -65,12 +65,12 @@ bool treeFromParam(const std::string& param, KDL::Tree& tree);
+  */
+ bool treeFromString(const std::string& xml, KDL::Tree& tree);
+ 
+-/** Constructs a KDL tree from a TiXmlDocument
+- * \param xml_doc The TiXmlDocument containting the xml description of the robot
++/** Constructs a KDL tree from a XMLDocument
++ * \param xml_doc The XMLDocument containting the xml description of the robot
+  * \param tree The resulting KDL Tree
+  * returns true on success, false on failure
+  */
+-bool treeFromXml(TiXmlDocument *xml_doc, KDL::Tree& tree);
++bool treeFromXml(tinyxml2::XMLDocument *xml_doc, KDL::Tree& tree);
+ 
+ /** Constructs a KDL tree from a URDF robot model
+  * \param robot_model The URDF robot model
+diff --git a/src/kdl_parser.cpp b/src/kdl_parser.cpp
+index 7031247..07c02e5 100644
+--- a/src/kdl_parser.cpp
++++ b/src/kdl_parser.cpp
+@@ -41,6 +41,7 @@
+ 
+ using namespace std;
+ using namespace KDL;
++using namespace tinyxml2;
+ 
+ namespace kdl_parser{
+ 
+@@ -154,8 +155,8 @@ bool addChildrenToTree(boost::shared_ptr<const urdf::Link> root, Tree& tree)
+ 
+ bool treeFromFile(const string& file, Tree& tree)
+ {
+-  TiXmlDocument urdf_xml;
+-  urdf_xml.LoadFile(file);
++  XMLDocument urdf_xml;
++  urdf_xml.LoadFile(file.c_str());
+   return treeFromXml(&urdf_xml, tree);
+ }
+ 
+@@ -171,12 +172,12 @@ bool treeFromParam(const string& param, Tree& tree)
+ 
+ bool treeFromString(const string& xml, Tree& tree)
+ {
+-  TiXmlDocument urdf_xml;
++  XMLDocument urdf_xml;
+   urdf_xml.Parse(xml.c_str());
+   return treeFromXml(&urdf_xml, tree);
+ }
+ 
+-bool treeFromXml(TiXmlDocument *xml_doc, Tree& tree)
++bool treeFromXml(XMLDocument *xml_doc, Tree& tree)
+ {
+   urdf::Model robot_model;
+   if (!robot_model.initXml(xml_doc)){
+-- 
+2.7.4
+

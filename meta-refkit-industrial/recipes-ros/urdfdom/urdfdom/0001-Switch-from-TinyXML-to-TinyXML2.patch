@@ -1,0 +1,1228 @@
+From 614b76d421d7ac40f85188ca1fbe4263debc152c Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Thu, 26 Jan 2017 12:11:51 +0200
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates urdfdom to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros/urdfdom/pull/99]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ CMakeLists.txt                                |   7 +-
+ cmake/SearchForTinyXML.cmake                  |  20 ---
+ cmake/SearchForTinyXML2.cmake                 |  20 +++
+ urdf_parser/include/urdf_parser/urdf_parser.h |   8 +-
+ urdf_parser/src/joint.cpp                     | 134 ++++++++++--------
+ urdf_parser/src/link.cpp                      | 188 ++++++++++++++------------
+ urdf_parser/src/model.cpp                     |  42 +++---
+ urdf_parser/src/pose.cpp                      |  17 ++-
+ urdf_parser/src/twist.cpp                     |   6 +-
+ urdf_parser/src/urdf_model_state.cpp          |   8 +-
+ urdf_parser/src/urdf_sensor.cpp               |  24 ++--
+ urdf_parser/src/world.cpp                     |  14 +-
+ 12 files changed, 267 insertions(+), 221 deletions(-)
+ delete mode 100644 cmake/SearchForTinyXML.cmake
+ create mode 100644 cmake/SearchForTinyXML2.cmake
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2ed60b8..b1d1bf7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,10 +34,9 @@ endif (MSVC OR MSVC90 OR MSVC10)
+ 
+ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+ 
+-include(SearchForTinyXML)
+-include_directories(${tinyxml_include_dirs})
+-link_directories(${tinyxml_library_dirs})
+-add_definitions(${tinyxml_cflags})
++include(SearchForTinyXML2)
++include_directories(${tinyxml2_include_dirs})
++link_libraries(${tinyxml2_libraries})
+ 
+ find_package(urdfdom_headers REQUIRED)
+ include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
+diff --git a/cmake/SearchForTinyXML.cmake b/cmake/SearchForTinyXML.cmake
+deleted file mode 100644
+index 483247d..0000000
+--- a/cmake/SearchForTinyXML.cmake
++++ /dev/null
+@@ -1,20 +0,0 @@
+-find_library(tinyxml_library tinyxml)
+-if (tinyxml_library)
+-  message (STATUS "Looking for libtinyxml - found")
+-  set(tinyxml_libraries ${tinyxml_library})
+-endif ()
+-
+-find_path(tinyxml_include_dirs NAMES tinyxml.h PATH_SUFFIXES tinyxml)
+-if (NOT tinyxml_include_dirs)
+-   message (STATUS "Looking for tinyxml/tinyxml.hpp or tinyxml/tinyxml.h - not found.")
+-endif ()
+-
+-if (NOT tinyxml_include_dirs OR NOT tinyxml_libraries)
+-   include (FindPkgConfig)
+-   if (PKG_CONFIG_FOUND)
+-     # Find tinyxml
+-     pkg_check_modules(tinyxml tinyxml)
+-   else()
+-     MESSAGE("Missing: tinyxml")
+-   endif()
+-endif ()
+diff --git a/cmake/SearchForTinyXML2.cmake b/cmake/SearchForTinyXML2.cmake
+new file mode 100644
+index 0000000..4f41443
+--- /dev/null
++++ b/cmake/SearchForTinyXML2.cmake
+@@ -0,0 +1,20 @@
++find_library(tinyxml2_library tinyxml2)
++if (tinyxml2_library)
++  message (STATUS "Looking for libtinyxml2 - found")
++  set(tinyxml2_libraries ${tinyxml2_library})
++endif ()
++
++find_path(tinyxml2_include_dirs NAMES tinyxml2.h PATH_SUFFIXES tinyxml2)
++if (NOT tinyxml2_include_dirs)
++   message (STATUS "Looking for tinyxml2/tinyxml2.hpp or tinyxml2/tinyxml2.h - not found.")
++endif ()
++
++if (NOT tinyxml2_include_dirs OR NOT tinyxml2_libraries)
++   include (FindPkgConfig)
++   if (PKG_CONFIG_FOUND)
++     # Find tinyxml2
++     pkg_check_modules(tinyxml2 tinyxml2)
++   else()
++     MESSAGE("Missing: tinyxml2")
++   endif()
++endif ()
+diff --git a/urdf_parser/include/urdf_parser/urdf_parser.h b/urdf_parser/include/urdf_parser/urdf_parser.h
+index 34d044b..e225fff 100644
+--- a/urdf_parser/include/urdf_parser/urdf_parser.h
++++ b/urdf_parser/include/urdf_parser/urdf_parser.h
+@@ -39,7 +39,7 @@
+ 
+ #include <string>
+ #include <map>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <boost/function.hpp>
+ #include <urdf_model/model.h>
+ #include <urdf_model/color.h>
+@@ -60,9 +60,9 @@ namespace urdf{
+ 
+   URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
+   URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDFFile(const std::string &path);
+-  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
+-  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
+-  URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
++  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
++  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model);
++  URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
+ }
+ 
+ #endif
+diff --git a/urdf_parser/src/joint.cpp b/urdf_parser/src/joint.cpp
+index 4d9f2b6..897a0e9 100644
+--- a/urdf_parser/src/joint.cpp
++++ b/urdf_parser/src/joint.cpp
+@@ -38,14 +38,16 @@
+ #include <urdf_model/joint.h>
+ #include <boost/lexical_cast.hpp>
+ #include <console_bridge/console.h>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <urdf_parser/urdf_parser.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parsePose(Pose &pose, TiXmlElement* xml);
++bool parsePose(Pose &pose, XMLElement* xml);
+ 
+-bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
++bool parseJointDynamics(JointDynamics &jd, XMLElement* config)
+ {
+   jd.clear();
+ 
+@@ -98,7 +100,7 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
+   }
+ }
+ 
+-bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
++bool parseJointLimits(JointLimits &jl, XMLElement* config)
+ {
+   jl.clear();
+ 
+@@ -181,7 +183,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseJointSafety(JointSafety &js, TiXmlElement* config)
++bool parseJointSafety(JointSafety &js, XMLElement* config)
+ {
+   js.clear();
+ 
+@@ -267,7 +269,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
++bool parseJointCalibration(JointCalibration &jc, XMLElement* config)
+ {
+   jc.clear();
+ 
+@@ -314,7 +316,7 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
++bool parseJointMimic(JointMimic &jm, XMLElement* config)
+ {
+   jm.clear();
+ 
+@@ -374,7 +376,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseJoint(Joint &joint, TiXmlElement* config)
++bool parseJoint(Joint &joint, XMLElement* config)
+ {
+   joint.clear();
+ 
+@@ -388,7 +390,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   joint.name = name;
+ 
+   // Get transform from Parent Link to Joint Frame
+-  TiXmlElement *origin_xml = config->FirstChildElement("origin");
++  XMLElement *origin_xml = config->FirstChildElement("origin");
+   if (!origin_xml)
+   {
+     logDebug("urdfdom: Joint [%s] missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", joint.name.c_str());
+@@ -405,7 +407,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get Parent Link
+-  TiXmlElement *parent_xml = config->FirstChildElement("parent");
++  XMLElement *parent_xml = config->FirstChildElement("parent");
+   if (parent_xml)
+   {
+     const char *pname = parent_xml->Attribute("link");
+@@ -420,7 +422,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get Child Link
+-  TiXmlElement *child_xml = config->FirstChildElement("child");
++  XMLElement *child_xml = config->FirstChildElement("child");
+   if (child_xml)
+   {
+     const char *pname = child_xml->Attribute("link");
+@@ -465,7 +467,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   if (joint.type != Joint::FLOATING && joint.type != Joint::FIXED)
+   {
+     // axis
+-    TiXmlElement *axis_xml = config->FirstChildElement("axis");
++    XMLElement *axis_xml = config->FirstChildElement("axis");
+     if (!axis_xml){
+       logDebug("urdfdom: no axis elemement for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
+       joint.axis = Vector3(1.0, 0.0, 0.0);
+@@ -485,7 +487,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get limit
+-  TiXmlElement *limit_xml = config->FirstChildElement("limit");
++  XMLElement *limit_xml = config->FirstChildElement("limit");
+   if (limit_xml)
+   {
+     joint.limits.reset(new JointLimits());
+@@ -508,7 +510,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get safety
+-  TiXmlElement *safety_xml = config->FirstChildElement("safety_controller");
++  XMLElement *safety_xml = config->FirstChildElement("safety_controller");
+   if (safety_xml)
+   {
+     joint.safety.reset(new JointSafety());
+@@ -521,7 +523,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get calibration
+-  TiXmlElement *calibration_xml = config->FirstChildElement("calibration");
++  XMLElement *calibration_xml = config->FirstChildElement("calibration");
+   if (calibration_xml)
+   {
+     joint.calibration.reset(new JointCalibration());
+@@ -534,7 +536,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get Joint Mimic
+-  TiXmlElement *mimic_xml = config->FirstChildElement("mimic");
++  XMLElement *mimic_xml = config->FirstChildElement("mimic");
+   if (mimic_xml)
+   {
+     joint.mimic.reset(new JointMimic());
+@@ -547,7 +549,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+   }
+ 
+   // Get Dynamics
+-  TiXmlElement *prop_xml = config->FirstChildElement("dynamics");
++  XMLElement *prop_xml = config->FirstChildElement("dynamics");
+   if (prop_xml)
+   {
+     joint.dynamics.reset(new JointDynamics());
+@@ -564,71 +566,83 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
+ 
+ 
+ /* exports */
+-bool exportPose(Pose &pose, TiXmlElement* xml);
++bool exportPose(Pose &pose, XMLElement* xml);
+ 
+-bool exportJointDynamics(JointDynamics &jd, TiXmlElement* xml)
++bool exportJointDynamics(JointDynamics &jd, XMLElement* xml)
+ {
+-  TiXmlElement *dynamics_xml = new TiXmlElement("dynamics");
+-  dynamics_xml->SetAttribute("damping", urdf_export_helpers::values2str(jd.damping) );
+-  dynamics_xml->SetAttribute("friction", urdf_export_helpers::values2str(jd.friction) );
+-  xml->LinkEndChild(dynamics_xml);
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *dynamics_xml = doc->NewElement("dynamics");
++  dynamics_xml->SetAttribute("damping", urdf_export_helpers::values2str(jd.damping).c_str() );
++  dynamics_xml->SetAttribute("friction", urdf_export_helpers::values2str(jd.friction).c_str() );
++  xml->InsertEndChild(dynamics_xml);
+   return true;
+ }
+ 
+-bool exportJointLimits(JointLimits &jl, TiXmlElement* xml)
++bool exportJointLimits(JointLimits &jl, XMLElement* xml)
+ {
+-  TiXmlElement *limit_xml = new TiXmlElement("limit");
+-  limit_xml->SetAttribute("effort", urdf_export_helpers::values2str(jl.effort) );
+-  limit_xml->SetAttribute("velocity", urdf_export_helpers::values2str(jl.velocity) );
+-  limit_xml->SetAttribute("lower", urdf_export_helpers::values2str(jl.lower) );
+-  limit_xml->SetAttribute("upper", urdf_export_helpers::values2str(jl.upper) );
+-  xml->LinkEndChild(limit_xml);
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *limit_xml = doc->NewElement("limit");
++  limit_xml->SetAttribute("effort", urdf_export_helpers::values2str(jl.effort).c_str() );
++  limit_xml->SetAttribute("velocity", urdf_export_helpers::values2str(jl.velocity).c_str() );
++  limit_xml->SetAttribute("lower", urdf_export_helpers::values2str(jl.lower).c_str() );
++  limit_xml->SetAttribute("upper", urdf_export_helpers::values2str(jl.upper).c_str() );
++  xml->InsertEndChild(limit_xml);
+   return true;
+ }
+ 
+-bool exportJointSafety(JointSafety &js, TiXmlElement* xml)
++bool exportJointSafety(JointSafety &js, XMLElement* xml)
+ {
+-  TiXmlElement *safety_xml = new TiXmlElement("safety_controller");
+-  safety_xml->SetAttribute("k_position", urdf_export_helpers::values2str(js.k_position) );
+-  safety_xml->SetAttribute("k_velocity", urdf_export_helpers::values2str(js.k_velocity) );
+-  safety_xml->SetAttribute("soft_lower_limit", urdf_export_helpers::values2str(js.soft_lower_limit) );
+-  safety_xml->SetAttribute("soft_upper_limit", urdf_export_helpers::values2str(js.soft_upper_limit) );
+-  xml->LinkEndChild(safety_xml);
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *safety_xml = doc->NewElement("safety_controller");
++  safety_xml->SetAttribute("k_position", urdf_export_helpers::values2str(js.k_position).c_str() );
++  safety_xml->SetAttribute("k_velocity", urdf_export_helpers::values2str(js.k_velocity).c_str() );
++  safety_xml->SetAttribute("soft_lower_limit", urdf_export_helpers::values2str(js.soft_lower_limit).c_str() );
++  safety_xml->SetAttribute("soft_upper_limit", urdf_export_helpers::values2str(js.soft_upper_limit).c_str() );
++  xml->InsertEndChild(safety_xml);
+   return true;
+ }
+ 
+-bool exportJointCalibration(JointCalibration &jc, TiXmlElement* xml)
++bool exportJointCalibration(JointCalibration &jc, XMLElement* xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   if (jc.falling || jc.rising)
+   {
+-    TiXmlElement *calibration_xml = new TiXmlElement("calibration");
++    XMLElement *calibration_xml = doc->NewElement("calibration");
+     if (jc.falling)
+-      calibration_xml->SetAttribute("falling", urdf_export_helpers::values2str(*jc.falling) );
++      calibration_xml->SetAttribute("falling", urdf_export_helpers::values2str(*jc.falling).c_str() );
+     if (jc.rising)
+-      calibration_xml->SetAttribute("rising", urdf_export_helpers::values2str(*jc.rising) );
++      calibration_xml->SetAttribute("rising", urdf_export_helpers::values2str(*jc.rising).c_str() );
+     //calibration_xml->SetAttribute("reference_position", urdf_export_helpers::values2str(jc.reference_position) );
+-    xml->LinkEndChild(calibration_xml);
++    xml->InsertEndChild(calibration_xml);
+   }
+   return true;
+ }
+ 
+-bool exportJointMimic(JointMimic &jm, TiXmlElement* xml)
++bool exportJointMimic(JointMimic &jm, XMLElement* xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   if (!jm.joint_name.empty())
+   {
+-    TiXmlElement *mimic_xml = new TiXmlElement("mimic");
+-    mimic_xml->SetAttribute("offset", urdf_export_helpers::values2str(jm.offset) );
+-    mimic_xml->SetAttribute("multiplier", urdf_export_helpers::values2str(jm.multiplier) );
+-    mimic_xml->SetAttribute("joint", jm.joint_name );
+-    xml->LinkEndChild(mimic_xml);
++    XMLElement *mimic_xml = doc->NewElement("mimic");
++    mimic_xml->SetAttribute("offset", urdf_export_helpers::values2str(jm.offset).c_str() );
++    mimic_xml->SetAttribute("multiplier", urdf_export_helpers::values2str(jm.multiplier).c_str() );
++    mimic_xml->SetAttribute("joint", jm.joint_name.c_str() );
++    xml->InsertEndChild(mimic_xml);
+   }
+   return true;
+ }
+ 
+-bool exportJoint(Joint &joint, TiXmlElement* xml)
++bool exportJoint(Joint &joint, XMLElement* xml)
+ {
+-  TiXmlElement * joint_xml = new TiXmlElement("joint");
+-  joint_xml->SetAttribute("name", joint.name);
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement * joint_xml = doc->NewElement("joint");
++  joint_xml->SetAttribute("name", joint.name.c_str());
+   if (joint.type == urdf::Joint::PLANAR)
+     joint_xml->SetAttribute("type", "planar");
+   else if (joint.type == urdf::Joint::FLOATING)
+@@ -648,19 +662,19 @@ bool exportJoint(Joint &joint, TiXmlElement* xml)
+   exportPose(joint.parent_to_joint_origin_transform, joint_xml);
+ 
+   // axis
+-  TiXmlElement * axis_xml = new TiXmlElement("axis");
+-  axis_xml->SetAttribute("xyz", urdf_export_helpers::values2str(joint.axis));
+-  joint_xml->LinkEndChild(axis_xml);
++  XMLElement * axis_xml = doc->NewElement("axis");
++  axis_xml->SetAttribute("xyz", urdf_export_helpers::values2str(joint.axis).c_str());
++  joint_xml->InsertEndChild(axis_xml);
+ 
+   // parent 
+-  TiXmlElement * parent_xml = new TiXmlElement("parent");
+-  parent_xml->SetAttribute("link", joint.parent_link_name);
++  XMLElement * parent_xml = doc-> NewElement("parent");
++  parent_xml->SetAttribute("link", joint.parent_link_name.c_str());
+   joint_xml->LinkEndChild(parent_xml);
+ 
+   // child
+-  TiXmlElement * child_xml = new TiXmlElement("child");
+-  child_xml->SetAttribute("link", joint.child_link_name);
+-  joint_xml->LinkEndChild(child_xml);
++  XMLElement * child_xml = doc->NewElement("child");
++  child_xml->SetAttribute("link", joint.child_link_name.c_str());
++  joint_xml->InsertEndChild(child_xml);
+ 
+   if (joint.dynamics)
+     exportJointDynamics(*(joint.dynamics), joint_xml);
+@@ -673,7 +687,7 @@ bool exportJoint(Joint &joint, TiXmlElement* xml)
+   if (joint.mimic)
+     exportJointMimic(*(joint.mimic), joint_xml);
+ 
+-  xml->LinkEndChild(joint_xml);
++  xml->InsertEndChild(joint_xml);
+   return true;
+ }
+ 
+diff --git a/urdf_parser/src/link.cpp b/urdf_parser/src/link.cpp
+index b1b34b6..c3f9982 100644
+--- a/urdf_parser/src/link.cpp
++++ b/urdf_parser/src/link.cpp
+@@ -41,14 +41,16 @@
+ #include <sstream>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <console_bridge/console.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parsePose(Pose &pose, TiXmlElement* xml);
++bool parsePose(Pose &pose, XMLElement* xml);
+ 
+-bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok)
++bool parseMaterial(Material &material, XMLElement *config, bool only_name_is_ok)
+ {
+   bool has_rgb = false;
+   bool has_filename = false;
+@@ -64,7 +66,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
+   material.name = config->Attribute("name");
+ 
+   // texture
+-  TiXmlElement *t = config->FirstChildElement("texture");
++  XMLElement *t = config->FirstChildElement("texture");
+   if (t)
+   {
+     if (t->Attribute("filename"))
+@@ -75,7 +77,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
+   }
+ 
+   // color
+-  TiXmlElement *c = config->FirstChildElement("color");
++  XMLElement *c = config->FirstChildElement("color");
+   if (c)
+   {
+     if (c->Attribute("rgba")) {
+@@ -103,7 +105,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
+ }
+ 
+ 
+-bool parseSphere(Sphere &s, TiXmlElement *c)
++bool parseSphere(Sphere &s, XMLElement *c)
+ {
+   s.clear();
+ 
+@@ -129,7 +131,7 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
+   return true;
+ }
+ 
+-bool parseBox(Box &b, TiXmlElement *c)
++bool parseBox(Box &b, XMLElement *c)
+ {
+   b.clear();
+   
+@@ -152,7 +154,7 @@ bool parseBox(Box &b, TiXmlElement *c)
+   return true;
+ }
+ 
+-bool parseCylinder(Cylinder &y, TiXmlElement *c)
++bool parseCylinder(Cylinder &y, XMLElement *c)
+ {
+   y.clear();
+ 
+@@ -191,7 +193,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
+ }
+ 
+ 
+-bool parseMesh(Mesh &m, TiXmlElement *c)
++bool parseMesh(Mesh &m, XMLElement *c)
+ {
+   m.clear();
+ 
+@@ -220,19 +222,19 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
+   return true;
+ }
+ 
+-boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
++boost::shared_ptr<Geometry> parseGeometry(XMLElement *g)
+ {
+   boost::shared_ptr<Geometry> geom;
+   if (!g) return geom;
+ 
+-  TiXmlElement *shape = g->FirstChildElement();
++  XMLElement *shape = g->FirstChildElement();
+   if (!shape)
+   {
+     logError("Geometry tag contains no child element.");
+     return geom;
+   }
+ 
+-  std::string type_name = shape->ValueStr();
++  std::string type_name(shape->Value());
+   if (type_name == "sphere")
+   {
+     Sphere *s = new Sphere();
+@@ -270,19 +272,19 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
+   return boost::shared_ptr<Geometry>();
+ }
+ 
+-bool parseInertial(Inertial &i, TiXmlElement *config)
++bool parseInertial(Inertial &i, XMLElement *config)
+ {
+   i.clear();
+ 
+   // Origin
+-  TiXmlElement *o = config->FirstChildElement("origin");
++  XMLElement *o = config->FirstChildElement("origin");
+   if (o)
+   {
+     if (!parsePose(i.origin, o))
+       return false;
+   }
+ 
+-  TiXmlElement *mass_xml = config->FirstChildElement("mass");
++  XMLElement *mass_xml = config->FirstChildElement("mass");
+   if (!mass_xml)
+   {
+     logError("Inertial element must have a mass element");
+@@ -307,7 +309,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
+     return false;
+   }
+ 
+-  TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
++  XMLElement *inertia_xml = config->FirstChildElement("inertia");
+   if (!inertia_xml)
+   {
+     logError("Inertial element must have inertia element");
+@@ -345,19 +347,19 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
+   return true;
+ }
+ 
+-bool parseVisual(Visual &vis, TiXmlElement *config)
++bool parseVisual(Visual &vis, XMLElement *config)
+ {
+   vis.clear();
+ 
+   // Origin
+-  TiXmlElement *o = config->FirstChildElement("origin");
++  XMLElement *o = config->FirstChildElement("origin");
+   if (o) {
+     if (!parsePose(vis.origin, o))
+       return false;
+   }
+ 
+   // Geometry
+-  TiXmlElement *geom = config->FirstChildElement("geometry");
++  XMLElement *geom = config->FirstChildElement("geometry");
+   vis.geometry = parseGeometry(geom);
+   if (!vis.geometry)
+     return false;
+@@ -367,7 +369,7 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
+     vis.name = name_char;
+ 
+   // Material
+-  TiXmlElement *mat = config->FirstChildElement("material");
++  XMLElement *mat = config->FirstChildElement("material");
+   if (mat) {
+     // get material name
+     if (!mat->Attribute("name")) {
+@@ -387,19 +389,19 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
+   return true;
+ }
+ 
+-bool parseCollision(Collision &col, TiXmlElement* config)
++bool parseCollision(Collision &col, XMLElement* config)
+ {  
+   col.clear();
+ 
+   // Origin
+-  TiXmlElement *o = config->FirstChildElement("origin");
++  XMLElement *o = config->FirstChildElement("origin");
+   if (o) {
+     if (!parsePose(col.origin, o))
+       return false;
+   }
+   
+   // Geometry
+-  TiXmlElement *geom = config->FirstChildElement("geometry");
++  XMLElement *geom = config->FirstChildElement("geometry");
+   col.geometry = parseGeometry(geom);
+   if (!col.geometry)
+     return false;
+@@ -411,7 +413,7 @@ bool parseCollision(Collision &col, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseLink(Link &link, TiXmlElement* config)
++bool parseLink(Link &link, XMLElement* config)
+ {
+   
+   link.clear();
+@@ -425,7 +427,7 @@ bool parseLink(Link &link, TiXmlElement* config)
+   link.name = std::string(name_char);
+ 
+   // Inertial (optional)
+-  TiXmlElement *i = config->FirstChildElement("inertial");
++  XMLElement *i = config->FirstChildElement("inertial");
+   if (i)
+   {
+     link.inertial.reset(new Inertial());
+@@ -437,7 +439,7 @@ bool parseLink(Link &link, TiXmlElement* config)
+   }
+ 
+   // Multiple Visuals (optional)
+-  for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
++  for (XMLElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
+   {
+ 
+     boost::shared_ptr<Visual> vis;
+@@ -460,7 +462,7 @@ bool parseLink(Link &link, TiXmlElement* config)
+     link.visual = link.visual_array[0];
+   
+   // Multiple Collisions (optional)
+-  for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
++  for (XMLElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
+   {
+     boost::shared_ptr<Collision> col;
+     col.reset(new Collision());
+@@ -483,67 +485,79 @@ bool parseLink(Link &link, TiXmlElement* config)
+ }
+ 
+ /* exports */
+-bool exportPose(Pose &pose, TiXmlElement* xml);
++bool exportPose(Pose &pose, XMLElement* xml);
+ 
+-bool exportMaterial(Material &material, TiXmlElement *xml)
++bool exportMaterial(Material &material, XMLElement *xml)
+ {
+-  TiXmlElement *material_xml = new TiXmlElement("material");
+-  material_xml->SetAttribute("name", material.name);
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *material_xml = doc->NewElement("material");
++  material_xml->SetAttribute("name", material.name.c_str());
+ 
+-  TiXmlElement* texture = new TiXmlElement("texture");
++  XMLElement* texture = doc->NewElement("texture");
+   if (!material.texture_filename.empty())
+-    texture->SetAttribute("filename", material.texture_filename);
+-  material_xml->LinkEndChild(texture);
++    texture->SetAttribute("filename", material.texture_filename.c_str());
++  material_xml->InsertEndChild(texture);
+ 
+-  TiXmlElement* color = new TiXmlElement("color");
+-  color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color));
+-  material_xml->LinkEndChild(color);
+-  xml->LinkEndChild(material_xml);
++  XMLElement* color = doc->NewElement("color");
++  color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color).c_str());
++  material_xml->InsertEndChild(color);
++  xml->InsertEndChild(material_xml);
+   return true;
+ }
+ 
+-bool exportSphere(Sphere &s, TiXmlElement *xml)
++bool exportSphere(Sphere &s, XMLElement *xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   // e.g. add <sphere radius="1"/>
+-  TiXmlElement *sphere_xml = new TiXmlElement("sphere");
+-  sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius));
+-  xml->LinkEndChild(sphere_xml);
++  XMLElement *sphere_xml = doc->NewElement("sphere");
++  sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius).c_str());
++  xml->InsertEndChild(sphere_xml);
+   return true;
+ }
+ 
+-bool exportBox(Box &b, TiXmlElement *xml)
++bool exportBox(Box &b, XMLElement *xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   // e.g. add <box size="1 1 1"/>
+-  TiXmlElement *box_xml = new TiXmlElement("box");
+-  box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim));
+-  xml->LinkEndChild(box_xml);
++  XMLElement *box_xml = doc->NewElement("box");
++  box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim).c_str());
++  xml->InsertEndChild(box_xml);
+   return true;
+ }
+ 
+-bool exportCylinder(Cylinder &y, TiXmlElement *xml)
++bool exportCylinder(Cylinder &y, XMLElement *xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   // e.g. add <cylinder radius="1"/>
+-  TiXmlElement *cylinder_xml = new TiXmlElement("cylinder");
+-  cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius));
+-  cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length));
+-  xml->LinkEndChild(cylinder_xml);
++  XMLElement *cylinder_xml = doc->NewElement("cylinder");
++  cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius).c_str());
++  cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length).c_str());
++  xml->InsertEndChild(cylinder_xml);
+   return true;
+ }
+ 
+-bool exportMesh(Mesh &m, TiXmlElement *xml)
++bool exportMesh(Mesh &m, XMLElement *xml)
+ {
++  XMLDocument *doc = xml->GetDocument();
++
+   // e.g. add <mesh filename="my_file" scale="1 1 1"/>
+-  TiXmlElement *mesh_xml = new TiXmlElement("mesh");
++  XMLElement *mesh_xml = doc->NewElement("mesh");
+   if (!m.filename.empty())
+-    mesh_xml->SetAttribute("filename", m.filename);
+-  mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+-  xml->LinkEndChild(mesh_xml);
++    mesh_xml->SetAttribute("filename", m.filename.c_str());
++  mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale).c_str());
++  xml->InsertEndChild(mesh_xml);
+   return true;
+ }
+ 
+-bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
++bool exportGeometry(boost::shared_ptr<Geometry> &geom, XMLElement *xml)
+ {
+-  TiXmlElement *geometry_xml = new TiXmlElement("geometry");
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *geometry_xml = doc->NewElement("geometry");
+   if (boost::dynamic_pointer_cast<Sphere>(geom))
+   {
+     exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+@@ -569,40 +583,42 @@ bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
+     exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+   }
+ 
+-  xml->LinkEndChild(geometry_xml);
++  xml->InsertEndChild(geometry_xml);
+   return true;
+ }
+ 
+-bool exportInertial(Inertial &i, TiXmlElement *xml)
++bool exportInertial(Inertial &i, XMLElement *xml)
+ {
+   // adds <inertial>
+   //        <mass value="1"/>
+   //        <pose xyz="0 0 0" rpy="0 0 0"/>
+   //        <inertia ixx="1" ixy="0" />
+   //      </inertial>
+-  TiXmlElement *inertial_xml = new TiXmlElement("inertial");
++  XMLDocument *doc = xml->GetDocument();
++
++  XMLElement *inertial_xml = doc->NewElement("inertial");
+ 
+-  TiXmlElement *mass_xml = new TiXmlElement("mass");
+-  mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass));
+-  inertial_xml->LinkEndChild(mass_xml);
++  XMLElement *mass_xml = doc->NewElement("mass");
++  mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass).c_str());
++  inertial_xml->InsertEndChild(mass_xml);
+ 
+   exportPose(i.origin, inertial_xml);
+ 
+-  TiXmlElement *inertia_xml = new TiXmlElement("inertia");
+-  inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx));
+-  inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy));
+-  inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz));
+-  inertia_xml->SetAttribute("iyy", urdf_export_helpers::values2str(i.iyy));
+-  inertia_xml->SetAttribute("iyz", urdf_export_helpers::values2str(i.iyz));
+-  inertia_xml->SetAttribute("izz", urdf_export_helpers::values2str(i.izz));
+-  inertial_xml->LinkEndChild(inertia_xml);
++  XMLElement *inertia_xml = doc->NewElement("inertia");
++  inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx).c_str());
++  inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy).c_str());
++  inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz).c_str());
++  inertia_xml->SetAttribute("iyy", urdf_export_helpers::values2str(i.iyy).c_str());
++  inertia_xml->SetAttribute("iyz", urdf_export_helpers::values2str(i.iyz).c_str());
++  inertia_xml->SetAttribute("izz", urdf_export_helpers::values2str(i.izz).c_str());
++  inertial_xml->InsertEndChild(inertia_xml);
+ 
+-  xml->LinkEndChild(inertial_xml);
++  xml->InsertEndChild(inertial_xml);
+   
+   return true;
+ }
+ 
+-bool exportVisual(Visual &vis, TiXmlElement *xml)
++bool exportVisual(Visual &vis, XMLElement *xml)
+ {
+   // <visual group="default">
+   //   <origin rpy="0 0 0" xyz="0 0 0"/>
+@@ -611,7 +627,9 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
+   //   </geometry>
+   //   <material name="Grey"/>
+   // </visual>
+-  TiXmlElement * visual_xml = new TiXmlElement("visual");
++  XMLDocument * doc = xml->GetDocument();
++
++  XMLElement * visual_xml = doc->NewElement("visual");
+ 
+   exportPose(vis.origin, visual_xml);
+ 
+@@ -620,12 +638,12 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
+   if (vis.material)
+     exportMaterial(*vis.material, visual_xml);
+ 
+-  xml->LinkEndChild(visual_xml);
++  xml->InsertEndChild(visual_xml);
+ 
+   return true;
+ }
+ 
+-bool exportCollision(Collision &col, TiXmlElement* xml)
++bool exportCollision(Collision &col, XMLElement* xml)
+ {  
+   // <collision group="default">
+   //   <origin rpy="0 0 0" xyz="0 0 0"/>
+@@ -634,21 +652,25 @@ bool exportCollision(Collision &col, TiXmlElement* xml)
+   //   </geometry>
+   //   <material name="Grey"/>
+   // </collision>
+-  TiXmlElement * collision_xml = new TiXmlElement("collision");
++  XMLDocument * doc = xml->GetDocument();
++
++  XMLElement * collision_xml = doc->NewElement("collision");
+ 
+   exportPose(col.origin, collision_xml);
+ 
+   exportGeometry(col.geometry, collision_xml);
+ 
+-  xml->LinkEndChild(collision_xml);
++  xml->InsertEndChild(collision_xml);
+ 
+   return true;
+ }
+ 
+-bool exportLink(Link &link, TiXmlElement* xml)
++bool exportLink(Link &link, XMLElement* xml)
+ {
+-  TiXmlElement * link_xml = new TiXmlElement("link");
+-  link_xml->SetAttribute("name", link.name);
++  XMLDocument * doc = xml->GetDocument();
++
++  XMLElement * link_xml = doc->NewElement("link");
++  link_xml->SetAttribute("name", link.name.c_str());
+ 
+   if (link.inertial)
+     exportInertial(*link.inertial, link_xml);
+@@ -657,7 +679,7 @@ bool exportLink(Link &link, TiXmlElement* xml)
+   for (std::size_t i = 0 ; i < link.collision_array.size() ; ++i)
+     exportCollision(*link.collision_array[i], link_xml);
+ 
+-  xml->LinkEndChild(link_xml);
++  xml->InsertEndChild(link_xml);
+ 
+   return true;
+ }
+diff --git a/urdf_parser/src/model.cpp b/urdf_parser/src/model.cpp
+index de2fbf8..8bf8298 100644
+--- a/urdf_parser/src/model.cpp
++++ b/urdf_parser/src/model.cpp
+@@ -40,11 +40,13 @@
+ #include <console_bridge/console.h>
+ #include <fstream>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
+-bool parseLink(Link &link, TiXmlElement *config);
+-bool parseJoint(Joint &joint, TiXmlElement *config);
++bool parseMaterial(Material &material, XMLElement *config, bool only_name_is_ok);
++bool parseLink(Link &link, XMLElement *config);
++bool parseJoint(Joint &joint, XMLElement *config);
+ 
+ boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
+ {
+@@ -65,17 +67,17 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+   boost::shared_ptr<ModelInterface> model(new ModelInterface);
+   model->clear();
+ 
+-  TiXmlDocument xml_doc;
++  XMLDocument xml_doc;
+   xml_doc.Parse(xml_string.c_str());
+   if (xml_doc.Error())
+   {
+-    logError(xml_doc.ErrorDesc());
+-    xml_doc.ClearError();
++    logError(xml_doc.GetErrorStr1());
++    xml_doc.Clear();
+     model.reset();
+     return model;
+   }
+ 
+-  TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
++  XMLElement *robot_xml = xml_doc.FirstChildElement("robot");
+   if (!robot_xml)
+   {
+     logError("Could not find the 'robot' element in the xml file");
+@@ -94,7 +96,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+   model->name_ = std::string(name);
+ 
+   // Get all Material elements
+-  for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
++  for (XMLElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
+   {
+     boost::shared_ptr<Material> material;
+     material.reset(new Material);
+@@ -123,7 +125,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+   }
+ 
+   // Get all Link elements
+-  for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
++  for (XMLElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
+   {
+     boost::shared_ptr<Link> link;
+     link.reset(new Link);
+@@ -183,7 +185,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+   }
+ 
+   // Get all Joint elements
+-  for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
++  for (XMLElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
+   {
+     boost::shared_ptr<Joint> joint;
+     joint.reset(new Joint);
+@@ -243,16 +245,15 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+   return model;
+ }
+ 
+-bool exportMaterial(Material &material, TiXmlElement *config);
+-bool exportLink(Link &link, TiXmlElement *config);
+-bool exportJoint(Joint &joint, TiXmlElement *config);
+-TiXmlDocument*  exportURDF(const ModelInterface &model)
++bool exportMaterial(Material &material, XMLElement *config);
++bool exportLink(Link &link, XMLElement *config);
++bool exportJoint(Joint &joint, XMLElement *config);
++void  exportURDF(const ModelInterface &model, XMLDocument &doc)
+ {
+-  TiXmlDocument *doc = new TiXmlDocument();
+ 
+-  TiXmlElement *robot = new TiXmlElement("robot");
+-  robot->SetAttribute("name", model.name_);
+-  doc->LinkEndChild(robot);
++  XMLElement *robot = doc.NewElement("robot");
++  robot->SetAttribute("name", model.name_.c_str());
++  doc.InsertEndChild(robot);
+ 
+ 
+   for (std::map<std::string, boost::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
+@@ -273,12 +274,11 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
+     exportJoint(*(j->second), robot);
+   }
+ 
+-  return doc;
+ }
+     
+-TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
++void exportURDF(boost::shared_ptr<ModelInterface> &model, XMLDocument &doc)
+ {
+-  return exportURDF(*model);
++  exportURDF(*model, doc);
+ }
+ 
+ 
+diff --git a/urdf_parser/src/pose.cpp b/urdf_parser/src/pose.cpp
+index 2ef0eea..0d1e23d 100644
+--- a/urdf_parser/src/pose.cpp
++++ b/urdf_parser/src/pose.cpp
+@@ -41,9 +41,11 @@
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+ #include <console_bridge/console.h>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <urdf_parser/urdf_parser.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf_export_helpers {
+ 
+ std::string values2str(unsigned int count, const double *values, double (*conv)(double))
+@@ -88,7 +90,7 @@ std::string values2str(double d)
+ 
+ namespace urdf{
+ 
+-bool parsePose(Pose &pose, TiXmlElement* xml)
++bool parsePose(Pose &pose, XMLElement* xml)
+ {
+   pose.clear();
+   if (xml)
+@@ -120,14 +122,15 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
+   return true;
+ }
+ 
+-bool exportPose(Pose &pose, TiXmlElement* xml)
++bool exportPose(Pose &pose, XMLElement* xml)
+ {
+-  TiXmlElement *origin = new TiXmlElement("origin");
++  XMLDocument *doc = xml->GetDocument();
++  XMLElement *origin = doc->NewElement("origin");
+   std::string pose_xyz_str = urdf_export_helpers::values2str(pose.position);
+   std::string pose_rpy_str = urdf_export_helpers::values2str(pose.rotation);
+-  origin->SetAttribute("xyz", pose_xyz_str);
+-  origin->SetAttribute("rpy", pose_rpy_str);
+-  xml->LinkEndChild(origin);
++  origin->SetAttribute("xyz", pose_xyz_str.c_str());
++  origin->SetAttribute("rpy", pose_rpy_str.c_str());
++  xml->InsertEndChild(origin);
+   return true;
+ }
+ 
+diff --git a/urdf_parser/src/twist.cpp b/urdf_parser/src/twist.cpp
+index 2117825..cc5ec40 100644
+--- a/urdf_parser/src/twist.cpp
++++ b/urdf_parser/src/twist.cpp
+@@ -40,12 +40,14 @@
+ #include <sstream>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <console_bridge/console.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parseTwist(Twist &twist, TiXmlElement* xml)
++bool parseTwist(Twist &twist, XMLElement* xml)
+ {
+   twist.clear();
+   if (xml)
+diff --git a/urdf_parser/src/urdf_model_state.cpp b/urdf_parser/src/urdf_model_state.cpp
+index 4cb60f8..ee73901 100644
+--- a/urdf_parser/src/urdf_model_state.cpp
++++ b/urdf_parser/src/urdf_model_state.cpp
+@@ -40,12 +40,14 @@
+ #include <sstream>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <console_bridge/console.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parseModelState(ModelState &ms, TiXmlElement* config)
++bool parseModelState(ModelState &ms, XMLElement* config)
+ {
+   ms.clear();
+ 
+@@ -70,7 +72,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
+     }
+   }
+ 
+-  TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
++  XMLElement *joint_state_elem = config->FirstChildElement("joint_state");
+   if (joint_state_elem)
+   {
+     boost::shared_ptr<JointState> joint_state;
+diff --git a/urdf_parser/src/urdf_sensor.cpp b/urdf_parser/src/urdf_sensor.cpp
+index 58db5cd..e0b4021 100644
+--- a/urdf_parser/src/urdf_sensor.cpp
++++ b/urdf_parser/src/urdf_sensor.cpp
+@@ -40,19 +40,21 @@
+ #include <sstream>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <console_bridge/console.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parsePose(Pose &pose, TiXmlElement* xml);
++bool parsePose(Pose &pose, XMLElement* xml);
+ 
+-bool parseCamera(Camera &camera, TiXmlElement* config)
++bool parseCamera(Camera &camera, XMLElement* config)
+ {
+   camera.clear();
+   camera.type = VisualSensor::CAMERA;
+ 
+-  TiXmlElement *image = config->FirstChildElement("image");
++  XMLElement *image = config->FirstChildElement("image");
+   if (image)
+   {
+     const char* width_char = image->Attribute("width");
+@@ -168,12 +170,12 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool parseRay(Ray &ray, TiXmlElement* config)
++bool parseRay(Ray &ray, XMLElement* config)
+ {
+   ray.clear();
+   ray.type = VisualSensor::RAY;
+ 
+-  TiXmlElement *horizontal = config->FirstChildElement("horizontal");
++  XMLElement *horizontal = config->FirstChildElement("horizontal");
+   if (horizontal)
+   {
+     const char* samples_char = horizontal->Attribute("samples");
+@@ -233,7 +235,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
+     }
+   }
+   
+-  TiXmlElement *vertical = config->FirstChildElement("vertical");
++  XMLElement *vertical = config->FirstChildElement("vertical");
+   if (vertical)
+   {
+     const char* samples_char = vertical->Attribute("samples");
+@@ -294,12 +296,12 @@ bool parseRay(Ray &ray, TiXmlElement* config)
+   }
+ }
+ 
+-boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
++boost::shared_ptr<VisualSensor> parseVisualSensor(XMLElement *g)
+ {
+   boost::shared_ptr<VisualSensor> visual_sensor;
+ 
+   // get sensor type
+-  TiXmlElement *sensor_xml;
++  XMLElement *sensor_xml;
+   if (g->FirstChildElement("camera"))
+   {
+     Camera *camera = new Camera();
+@@ -324,7 +326,7 @@ boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
+ }
+ 
+ 
+-bool parseSensor(Sensor &sensor, TiXmlElement* config)
++bool parseSensor(Sensor &sensor, XMLElement* config)
+ {
+   sensor.clear();
+ 
+@@ -346,7 +348,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
+   sensor.parent_link_name = std::string(parent_link_name_char);
+ 
+   // parse origin
+-  TiXmlElement *o = config->FirstChildElement("origin");
++  XMLElement *o = config->FirstChildElement("origin");
+   if (o)
+   {
+     if (!parsePose(sensor.origin, o))
+diff --git a/urdf_parser/src/world.cpp b/urdf_parser/src/world.cpp
+index f858b25..a419eeb 100644
+--- a/urdf_parser/src/world.cpp
++++ b/urdf_parser/src/world.cpp
+@@ -42,12 +42,13 @@
+ #include <sstream>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+-#include <tinyxml.h>
+ #include <console_bridge/console.h>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+-bool parseWorld(World &world, TiXmlElement* config)
++bool parseWorld(World &world, XMLElement* config)
+ {
+ 
+   // to be implemented
+@@ -55,15 +56,16 @@ bool parseWorld(World &world, TiXmlElement* config)
+   return true;
+ }
+ 
+-bool exportWorld(World &world, TiXmlElement* xml)
++bool exportWorld(World &world, XMLElement* xml)
+ {
+-  TiXmlElement * world_xml = new TiXmlElement("world");
+-  world_xml->SetAttribute("name", world.name);
++  XMLDocument * doc = xml->GetDocument();
++  XMLElement * world_xml = doc->NewElement("world");
++  world_xml->SetAttribute("name", world.name.c_str());
+ 
+   // to be implemented
+   // exportModels(*world.models, world_xml);
+ 
+-  xml->LinkEndChild(world_xml);
++  xml->InsertEndChild(world_xml);
+ 
+   return true;
+ }
+-- 
+2.7.4
+

@@ -1,0 +1,807 @@
+From e2254610af2e7cc5193694d5ce7b6e0dbca73c79 Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Fri, 20 Jan 2017 15:08:40 +0200
+Subject: [PATCH 2/2] rewrite to use TinyXML2 instead of TinyXML
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates srdfdom to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros-planning/srdfdom/pull/32]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ CMakeLists.txt                |   8 +-
+ include/srdfdom/model.h       |  24 ++---
+ include/srdfdom/srdf_writer.h |  30 +++---
+ package.xml                   |   4 +-
+ src/model.cpp                 |  52 ++++++-----
+ src/srdf_writer.cpp           | 213 +++++++++++++++++++++---------------------
+ 6 files changed, 169 insertions(+), 162 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 545934b..8244ea2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,16 +8,16 @@ find_package(urdfdom_headers REQUIRED)
+ 
+ find_package(catkin REQUIRED COMPONENTS cmake_modules urdfdom_py)
+ 
+-find_package(TinyXML REQUIRED)
++find_package(TinyXML2 REQUIRED)
+ 
+-include_directories(include ${Boost_INCLUDE_DIR} ${TinyXML_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${urdfdom_headers_INCLUDE_DIRS})
++include_directories(include ${Boost_INCLUDE_DIR} ${TinyXML2_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${urdfdom_headers_INCLUDE_DIRS})
+ link_directories(${catkin_LIBRARY_DIRS})
+ 
+ catkin_python_setup()
+ 
+ catkin_package(
+   LIBRARIES ${PROJECT_NAME}
+-  INCLUDE_DIRS include ${TinyXML_INCLUDE_DIRS}
++  INCLUDE_DIRS include ${TinyXML2_INCLUDE_DIRS}
+   DEPENDS console_bridge urdfdom_headers urdfdom_py
+ )
+ 
+@@ -25,7 +25,7 @@ add_library(${PROJECT_NAME}
+   src/model.cpp
+   src/srdf_writer.cpp
+ )
+-target_link_libraries(${PROJECT_NAME} ${TinyXML_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${urdfdom_headers_LIBRARIES})
++target_link_libraries(${PROJECT_NAME} ${TinyXML2_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${urdfdom_headers_LIBRARIES})
+ 
+ 
+ install(TARGETS ${PROJECT_NAME}
+diff --git a/include/srdfdom/model.h b/include/srdfdom/model.h
+index 9ba7cf7..40ffe43 100644
+--- a/include/srdfdom/model.h
++++ b/include/srdfdom/model.h
+@@ -43,7 +43,7 @@
+ #include <utility>
+ #include <urdf_model/model.h>
+ #include <boost/shared_ptr.hpp>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ 
+ namespace urdf
+ {
+@@ -67,10 +67,10 @@ public:
+   {
+   }
+   
+-  /// \brief Load Model from TiXMLElement
+-  bool initXml(const urdf::ModelInterface &urdf_model, TiXmlElement *xml);
+-  /// \brief Load Model from TiXMLDocument
+-  bool initXml(const urdf::ModelInterface &urdf_model, TiXmlDocument *xml);
++  /// \brief Load Model from XMLElement
++  bool initXml(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *xml);
++  /// \brief Load Model from XMLDocument
++  bool initXml(const urdf::ModelInterface &urdf_model, tinyxml2::XMLDocument *xml);
+   /// \brief Load Model given a filename
+   bool initFile(const urdf::ModelInterface &urdf_model, const std::string& filename);
+   /// \brief Load Model from a XML-string
+@@ -258,13 +258,13 @@ public:
+   
+ private:
+   
+-  void loadVirtualJoints(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadEndEffectors(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadLinkSphereApproximations(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadDisabledCollisions(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
+-  void loadPassiveJoints(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml);
++  void loadVirtualJoints(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadGroups(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadGroupStates(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadEndEffectors(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadLinkSphereApproximations(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadDisabledCollisions(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
++  void loadPassiveJoints(const urdf::ModelInterface &urdf_model, tinyxml2::XMLElement *robot_xml);
+   
+   std::string                    name_;
+   std::vector<Group>             groups_;
+diff --git a/include/srdfdom/srdf_writer.h b/include/srdfdom/srdf_writer.h
+index bab621f..cfe7de6 100644
+--- a/include/srdfdom/srdf_writer.h
++++ b/include/srdfdom/srdf_writer.h
+@@ -105,60 +105,53 @@ public:
+   std::string getSRDFString();
+ 
+   /**
+-   * Generate SRDF XML of all contained data
+-   *
+-   * @return TinyXML document that contains current SRDF data in this class
+-   */
+-  TiXmlDocument generateSRDF();
+-
+-  /**
+    * Generate XML for SRDF groups
+    *
+    * @param root - TinyXML root element to attach sub elements to
+    */
+-  void createGroupsXML( TiXmlElement *root );
++  void createGroupsXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF link collision spheres
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createLinkSphereApproximationsXML( TiXmlElement *root );
++  void createLinkSphereApproximationsXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF disabled collisions of robot link pairs
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createDisabledCollisionsXML( TiXmlElement *root );
++  void createDisabledCollisionsXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF group states of each joint's position
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createGroupStatesXML( TiXmlElement *root );
++  void createGroupStatesXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF end effectors
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createEndEffectorsXML( TiXmlElement *root );
++  void createEndEffectorsXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF virtual joints
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createVirtualJointsXML( TiXmlElement *root );
++  void createVirtualJointsXML( tinyxml2::XMLElement *root );
+ 
+   /**
+    * Generate XML for SRDF passive joints
+    *
+    * @param root  - TinyXML root element to attach sub elements to
+    */
+-  void createPassiveJointsXML( TiXmlElement *root );
++  void createPassiveJointsXML( tinyxml2::XMLElement *root );
+ 
+   // ******************************************************************************************
+   // Group Datastructures
+@@ -178,6 +171,15 @@ public:
+   // Robot name
+   std::string robot_name_;
+ 
++private:
++
++  /**
++   * Generate SRDF XML of all contained data
++   *
++   * @param document - TinyXML2 document that contains current SRDF data in this class
++   */
++  void generateSRDF(tinyxml2::XMLDocument &document);
++
+ };
+ 
+ // ******************************************************************************************
+diff --git a/package.xml b/package.xml
+index 57e1db7..b30e806 100644
+--- a/package.xml
++++ b/package.xml
+@@ -18,12 +18,12 @@
+   <build_depend>libconsole-bridge-dev</build_depend>
+   <build_depend>liburdfdom-headers-dev</build_depend>
+   <build_depend>urdfdom_py</build_depend>
+-  <build_depend>tinyxml</build_depend>
++  <build_depend>tinyxml2</build_depend>
+ 
+   <run_depend>boost</run_depend>
+   <run_depend>libconsole-bridge-dev</run_depend>
+   <run_depend>liburdfdom-headers-dev</run_depend>
+-  <run_depend>tinyxml</run_depend>
++  <run_depend>tinyxml2</run_depend>
+   <run_depend>urdfdom_py</run_depend>
+ 
+   <test_depend>rostest</test_depend>
+diff --git a/src/model.cpp b/src/model.cpp
+index bab1138..0b6132f 100644
+--- a/src/model.cpp
++++ b/src/model.cpp
+@@ -44,9 +44,11 @@
+ #include <set>
+ #include <limits>
+ 
+-void srdf::Model::loadVirtualJoints(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++using namespace tinyxml2;
++
++void srdf::Model::loadVirtualJoints(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* vj_xml = robot_xml->FirstChildElement("virtual_joint"); vj_xml; vj_xml = vj_xml->NextSiblingElement("virtual_joint"))
++  for (XMLElement* vj_xml = robot_xml->FirstChildElement("virtual_joint"); vj_xml; vj_xml = vj_xml->NextSiblingElement("virtual_joint"))
+   {
+     const char *jname = vj_xml->Attribute("name");
+     const char *child = vj_xml->Attribute("child_link");
+@@ -92,9 +94,9 @@ void srdf::Model::loadVirtualJoints(const urdf::ModelInterface &urdf_model, TiXm
+   }
+ }
+ 
+-void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* group_xml = robot_xml->FirstChildElement("group"); group_xml; group_xml = group_xml->NextSiblingElement("group"))
++  for (XMLElement* group_xml = robot_xml->FirstChildElement("group"); group_xml; group_xml = group_xml->NextSiblingElement("group"))
+   {
+     const char *gname = group_xml->Attribute("name");
+     if (!gname)
+@@ -106,7 +108,7 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+     g.name_ = std::string(gname); boost::trim(g.name_);
+     
+     // get the links in the groups
+-    for (TiXmlElement* link_xml = group_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
++    for (XMLElement* link_xml = group_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
+     {
+       const char *lname = link_xml->Attribute("name");
+       if (!lname)
+@@ -124,7 +126,7 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+     }
+     
+     // get the joints in the groups
+-    for (TiXmlElement* joint_xml = group_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
++    for (XMLElement* joint_xml = group_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
+     {
+       const char *jname = joint_xml->Attribute("name");
+       if (!jname)
+@@ -152,7 +154,7 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+     }
+     
+     // get the chains in the groups
+-    for (TiXmlElement* chain_xml = group_xml->FirstChildElement("chain"); chain_xml; chain_xml = chain_xml->NextSiblingElement("chain"))
++    for (XMLElement* chain_xml = group_xml->FirstChildElement("chain"); chain_xml; chain_xml = chain_xml->NextSiblingElement("chain"))
+     {
+       const char *base = chain_xml->Attribute("base_link");
+       const char *tip = chain_xml->Attribute("tip_link");
+@@ -207,7 +209,7 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+     }
+     
+     // get the subgroups in the groups
+-    for (TiXmlElement* subg_xml = group_xml->FirstChildElement("group"); subg_xml; subg_xml = subg_xml->NextSiblingElement("group"))
++    for (XMLElement* subg_xml = group_xml->FirstChildElement("group"); subg_xml; subg_xml = subg_xml->NextSiblingElement("group"))
+     {
+       const char *sub = subg_xml->Attribute("name");
+       if (!sub)
+@@ -265,9 +267,9 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+   }
+ }
+ 
+-void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* gstate_xml = robot_xml->FirstChildElement("group_state"); gstate_xml; gstate_xml = gstate_xml->NextSiblingElement("group_state"))
++  for (XMLElement* gstate_xml = robot_xml->FirstChildElement("group_state"); gstate_xml; gstate_xml = gstate_xml->NextSiblingElement("group_state"))
+   {
+     const char *sname = gstate_xml->Attribute("name");
+     const char *gname = gstate_xml->Attribute("group");
+@@ -300,7 +302,7 @@ void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlE
+     }
+     
+     // get the joint values in the group state
+-    for (TiXmlElement* joint_xml = gstate_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
++    for (XMLElement* joint_xml = gstate_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
+     {
+       const char *jname = joint_xml->Attribute("name");
+       const char *jval = joint_xml->Attribute("value");
+@@ -352,9 +354,9 @@ void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlE
+   }
+ }
+ 
+-void srdf::Model::loadEndEffectors(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadEndEffectors(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* eef_xml = robot_xml->FirstChildElement("end_effector"); eef_xml; eef_xml = eef_xml->NextSiblingElement("end_effector"))
++  for (XMLElement* eef_xml = robot_xml->FirstChildElement("end_effector"); eef_xml; eef_xml = eef_xml->NextSiblingElement("end_effector"))
+   {
+     const char *ename = eef_xml->Attribute("name");
+     const char *gname = eef_xml->Attribute("group");
+@@ -404,9 +406,9 @@ void srdf::Model::loadEndEffectors(const urdf::ModelInterface &urdf_model, TiXml
+   }
+ }
+ 
+-void srdf::Model::loadLinkSphereApproximations(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadLinkSphereApproximations(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* cslink_xml = robot_xml->FirstChildElement("link_sphere_approximation"); cslink_xml; cslink_xml = cslink_xml->NextSiblingElement("link_sphere_approximation"))
++  for (XMLElement* cslink_xml = robot_xml->FirstChildElement("link_sphere_approximation"); cslink_xml; cslink_xml = cslink_xml->NextSiblingElement("link_sphere_approximation"))
+   {
+     int non_0_radius_sphere_cnt = 0;
+     const char *link_name = cslink_xml->Attribute("link");
+@@ -427,7 +429,7 @@ void srdf::Model::loadLinkSphereApproximations(const urdf::ModelInterface &urdf_
+ 
+     // get the spheres for this link
+     int cnt = 0;
+-    for (TiXmlElement* sphere_xml = cslink_xml->FirstChildElement("sphere"); sphere_xml; sphere_xml = sphere_xml->NextSiblingElement("sphere"), cnt++)
++    for (XMLElement* sphere_xml = cslink_xml->FirstChildElement("sphere"); sphere_xml; sphere_xml = sphere_xml->NextSiblingElement("sphere"), cnt++)
+     {
+       const char *s_center = sphere_xml->Attribute("center");
+       const char *s_r = sphere_xml->Attribute("radius");
+@@ -491,9 +493,9 @@ void srdf::Model::loadLinkSphereApproximations(const urdf::ModelInterface &urdf_
+   }
+ }
+ 
+-void srdf::Model::loadDisabledCollisions(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadDisabledCollisions(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+-  for (TiXmlElement* c_xml = robot_xml->FirstChildElement("disable_collisions"); c_xml; c_xml = c_xml->NextSiblingElement("disable_collisions"))
++  for (XMLElement* c_xml = robot_xml->FirstChildElement("disable_collisions"); c_xml; c_xml = c_xml->NextSiblingElement("disable_collisions"))
+   {
+     const char *link1 = c_xml->Attribute("link1");
+     const char *link2 = c_xml->Attribute("link2");
+@@ -522,9 +524,9 @@ void srdf::Model::loadDisabledCollisions(const urdf::ModelInterface &urdf_model,
+   }
+ }
+ 
+-void srdf::Model::loadPassiveJoints(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++void srdf::Model::loadPassiveJoints(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {  
+-  for (TiXmlElement* c_xml = robot_xml->FirstChildElement("passive_joint"); c_xml; c_xml = c_xml->NextSiblingElement("passive_joint"))
++  for (XMLElement* c_xml = robot_xml->FirstChildElement("passive_joint"); c_xml; c_xml = c_xml->NextSiblingElement("passive_joint"))
+   {
+     const char *name = c_xml->Attribute("name");
+     if (!name)
+@@ -550,10 +552,10 @@ void srdf::Model::loadPassiveJoints(const urdf::ModelInterface &urdf_model, TiXm
+   }
+ }
+ 
+-bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, TiXmlElement *robot_xml)
++bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, XMLElement *robot_xml)
+ {
+   clear();
+-  if (!robot_xml || robot_xml->ValueStr() != "robot")
++  if (!robot_xml || strcmp(robot_xml->Value(), "robot") != 0)
+   {
+     logError("Could not find the 'robot' element in the xml file");
+     return false;
+@@ -581,9 +583,9 @@ bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, TiXmlElement *
+   return true;
+ }
+ 
+-bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, TiXmlDocument *xml)
++bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, XMLDocument *xml)
+ {
+-  TiXmlElement *robot_xml = xml ? xml->FirstChildElement("robot") : NULL;
++  XMLElement *robot_xml = xml ? xml->FirstChildElement("robot") : NULL;
+   if (!robot_xml)
+   {
+     logError("Could not find the 'robot' element in the xml file");
+@@ -618,7 +620,7 @@ bool srdf::Model::initFile(const urdf::ModelInterface &urdf_model, const std::st
+ 
+ bool srdf::Model::initString(const urdf::ModelInterface &urdf_model, const std::string& xmlstring)
+ {
+-  TiXmlDocument xml_doc;
++  XMLDocument xml_doc;
+   xml_doc.Parse(xmlstring.c_str());
+   return initXml(urdf_model, &xml_doc);
+ }
+diff --git a/src/srdf_writer.cpp b/src/srdf_writer.cpp
+index e82238e..fb18acc 100644
+--- a/src/srdf_writer.cpp
++++ b/src/srdf_writer.cpp
+@@ -34,9 +34,11 @@
+ 
+ /* Author: Dave Coleman */
+ 
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <srdfdom/srdf_writer.h>
+ 
++using namespace tinyxml2;
++
+ namespace srdf
+ {
+ 
+@@ -118,10 +120,11 @@ void SRDFWriter::updateSRDFModel( const urdf::ModelInterface &robot_model )
+ bool SRDFWriter::writeSRDF( const std::string &file_path )
+ {
+   // Generate the SRDF
+-  TiXmlDocument document = generateSRDF();
++  XMLDocument document;
++  generateSRDF(document);
+ 
+   // Save to file
+-  return document.SaveFile( file_path );
++  return document.SaveFile( file_path.c_str() );
+ }
+ 
+ // ******************************************************************************************
+@@ -130,11 +133,11 @@ bool SRDFWriter::writeSRDF( const std::string &file_path )
+ std::string SRDFWriter::getSRDFString()
+ {
+   // Generate the SRDF
+-  TiXmlDocument document = generateSRDF();
++  XMLDocument document;
++  generateSRDF(document);
+ 
+   // Setup printer
+-  TiXmlPrinter printer;
+-  printer.SetIndent( "    " );
++  XMLPrinter printer;
+   document.Accept( &printer );
+ 
+   // Return string
+@@ -144,20 +147,16 @@ std::string SRDFWriter::getSRDFString()
+ // ******************************************************************************************
+ // Generate SRDF XML of all contained data
+ // ******************************************************************************************
+-TiXmlDocument SRDFWriter::generateSRDF()
++void SRDFWriter::generateSRDF(tinyxml2::XMLDocument& document)
+ {
+-  TiXmlDocument document;
+-  TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
+-  document.LinkEndChild( decl );
++  document.NewDeclaration();
+ 
+   // Convenience comments
+-  TiXmlComment * comment = new TiXmlComment( "This does not replace URDF, and is not an extension of URDF.\n    This is a format for representing semantic information about the robot structure.\n    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined\n" );
+-  document.LinkEndChild( comment );
++  document.NewComment( "This does not replace URDF, and is not an extension of URDF.\n    This is a format for representing semantic information about the robot structure.\n    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined\n" );
+ 
+   // Root
+-  TiXmlElement* robot_root = new TiXmlElement("robot");
+-  robot_root->SetAttribute("name", robot_name_ ); // robot name
+-  document.LinkEndChild( robot_root );
++  XMLElement* robot_root = document.NewElement("robot");
++  robot_root->SetAttribute("name", robot_name_.c_str() ); // robot name
+ 
+   // Add Groups
+   createGroupsXML( robot_root );
+@@ -179,30 +178,28 @@ TiXmlDocument SRDFWriter::generateSRDF()
+ 
+   // Add Disabled Collisions
+   createDisabledCollisionsXML( robot_root );
+-
+-  // Save
+-  return document;
+ }
+ 
+ // ******************************************************************************************
+ // Generate XML for SRDF groups
+ // ******************************************************************************************
+-void SRDFWriter::createGroupsXML( TiXmlElement *root )
++void SRDFWriter::createGroupsXML( XMLElement *root )
+ {
++  XMLDocument* doc = root->GetDocument();
++
+   // Convenience comments
+   if( groups_.size() ) // only show comments if there are corresponding elements
+   {
+-    TiXmlComment *comment;
+-    comment = new TiXmlComment( "GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc" );
+-    root->LinkEndChild( comment );
+-    comment = new TiXmlComment( "LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included" );
+-    root->LinkEndChild( comment );
+-    comment = new TiXmlComment( "JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included" );
+-    root->LinkEndChild( comment );
+-    comment = new TiXmlComment( "CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group");
+-    root->LinkEndChild( comment );
+-    comment = new TiXmlComment( "SUBGROUPS: Groups can also be formed by referencing to already defined group names" );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc" );
++    root->InsertEndChild( comment );
++    comment = doc->NewComment( "LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included" );
++    root->InsertEndChild( comment );
++    comment = doc->NewComment( "JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included" );
++    root->InsertEndChild( comment );
++    comment = doc->NewComment( "CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group");
++    root->InsertEndChild( comment );
++    comment = doc->NewComment( "SUBGROUPS: Groups can also be formed by referencing to already defined group names" );
++    root->InsertEndChild( comment );
+   }
+ 
+   // Loop through all of the top groups
+@@ -211,45 +208,45 @@ void SRDFWriter::createGroupsXML( TiXmlElement *root )
+   {
+ 
+     // Create group element
+-    TiXmlElement *group = new TiXmlElement("group");
+-    group->SetAttribute("name", group_it->name_ ); // group name
+-    root->LinkEndChild(group);
++    XMLElement *group = doc->NewElement("group");
++    group->SetAttribute("name", group_it->name_.c_str() ); // group name
++    root->InsertEndChild(group);
+ 
+     // LINKS
+     for( std::vector<std::string>::const_iterator link_it = group_it->links_.begin();
+          link_it != group_it->links_.end(); ++link_it )
+     {
+-      TiXmlElement *link = new TiXmlElement("link");
+-      link->SetAttribute("name", *link_it ); // link name
+-      group->LinkEndChild( link );
++      XMLElement *link = doc->NewElement("link");
++      link->SetAttribute("name", (*link_it).c_str() ); // link name
++      group->InsertEndChild( link );
+     }
+ 
+     // JOINTS
+     for( std::vector<std::string>::const_iterator joint_it = group_it->joints_.begin();
+          joint_it != group_it->joints_.end(); ++joint_it )
+     {
+-      TiXmlElement *joint = new TiXmlElement("joint");
+-      joint->SetAttribute("name", *joint_it ); // joint name
+-      group->LinkEndChild( joint );
++      XMLElement *joint = doc->NewElement("joint");
++      joint->SetAttribute("name", (*joint_it).c_str() ); // joint name
++      group->InsertEndChild( joint );
+     }
+ 
+     // CHAINS
+     for( std::vector<std::pair<std::string,std::string> >::const_iterator chain_it = group_it->chains_.begin();
+          chain_it != group_it->chains_.end(); ++chain_it )
+     {
+-      TiXmlElement *chain = new TiXmlElement("chain");
+-      chain->SetAttribute("base_link", chain_it->first );
+-      chain->SetAttribute("tip_link", chain_it->second );
+-      group->LinkEndChild( chain );
++      XMLElement *chain = doc->NewElement("chain");
++      chain->SetAttribute("base_link", chain_it->first.c_str() );
++      chain->SetAttribute("tip_link", chain_it->second.c_str() );
++      group->InsertEndChild( chain );
+     }
+ 
+     // SUBGROUPS
+     for( std::vector<std::string>::const_iterator subgroup_it = group_it->subgroups_.begin();
+          subgroup_it != group_it->subgroups_.end(); ++subgroup_it )
+     {
+-      TiXmlElement *subgroup = new TiXmlElement("group");
+-      subgroup->SetAttribute("name", *subgroup_it ); // subgroup name
+-      group->LinkEndChild( subgroup );
++      XMLElement *subgroup = doc->NewElement("group");
++      subgroup->SetAttribute("name", (*subgroup_it).c_str() ); // subgroup name
++      group->InsertEndChild( subgroup );
+     }
+ 
+   }
+@@ -258,15 +255,16 @@ void SRDFWriter::createGroupsXML( TiXmlElement *root )
+ // ******************************************************************************************
+ // Generate XML for SRDF link collision spheres
+ // ******************************************************************************************
+-void SRDFWriter::createLinkSphereApproximationsXML( TiXmlElement *root )
++void SRDFWriter::createLinkSphereApproximationsXML( XMLElement *root )
+ {
+   if( link_sphere_approximations_.empty() ) // skip it if there are none
+     return;
+ 
++  XMLDocument *doc = root->GetDocument();
++
+   // Convenience comments
+-  TiXmlComment *comment = new TiXmlComment();
+-  comment->SetValue( "COLLISION SPHERES: Purpose: Define a set of spheres that bounds a link." );
+-  root->LinkEndChild( comment );
++  XMLComment *comment = doc->NewComment( "COLLISION SPHERES: Purpose: Define a set of spheres that bounds a link." );
++  root->InsertEndChild( comment );
+ 
+ 
+   for ( std::vector<srdf::Model::LinkSpheres>::const_iterator link_sphere_it = link_sphere_approximations_.begin();
+@@ -276,21 +274,21 @@ void SRDFWriter::createLinkSphereApproximationsXML( TiXmlElement *root )
+       continue;
+ 
+     // Create new element for the link
+-    TiXmlElement *link = new TiXmlElement("link_sphere_approximation");
+-    link->SetAttribute("link", link_sphere_it->link_);
+-    root->LinkEndChild( link );
++    XMLElement *link = doc->NewElement("link_sphere_approximation");
++    link->SetAttribute("link", link_sphere_it->link_.c_str());
++    root->InsertEndChild( link );
+ 
+     // Add all spheres for the link
+     for( std::vector<srdf::Model::Sphere>::const_iterator sphere_it = link_sphere_it->spheres_.begin();
+          sphere_it != link_sphere_it->spheres_.end(); ++sphere_it )
+     {
+-      TiXmlElement *sphere = new TiXmlElement("sphere");
++      XMLElement *sphere = doc->NewElement("sphere");
+       std::stringstream center;
+       center.precision(20);
+       center << sphere_it->center_x_ << " " << sphere_it->center_y_ << " " << sphere_it->center_z_;
+-      sphere->SetAttribute("center", center.str() );
+-      sphere->SetDoubleAttribute("radius", sphere_it->radius_ );
+-      link->LinkEndChild( sphere );
++      sphere->SetAttribute("center", center.str().c_str() );
++      sphere->SetAttribute("radius", sphere_it->radius_ );
++      link->InsertEndChild( sphere );
+     }
+   }
+ }
+@@ -298,61 +296,63 @@ void SRDFWriter::createLinkSphereApproximationsXML( TiXmlElement *root )
+ // ******************************************************************************************
+ // Generate XML for SRDF disabled collisions of robot link pairs
+ // ******************************************************************************************
+-void SRDFWriter::createDisabledCollisionsXML( TiXmlElement *root )
++void SRDFWriter::createDisabledCollisionsXML( XMLElement *root )
+ {
++  XMLDocument *doc = root->GetDocument();
++
+   // Convenience comments
+   if( disabled_collisions_.size() ) // only show comments if there are corresponding elements
+   {
+-    TiXmlComment *comment = new TiXmlComment();
+-    comment->SetValue( "DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. " );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. " );
++    root->InsertEndChild( comment );
+   }
+ 
+   for ( std::vector<srdf::Model::DisabledCollision>::const_iterator pair_it = disabled_collisions_.begin();
+         pair_it != disabled_collisions_.end() ; ++pair_it)
+   {
+     // Create new element for each link pair
+-    TiXmlElement *link_pair = new TiXmlElement("disable_collisions");
+-    link_pair->SetAttribute("link1", pair_it->link1_ );
+-    link_pair->SetAttribute("link2", pair_it->link2_ );
+-    link_pair->SetAttribute("reason", pair_it->reason_ );
++    XMLElement *link_pair = doc->NewElement("disable_collisions");
++    link_pair->SetAttribute("link1", pair_it->link1_.c_str() );
++    link_pair->SetAttribute("link2", pair_it->link2_.c_str() );
++    link_pair->SetAttribute("reason", pair_it->reason_.c_str() );
+ 
+-    root->LinkEndChild( link_pair );
++    root->InsertEndChild( link_pair );
+   }
+ }
+ 
+ // ******************************************************************************************
+ // Generate XML for SRDF group states
+ // ******************************************************************************************
+-void SRDFWriter::createGroupStatesXML( TiXmlElement *root )
++void SRDFWriter::createGroupStatesXML( XMLElement *root )
+ {
++  XMLDocument *doc = root->GetDocument();
++
+   // Convenience comments
+   if( group_states_.size() ) // only show comments if there are corresponding elements
+   {
+-    TiXmlComment *comment = new TiXmlComment();
+-    comment->SetValue( "GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'" );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'" );
++    root->InsertEndChild( comment );
+   }
+ 
+   for ( std::vector<srdf::Model::GroupState>::const_iterator state_it = group_states_.begin();
+         state_it != group_states_.end() ; ++state_it)
+   {
+     // Create new element for each group state
+-    TiXmlElement *state = new TiXmlElement("group_state");
+-    state->SetAttribute("name", state_it->name_ );
+-    state->SetAttribute("group", state_it->group_ );
+-    root->LinkEndChild( state );
++    XMLElement *state = doc->NewElement("group_state");
++    state->SetAttribute("name", state_it->name_.c_str() );
++    state->SetAttribute("group", state_it->group_.c_str() );
++    root->InsertEndChild( state );
+ 
+     // Add all joints
+     for( std::map<std::string, std::vector<double> >::const_iterator value_it = state_it->joint_values_.begin();
+          value_it != state_it->joint_values_.end(); ++value_it )
+     {
+-      TiXmlElement *joint = new TiXmlElement("joint");
+-      joint->SetAttribute("name", value_it->first ); // joint name
+-      joint->SetDoubleAttribute("value", value_it->second[0] ); // joint value
++      XMLElement *joint = doc->NewElement("joint");
++      joint->SetAttribute("name", value_it->first.c_str() ); // joint name
++      joint->SetAttribute("value", value_it->second[0] ); // joint value
+ 
+       // TODO: use the vector to support multi-DOF joints
+-      state->LinkEndChild( joint );
++      state->InsertEndChild( joint );
+     }
+   }
+ }
+@@ -360,72 +360,75 @@ void SRDFWriter::createGroupStatesXML( TiXmlElement *root )
+ // ******************************************************************************************
+ // Generate XML for SRDF end effectors
+ // ******************************************************************************************
+-void SRDFWriter::createEndEffectorsXML( TiXmlElement *root )
++void SRDFWriter::createEndEffectorsXML( XMLElement *root )
+ {
++  XMLDocument *doc = root->GetDocument();
++
+   // Convenience comments
+   if( end_effectors_.size() ) // only show comments if there are corresponding elements
+   {
+-    TiXmlComment *comment = new TiXmlComment();
+-    comment->SetValue( "END EFFECTOR: Purpose: Represent information about an end effector." );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "END EFFECTOR: Purpose: Represent information about an end effector." );
++    root->InsertEndChild( comment );
+   }
+ 
+   for ( std::vector<srdf::Model::EndEffector>::const_iterator effector_it = end_effectors_.begin();
+         effector_it != end_effectors_.end() ; ++effector_it)
+   {
+     // Create new element for each link pair
+-    TiXmlElement *effector = new TiXmlElement("end_effector");
+-    effector->SetAttribute("name", effector_it->name_ );
+-    effector->SetAttribute("parent_link", effector_it->parent_link_ );
+-    effector->SetAttribute("group", effector_it->component_group_ );
++    XMLElement *effector = doc->NewElement("end_effector");
++    effector->SetAttribute("name", effector_it->name_.c_str() );
++    effector->SetAttribute("parent_link", effector_it->parent_link_.c_str() );
++    effector->SetAttribute("group", effector_it->component_group_.c_str() );
+     if (!effector_it->parent_group_.empty())
+-      effector->SetAttribute("parent_group", effector_it->parent_group_ );
+-    root->LinkEndChild( effector );
++      effector->SetAttribute("parent_group", effector_it->parent_group_.c_str() );
++    root->InsertEndChild( effector );
+   }
+ }
+ 
+ // ******************************************************************************************
+ // Generate XML for SRDF virtual joints
+ // ******************************************************************************************
+-void SRDFWriter::createVirtualJointsXML( TiXmlElement *root )
++void SRDFWriter::createVirtualJointsXML( XMLElement *root )
+ {
++  XMLDocument *doc = root->GetDocument();
++
+   // Convenience comments
+   if( virtual_joints_.size() ) // only show comments if there are corresponding elements
+   {
+-    TiXmlComment *comment = new TiXmlComment();
+-    comment->SetValue( "VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)" );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)" );
++    root->InsertEndChild( comment );
+   }
+ 
+   for ( std::vector<srdf::Model::VirtualJoint>::const_iterator virtual_it = virtual_joints_.begin();
+         virtual_it != virtual_joints_.end() ; ++virtual_it)
+   {
+     // Create new element for each link pair
+-    TiXmlElement *virtual_joint = new TiXmlElement("virtual_joint");
+-    virtual_joint->SetAttribute("name", virtual_it->name_ );
+-    virtual_joint->SetAttribute("type", virtual_it->type_ );
+-    virtual_joint->SetAttribute("parent_frame", virtual_it->parent_frame_ );
+-    virtual_joint->SetAttribute("child_link", virtual_it->child_link_ );
++    XMLElement *virtual_joint = doc->NewElement("virtual_joint");
++    virtual_joint->SetAttribute("name", virtual_it->name_.c_str() );
++    virtual_joint->SetAttribute("type", virtual_it->type_.c_str() );
++    virtual_joint->SetAttribute("parent_frame", virtual_it->parent_frame_.c_str() );
++    virtual_joint->SetAttribute("child_link", virtual_it->child_link_.c_str() );
+ 
+-    root->LinkEndChild( virtual_joint );
++    root->InsertEndChild( virtual_joint );
+   }
+ }
+ 
+-void SRDFWriter::createPassiveJointsXML( TiXmlElement *root )
++void SRDFWriter::createPassiveJointsXML( XMLElement *root )
+ {
++  XMLDocument *doc = root->GetDocument();
++
+   if ( passive_joints_.size() )
+   {
+-    TiXmlComment *comment = new TiXmlComment();
+-    comment->SetValue( "PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated" );
+-    root->LinkEndChild( comment );
++    XMLComment *comment = doc->NewComment( "PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated" );
++    root->InsertEndChild( comment );
+   }
+   for ( std::vector<srdf::Model::PassiveJoint>::const_iterator p_it = passive_joints_.begin();
+         p_it != passive_joints_.end() ; ++p_it)
+   {
+     // Create new element for each link pair
+-    TiXmlElement *p_joint = new TiXmlElement("passive_joint");
+-    p_joint->SetAttribute("name", p_it->name_ );
+-    root->LinkEndChild( p_joint );
++    XMLElement *p_joint = doc->NewElement("passive_joint");
++    p_joint->SetAttribute("name", p_it->name_.c_str() );
++    root->InsertEndChild( p_joint );
+   }
+ }
+ 
+-- 
+2.7.4
+

@@ -1,0 +1,27 @@
+From 8147211740570bd9c2c43050c3e88cbaaadba1ca Mon Sep 17 00:00:00 2001
+From: Tim Rakowski <tim.rakowski@googlemail.com>
+Date: Sun, 26 Feb 2017 12:39:29 +0100
+Subject: [PATCH] Fixed inverted result code check
+
+Upstream-Status: Backported
+
+---
+ src/rospack.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/rospack.cpp b/src/rospack.cpp
+index ebdecd7..a515f4f 100644
+--- a/src/rospack.cpp
++++ b/src/rospack.cpp
+@@ -1546,7 +1546,7 @@ Rosstackage::loadManifest(Stackage* stackage)
+   if(stackage->manifest_loaded_)
+     return;
+ 
+-  if(!stackage->manifest_.LoadFile(stackage->manifest_path_.c_str()))
++  if(stackage->manifest_.LoadFile(stackage->manifest_path_.c_str()) != XML_SUCCESS)
+   {
+     std::string errmsg = std::string("error parsing manifest of package ") +
+             stackage->name_ + " at " + stackage->manifest_path_;
+-- 
+2.9.3
+

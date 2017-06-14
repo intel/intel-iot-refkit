@@ -1,0 +1,241 @@
+From ebd1f196fa51bd1df678923d5d298ffe6cd46e30 Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Fri, 3 Jun 2016 11:49:06 +0300
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates rospack to use TinyXML2.
+
+Upstream-Status: Accepted [available since v2.4.0]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+
+---
+ CMakeLists.txt  |  8 ++++----
+ package.xml     |  4 ++--
+ src/rospack.cpp | 52 +++++++++++++++++++++++++++-------------------------
+ 3 files changed, 33 insertions(+), 31 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b5bb44..c45cc94 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,12 +5,12 @@ find_package(catkin REQUIRED COMPONENTS cmake_modules)
+ find_package(Boost REQUIRED COMPONENTS filesystem program_options system)
+ set(Python_ADDITIONAL_VERSIONS "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+ find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
+-find_package(TinyXML REQUIRED)
++find_package(TinyXML2 REQUIRED)
+ 
+ catkin_package(
+   INCLUDE_DIRS include
+   LIBRARIES rospack ${PYTHON_LIBRARIES}
+-  DEPENDS Boost TinyXML
++  DEPENDS Boost TinyXML2
+ )
+ 
+ #add_definitions(-Wall)
+@@ -21,7 +21,7 @@ if(API_BACKCOMPAT_V1)
+   set(backcompat_source src/rospack_backcompat.cpp)
+ endif()
+ 
+-include_directories(include ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
++include_directories(include ${TinyXML2_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+ 
+ add_library(rospack
+   src/rospack.cpp
+@@ -29,7 +29,7 @@ add_library(rospack
+   src/rospack_cmdline.cpp
+   src/utils.cpp
+ )
+-target_link_libraries(rospack ${TinyXML_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
++target_link_libraries(rospack ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+ 
+ add_executable(rospackexe src/rospack_main.cpp)
+ # Set the name, and make it a "global" executable
+diff --git a/package.xml b/package.xml
+index 448788a..c2c514a 100644
+--- a/package.xml
++++ b/package.xml
+@@ -20,14 +20,14 @@
+   <build_depend>gtest</build_depend>
+   <build_depend>pkg-config</build_depend>
+   <build_depend>python</build_depend>
+-  <build_depend>tinyxml</build_depend>
++  <build_depend>tinyxml2</build_depend>
+ 
+   <run_depend>boost</run_depend>
+   <run_depend>pkg-config</run_depend>
+   <run_depend>python</run_depend>
+   <run_depend>python-catkin-pkg</run_depend>
+   <run_depend>python-rosdep</run_depend>
+-  <run_depend>tinyxml</run_depend>
++  <run_depend>tinyxml2</run_depend>
+ 
+   <test_depend>python-coverage</test_depend>
+ </package>
+diff --git a/src/rospack.cpp b/src/rospack.cpp
+index 18be326..ebdecd7 100644
+--- a/src/rospack.cpp
++++ b/src/rospack.cpp
+@@ -27,7 +27,7 @@
+ 
+ #include "rospack/rospack.h"
+ #include "utils.h"
+-#include "tinyxml.h"
++#include "tinyxml2.h"
+ 
+ #include <boost/algorithm/string.hpp>
+ #include <boost/filesystem.hpp>
+@@ -81,6 +81,8 @@
+ #define PyUnicode_FromString PyString_FromString
+ #endif
+ 
++using namespace tinyxml2;
++
+ // TODO:
+ //   recrawl on:
+ //     package not found in cache
+@@ -115,7 +117,7 @@ static const int MAX_CRAWL_DEPTH = 1000;
+ static const int MAX_DEPENDENCY_DEPTH = 1000;
+ static const double DEFAULT_MAX_CACHE_AGE = 60.0;
+ 
+-TiXmlElement* get_manifest_root(Stackage* stackage);
++XMLElement* get_manifest_root(Stackage* stackage);
+ double time_since_epoch();
+ 
+ #ifdef __APPLE__
+@@ -150,7 +152,7 @@ class Stackage
+     // \brief have we already loaded the manifest?
+     bool manifest_loaded_;
+     // \brief TinyXML structure, filled in during parsing
+-    TiXmlDocument manifest_;
++    XMLDocument manifest_;
+     std::vector<Stackage*> deps_;
+     bool deps_computed_;
+     bool is_wet_package_;
+@@ -176,14 +178,14 @@ class Stackage
+       assert(is_wet_package_);
+       assert(manifest_loaded_);
+       // get name from package.xml instead of folder name
+-      TiXmlElement* root = get_manifest_root(this);
+-      for(TiXmlElement* el = root->FirstChildElement("name"); el; el = el->NextSiblingElement("name"))
++      XMLElement* root = get_manifest_root(this);
++      for(XMLElement* el = root->FirstChildElement("name"); el; el = el->NextSiblingElement("name"))
+       {
+         name_ = el->GetText();
+         break;
+       }
+       // check if package is a metapackage
+-      for(TiXmlElement* el = root->FirstChildElement("export"); el; el = el->NextSiblingElement("export"))
++      for(XMLElement* el = root->FirstChildElement("export"); el; el = el->NextSiblingElement("export"))
+       {
+         if(el->FirstChildElement("metapackage"))
+         {
+@@ -722,8 +724,8 @@ Rosstackage::rosdeps(const std::string& name, bool direct,
+ void
+ Rosstackage::_rosdeps(Stackage* stackage, std::set<std::string>& rosdeps, const char* tag_name)
+ {
+-  TiXmlElement* root = get_manifest_root(stackage);
+-  for(TiXmlElement* ele = root->FirstChildElement(tag_name);
++  XMLElement* root = get_manifest_root(stackage);
++  for(XMLElement* ele = root->FirstChildElement(tag_name);
+       ele;
+       ele = ele->NextSiblingElement(tag_name))
+   {
+@@ -765,8 +767,8 @@ Rosstackage::vcs(const std::string& name, bool direct,
+         it != deps_vec.end();
+         ++it)
+     {
+-      TiXmlElement* root = get_manifest_root(*it);
+-      for(TiXmlElement* ele = root->FirstChildElement(MANIFEST_TAG_VERSIONCONTROL);
++      XMLElement* root = get_manifest_root(*it);
++      for(XMLElement* ele = root->FirstChildElement(MANIFEST_TAG_VERSIONCONTROL);
+           ele;
+           ele = ele->NextSiblingElement(MANIFEST_TAG_VERSIONCONTROL))
+       {
+@@ -1007,16 +1009,16 @@ Rosstackage::exports_dry_package(Stackage* stackage, const std::string& lang,
+                      const std::string& attrib,
+                      std::vector<std::string>& flags)
+ {
+-  TiXmlElement* root = get_manifest_root(stackage);
+-  for(TiXmlElement* ele = root->FirstChildElement(MANIFEST_TAG_EXPORT);
++  XMLElement* root = get_manifest_root(stackage);
++  for(XMLElement* ele = root->FirstChildElement(MANIFEST_TAG_EXPORT);
+       ele;
+       ele = ele->NextSiblingElement(MANIFEST_TAG_EXPORT))
+   {
+     bool os_match = false;
+     const char *best_match = NULL;
+-    for(TiXmlElement* ele2 = ele->FirstChildElement(lang);
++    for(XMLElement* ele2 = ele->FirstChildElement(lang.c_str());
+         ele2;
+-        ele2 = ele2->NextSiblingElement(lang))
++        ele2 = ele2->NextSiblingElement(lang.c_str()))
+     {
+       const char *os_str;
+       if ((os_str = ele2->Attribute("os")))
+@@ -1113,14 +1115,14 @@ Rosstackage::plugins(const std::string& name, const std::string& attrib,
+       it != stackages.end();
+       ++it)
+   {
+-    TiXmlElement* root = get_manifest_root(*it);
+-    for(TiXmlElement* ele = root->FirstChildElement(MANIFEST_TAG_EXPORT);
++    XMLElement* root = get_manifest_root(*it);
++    for(XMLElement* ele = root->FirstChildElement(MANIFEST_TAG_EXPORT);
+         ele;
+         ele = ele->NextSiblingElement(MANIFEST_TAG_EXPORT))
+     {
+-      for(TiXmlElement* ele2 = ele->FirstChildElement(name);
++      for(XMLElement* ele2 = ele->FirstChildElement(name.c_str());
+           ele2;
+-          ele2 = ele2->NextSiblingElement(name))
++          ele2 = ele2->NextSiblingElement(name.c_str()))
+       {
+         const char *att_str;
+         if((att_str = ele2->Attribute(attrib.c_str())))
+@@ -1544,7 +1546,7 @@ Rosstackage::loadManifest(Stackage* stackage)
+   if(stackage->manifest_loaded_)
+     return;
+ 
+-  if(!stackage->manifest_.LoadFile(stackage->manifest_path_))
++  if(!stackage->manifest_.LoadFile(stackage->manifest_path_.c_str()))
+   {
+     std::string errmsg = std::string("error parsing manifest of package ") +
+             stackage->name_ + " at " + stackage->manifest_path_;
+@@ -1590,14 +1592,14 @@ Rosstackage::computeDeps(Stackage* stackage, bool ignore_errors, bool ignore_mis
+ void
+ Rosstackage::computeDepsInternal(Stackage* stackage, bool ignore_errors, const std::string& depend_tag, bool ignore_missing)
+ {
+-  TiXmlElement* root;
++  XMLElement* root;
+   root = get_manifest_root(stackage);
+ 
+-  TiXmlNode *dep_node = NULL;
+   const char* dep_pkgname;
+-  while((dep_node = root->IterateChildren(depend_tag, dep_node)))
++  for(XMLElement *dep_ele = root->FirstChildElement(depend_tag.c_str());
++      dep_ele;
++      dep_ele = dep_ele->NextSiblingElement(depend_tag.c_str()))
+   {
+-    TiXmlElement *dep_ele = dep_node->ToElement();
+     if (!stackage->is_wet_package_)
+     {
+       dep_pkgname = dep_ele->Attribute(tag_.c_str());
+@@ -2310,10 +2312,10 @@ std::string Rosstack::get_manifest_type()
+   return "stack";
+ }
+ 
+-TiXmlElement*
++XMLElement*
+ get_manifest_root(Stackage* stackage)
+ {
+-  TiXmlElement* ele = stackage->manifest_.RootElement();
++  XMLElement* ele = stackage->manifest_.RootElement();
+   if(!ele)
+   {
+     std::string errmsg = std::string("error parsing manifest of package ") +
+-- 
+2.7.4
+
