@@ -3,10 +3,10 @@
 #
 # Upstream-Status: Inappropriate [Downstream configuration] 
 
-DEPENDS_remove_class-native_refkit-config = "lzo-native"
-DEPENDS_remove_class-nativesdk_refkit-config = "lzo-native"
-DEPENDS_append_class-native_refkit-config = " lz4-native"
-DEPENDS_append_class-nativesdk_refkit-config = " lz4-native"
+DEPENDS_remove_class-native_df-refkit-config = "lzo-native"
+DEPENDS_remove_class-nativesdk_df-refkit-config = "lzo-native"
+DEPENDS_append_class-native_df-refkit-config = " lz4-native"
+DEPENDS_append_class-nativesdk_df-refkit-config = " lz4-native"
 
 # nologin can come from two separate sources, shadow and util-linux.
 # Normally these do not conflict, the one from shadow goes into /sbin,
@@ -18,7 +18,7 @@ DEPENDS_append_class-nativesdk_refkit-config = " lz4-native"
 # Ideally we probably should make sure first that shadow is enabled to
 # ensure we don't end up without any /{usr/,}sbin/nologin.
 
-do_install_append_refkit-config () {
+do_install_append_df-refkit-config () {
     if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ];
     then
         rm -f ${D}${sbindir}/nologin

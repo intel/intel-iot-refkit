@@ -4,4 +4,4 @@
 # without tcsd already running, the tools just fail. A better
 # solution would be socket-activation, but tcsd does not support
 # that. Does not matter, tcsd is only installed when needed.
-SYSTEMD_AUTO_ENABLE_refkit-config = "enable"
+SYSTEMD_AUTO_ENABLE_df-refkit-config = "enable"

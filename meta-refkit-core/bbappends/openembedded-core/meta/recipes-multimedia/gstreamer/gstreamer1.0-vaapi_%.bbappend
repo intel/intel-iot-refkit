@@ -1,2 +1,2 @@
-PACKAGECONFIG_remove_refkit-config = "glx"
-EXTRA_OECONF_append_refkit-config = " --disable-egl"
+PACKAGECONFIG_remove_df-refkit-config = "glx"
+EXTRA_OECONF_append_df-refkit-config = " --disable-egl"
