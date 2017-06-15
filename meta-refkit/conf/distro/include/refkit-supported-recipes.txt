@@ -64,6 +64,7 @@ bubblewrap@flatpak-layer
 busybox@core
 bzip2@core
 ca-certificates@core
+caffe-bvlc-reference@refkit-computervision
 cairo@core
 cantarell-fonts@core
 catkin-runtime@ros-layer
