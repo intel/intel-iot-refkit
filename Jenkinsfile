@@ -279,7 +279,7 @@ def step_xunit() {
         [$class: 'FailedThreshold',
             failureNewThreshold: '0',
             failureThreshold: '0',
-            unstableNewThreshold: '99999',
+            unstableNewThreshold: '99998',
             unstableThreshold: '99999'],
         [$class: 'SkippedThreshold',
             failureNewThreshold: '99999',
