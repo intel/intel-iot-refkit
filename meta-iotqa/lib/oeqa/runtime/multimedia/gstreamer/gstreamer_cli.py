@@ -13,6 +13,6 @@ class GstreamerCommandlineTest(oeRuntimeTest):
         (status, output) = self.target.run('gst-launch-1.0 -v fakesrc silent=false num-buffers=3 ! fakesink silent=false')
         self.assertEqual(status, 0, msg="Error messages: %s" % output)
 
-    def test_gst_launch_cmd_can_create_pipeline_for_video(self):
-        (status, output) = self.target.run('gst-launch-1.0 -v videotestsrc ! videoconvert ! autovideosink')
-        self.assertEqual(status, 0, msg="Error messages: %s" % output)
+    #def test_gst_launch_cmd_can_create_pipeline_for_video(self):
+    #    (status, output) = self.target.run('gst-launch-1.0 -v videotestsrc ! videoconvert ! autovideosink')
+    #    self.assertEqual(status, 0, msg="Error messages: %s" % output)
