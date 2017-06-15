@@ -4,10 +4,8 @@ import os
 import time
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 
-@tag(TestType = 'Functional Positive', FeatureID = 'IOTOS-707')
 class PythonRuntimeTest(oeRuntimeTest):
     '''
     This test suite tests whether some basic and key Python modules work well.
@@ -50,7 +48,6 @@ class PythonRuntimeTest(oeRuntimeTest):
         if os.path.exists(cls.results_python_runtime):
             os.remove(cls.results_python_runtime)
 
-    @tag(CasesNumber=1364)
     def test_python_runtime(self):
         '''
         Test the Python key standard modules.

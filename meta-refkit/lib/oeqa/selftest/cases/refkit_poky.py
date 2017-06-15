@@ -28,9 +28,8 @@ import re
 import shutil
 import sys
 
-from oeqa.selftest.base import oeSelfTest
+from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
-from oeqa.utils.decorators import testcase
 
 class RefkitPokyMeta(type):
     """
@@ -75,7 +74,7 @@ REFKIT_IMAGE_MODE = "development"
                 # yocto-compat-layer.py does not return error codes (YOCTO #11482), so we have to guess.
                 if 'INFO: FAILED' in result.output:
                     self.fail(result.output)
-                self.log.info('%s:\n%s' % (cmd, result.output))
+                self.logger.info('%s:\n%s' % (cmd, result.output))
             return test
 
         layers = {}
@@ -91,7 +90,7 @@ REFKIT_IMAGE_MODE = "development"
             dict[test_name] = gen_test(refkit_layer)
         return type.__new__(mcs, name, bases, dict)
 
-class TestRefkitPoky(oeSelfTest, metaclass=RefkitPokyMeta):
+class TestRefkitPoky(OESelftestTestCase, metaclass=RefkitPokyMeta):
     """
     Tests content from refkit against Poky. We do not want to depend on the
     combined poky repo, though, so Poky in this context is OE-core + meta-poky.
@@ -122,6 +121,7 @@ include selftest.inc
 
     @classmethod
     def setUpClass(cls):
+        super(TestRefkitPoky, cls).setUpClass()
         """Queries the local configuration to find the relevant directories."""
         cls.build_dir = os.getcwd()
         cls.poky_dir = os.path.join(cls.build_dir, 'refkit-poky')

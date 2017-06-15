@@ -5,9 +5,7 @@ from oeqa.runtime.bluetooth import bluetooth
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import get_files_dir
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT")
 class CommBTTest(oeRuntimeTest):
     """
     @class CommBTTest
@@ -21,7 +19,6 @@ class CommBTTest(oeRuntimeTest):
         self.bt = bluetooth.BTFunction(self.target)
         self.bt.target_hciconfig_init()
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_power_on(self):
         '''enable bluetooth device
         @fn test_bt_power_on
@@ -31,7 +28,6 @@ class CommBTTest(oeRuntimeTest):
         self.target.run('hciconfig hci0 down')
         self.bt.ctl_power_on()
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_power_off(self):
         '''disable bluetooth device
         @fn test_bt_power_off
@@ -41,7 +37,6 @@ class CommBTTest(oeRuntimeTest):
         self.target.run('hciconfig hci0 up')
         self.bt.ctl_power_off()
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_visable_on(self):
         '''enable visibility
         @fn test_bt_visable_on
@@ -51,7 +46,6 @@ class CommBTTest(oeRuntimeTest):
         self.target.run('hciconfig hci0 noscan')
         self.bt.ctl_visable_on()
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_visable_off(self):
         '''disable visibility
         @fn test_bt_visable_off
@@ -61,7 +55,6 @@ class CommBTTest(oeRuntimeTest):
         self.target.run('hciconfig hci0 piscan')
         self.bt.ctl_visable_off()
 
-    @tag(TestType="EFT", FeatureID="IOTOS-453")
     def test_bt_change_name(self):
         '''change BT device name
         @fn test_bt_change_name

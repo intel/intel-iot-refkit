@@ -8,13 +8,11 @@ except:
  import configparser as ConfigParser
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
 ssid_config = ConfigParser.ConfigParser()
 config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
 ssid_config.readfp(open(config_path))
 
-@tag(TestType="EFT")
 class CommWiFiStable(oeRuntimeTest):
     """
     @class CommWiFiStable
@@ -36,7 +34,6 @@ class CommWiFiStable(oeRuntimeTest):
         # disable wifi
         self.wifi.disable_wifi()
 
-    @tag(FeatureID="IOTOS-462")
     def test_wifi_onoff_multiple_time(self):
         '''connmanctl to enable/disable wifi for multiple times
         @fn test_wifi_onoff_multiple_time

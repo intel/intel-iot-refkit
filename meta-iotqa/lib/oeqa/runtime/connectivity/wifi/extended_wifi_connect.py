@@ -1,23 +1,21 @@
 import time
 import os
 import string
-from oeqa.runtime.wifi import wifi
+from oeqa.runtime.connectivity.wifi import wifi
 try:
  import ConfigParser
 except:
  import configparser as ConfigParser
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
 ssid_config = ConfigParser.ConfigParser()
-config_path = os.path.join(os.path.dirname(__file__), "files/config.ini")
+config_path = os.path.join(os.path.dirname(__file__), "files/extended_config.ini")
 ssid_config.readfp(open(config_path))
 
-@tag(TestType="FVT")
-class CommWiFiConect(oeRuntimeTest):
+class ExtendedWifiConnectTest(oeRuntimeTest):
     """
-    @class CommWiFiConect
+    @class ExtendedWifiConnectTest
     """
     def setUp(self):
         ''' initialize wifi class
@@ -36,7 +34,6 @@ class CommWiFiConect(oeRuntimeTest):
         # disable wifi
         self.wifi.disable_wifi()
 
-    @tag(FeatureID="IOTOS-457,IOTOS-1610")
     def test_connect_80211b(self):
         '''connmanctl to connect 802.11b AP
         @fn test_connect_80211b
@@ -49,7 +46,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-457,IOTOS-1610")
     def test_connect_80211g(self):
         '''connmanctl to connect 802.11g AP
         @fn test_connect_80211g
@@ -62,7 +58,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-457,IOTOS-1610")
     def test_connect_80211n(self):
         '''connmanctl to connect 802.11n AP
         @fn test_connect_80211n
@@ -75,7 +70,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-458,IOTOS-1610")
     def test_connect_wpapsk(self):
         '''connmanctl to connect WPA-PSK AP (set by ssid_80211b AP)
         @fn test_connect_wpapsk
@@ -88,7 +82,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-458,IOTOS-1610")
     def test_connect_wpa2psk(self):
         '''connmanctl to connect WPA2-PSK AP (set by ssid_80211g AP)
         @fn test_connect_wpa2psk
@@ -101,7 +94,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-490")
     def test_connect_wpa2psk_broadcast(self):
         '''connmanctl to connect WPA2-PSK AP (not hidden)
         @fn test_connect_wpa2psk_broadcast
@@ -114,7 +106,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-528")
     def test_connect_internet(self):
         '''connmanctl to connect to internet, by broadcast AP
         @fn test_connect_internet
@@ -129,7 +120,6 @@ class CommWiFiConect(oeRuntimeTest):
         self.wifi.execute_connection(ap_type, ssid, pwd)
         self.wifi.check_internet_connection(url)
 
-    @tag(FeatureID="IOTOS-458")
     def test_connect_wep(self):
         '''connmanctl to connect to WEP encryption AP
         @fn test_connect_wep
@@ -142,7 +132,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-458")
     def test_connect_80211ac(self):
         '''connmanctl to connect to 802.11ac AP
         @fn test_connect_80211ac
@@ -155,7 +144,6 @@ class CommWiFiConect(oeRuntimeTest):
 
         self.wifi.execute_connection(ap_type, ssid, pwd)
 
-    @tag(FeatureID="IOTOS-458")
     def test_connect_save_password(self):
         '''When connecting to an AP connected before, do not need input password
         @fn test_connect_save_password

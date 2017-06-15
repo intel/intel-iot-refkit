@@ -3,7 +3,6 @@ import sys
 import subprocess
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 def inst_cp_module_coap():
     '''
@@ -27,7 +26,6 @@ def inst_cp_module_coap():
                 inst_coap.stdout.read().decode('utf-8'))
 
 
-@tag(TestType='EFT', FeatureID='IOTOS-1161')
 class CoapTest(oeRuntimeTest):
     """
     @class CoapTest

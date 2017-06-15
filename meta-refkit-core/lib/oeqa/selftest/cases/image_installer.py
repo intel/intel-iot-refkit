@@ -30,12 +30,11 @@ import os
 from glob import glob
 from shutil import rmtree,copyfile
 
-from oeqa.selftest.base import oeSelfTest
+from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqemu
-from oeqa.utils.decorators import testcase
 
 
-class ImageInstaller(oeSelfTest):
+class ImageInstaller(OESelftestTestCase):
     """
     image-installer.bbclass and refkit-installer-image.bb test class.
     Device paths are based on the assumption that virtio is used.

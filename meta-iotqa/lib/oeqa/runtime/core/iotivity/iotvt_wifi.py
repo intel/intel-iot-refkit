@@ -5,17 +5,15 @@ try:
  import ConfigParser
 except:
  import configparser as ConfigParser
-from oeqa.runtime.wifi import wifi
+from oeqa.runtime.connectivity.wifi import wifi
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import run_as, add_group, add_user, remove_user
-from oeqa.utils.decorators import tag
 
 ssid_config = ConfigParser.ConfigParser()
-config_path = os.path.join(os.path.dirname(__file__), "../sanity/files/config.ini")
+config_path = os.path.join(os.path.dirname(__file__), "../../connectivity/wifi/files/config.ini")
 ssid_config.readfp(open(config_path))
 
-@tag(TestType="FVT", FeatureID="IOTOS-499")
 class IOtvtWiFi(oeRuntimeTest):
     """
     @class IOtvtWiFi

@@ -5,9 +5,7 @@ from oeqa.runtime.bluetooth import bluetooth
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import get_files_dir
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT")
 class CommBTTestMNode(oeRuntimeTest):
     """
     @class CommBTTestMNode
@@ -37,7 +35,6 @@ class CommBTTestMNode(oeRuntimeTest):
         self.bt1.target_hciconfig_init()
         self.bt2.target_hciconfig_init()
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_gatt_read_primary(self):
         '''Use gatttool to show remote primary attr handles
         @fn test_bt_gatt_read_primary
@@ -53,7 +50,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool Primary is wrong: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_gatt_read_characteristics(self):
         '''Use gatttool to show target characteristics handles
         @fn test_bt_gatt_read_characteristics
@@ -69,7 +65,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool characteristics fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_gatt_read_handle(self):
         '''Use gatttool to read target handle value
         @fn test_bt_gatt_read_handle
@@ -85,7 +80,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool read handle fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_gatt_connect(self):
         '''Use gatttool interactive mode to do connect
         @fn test_bt_gatt_connect
@@ -101,7 +95,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 2, msg="gatttool connect fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_remote_gatt_read_primary(self):
         '''Use gatttool to show host primary attr handles
         @fn test_bt_remote_gatt_read_primary
@@ -117,7 +110,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool be read primary fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_remote_gatt_read_characteristics(self):
         '''Use gatttool to show host characteristics handles
         @fn test_bt_remote_gatt_read_characteristics
@@ -133,7 +125,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool be read characteristics fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_remote_gatt_read_handle(self):
         '''Use gatttool to read host handle value
         @fn test_bt_remote_gatt_read_handle
@@ -149,7 +140,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 0, msg="gatttool be read handle fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_remote_gatt_connect(self):
         '''Use gatttool interactive mode to do connect to host
         @fn test_bt_remote_gatt_connect
@@ -165,7 +155,6 @@ class CommBTTestMNode(oeRuntimeTest):
 
         self.assertEqual(status, 2, msg="gatttool be connected fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_visible(self):
         '''Do traditional visible and be scanned by other (not ble scan)
         @fn test_bt_visible
@@ -184,7 +173,6 @@ class CommBTTestMNode(oeRuntimeTest):
             output = output.decode("ascii")
         self.assertEqual(status, 2, msg="Scan remote device fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-456")
     def test_bt_scan(self):
         '''Scan nearby bluetooth devices (not ble scan)
         @fn test_bt_scan
@@ -203,7 +191,6 @@ class CommBTTestMNode(oeRuntimeTest):
             output = output.decode("ascii")
         self.assertEqual(status, 2, msg="Scan remote device fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-759")
     def test_bt_le_advertising(self):
         '''Target does LE advertising, another device scans it
         @fn test_bt_le_advertising
@@ -229,7 +216,6 @@ class CommBTTestMNode(oeRuntimeTest):
             output = output.decode("ascii")
         self.assertEqual(status, 2, msg="Be LE-scanned fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-770")
     def test_bt_le_scan(self):
         '''Another device (host) does LE advertising, target scans it
         @fn test_bt_le_scan
@@ -255,7 +241,6 @@ class CommBTTestMNode(oeRuntimeTest):
             output = output.decode("utf-8")
         self.assertEqual(status, 2, msg="LE Scan other fails: %s" % output)
 
-    @tag(FeatureID="IOTOS-453")
     def test_bt_pairing(self):
         '''Use bluetoothctl to pair IoT device with host
         @fn test_bt_pairing

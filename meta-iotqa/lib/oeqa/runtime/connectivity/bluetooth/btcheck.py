@@ -1,8 +1,6 @@
 import time
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
-@tag(TestType="FVT", FeatureID="IOTOS-453")
 class CommBluetoothTest(oeRuntimeTest):
     """
     @class CommBluetoothTest

@@ -3,9 +3,7 @@ import time
 from oeqa.runtime.bluetooth import bluetooth
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
-@tag(TestType="EFT")
 class CommBT6LowPanMNode(oeRuntimeTest):
     """
     @class CommBT6LowPanMNode
@@ -31,7 +29,6 @@ class CommBT6LowPanMNode(oeRuntimeTest):
         self.bt1.disable_6lowpan_ble()
         self.bt2.disable_6lowpan_ble()
 
-    @tag(FeatureID="IOTOS-762")
     def test_bt_connect_6lowpan(self):
         '''Setup two devices with BLE
         @fn test_bt_connect_6lowpan
@@ -40,7 +37,6 @@ class CommBT6LowPanMNode(oeRuntimeTest):
         '''
         self.bt1.connect_6lowpan_ble(self.bt2)
 
-    @tag(FeatureID="IOTOS-762")
     def test_bt_6lowpan_ping6_out(self):
         '''Setup two devices with BLE, and ping each other
         @fn test_bt_6lowpan_ping6_out
@@ -51,7 +47,6 @@ class CommBT6LowPanMNode(oeRuntimeTest):
         # first device to ping second device
         self.bt1.bt0_ping6_check(self.bt2.get_bt0_ip())
 
-    @tag(FeatureID="IOTOS-762")
     def test_bt_6lowpan_be_pinged(self):
         '''Setup two devices with BLE, and ping each other
         @fn test_bt_6lowpan_be_pinged
@@ -62,7 +57,6 @@ class CommBT6LowPanMNode(oeRuntimeTest):
         # first device to ping second device
         self.bt2.bt0_ping6_check(self.bt1.get_bt0_ip())
 
-    @tag(FeatureID="IOTOS-762")
     def test_bt_6lowpan_ssh_to(self):
         '''Setup two devices with BLE, and ssh to remote
         @fn test_bt_6lowpan_ssh_to
@@ -73,7 +67,6 @@ class CommBT6LowPanMNode(oeRuntimeTest):
         # first device to ping second device
         self.bt1.bt0_ssh_check(self.bt2.get_bt0_ip())
 
-    @tag(FeatureID="IOTOS-762")
     def test_bt_6lowpan_be_ssh(self):
         '''Setup two devices with BLE, and remote ssh to self
         @fn test_bt_6lowpan_be_ssh

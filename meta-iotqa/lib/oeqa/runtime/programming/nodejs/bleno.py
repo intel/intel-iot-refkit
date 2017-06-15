@@ -8,7 +8,6 @@ import shutil
 import subprocess
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 
 class BlenoTest(oeRuntimeTest):
@@ -49,7 +48,6 @@ class BlenoTest(oeRuntimeTest):
         self.target.run(update_mocha_test_cmd)
 
 
-    @tag(CasesNumber = 23)
     def test_bleno(self):
         '''
         Run the bleno test cases on the target device.

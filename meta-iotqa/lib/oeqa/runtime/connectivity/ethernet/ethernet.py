@@ -3,9 +3,7 @@ import os
 import string
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
-from oeqa.utils.decorators import tag
 
-@tag(TestType="EFT")
 class CommEthernet(oeRuntimeTest):
     """
     @class CommEthernet
@@ -70,7 +68,6 @@ class CommEthernet(oeRuntimeTest):
         # if above return is not OK, there might be error, return Blank
         self.assertEqual(1, 0, msg="Host interface with %s is not found" % prefix)
 
-    @tag(FeatureID="IOTOS-489")
     def test_ethernet_ipv6_ping(self):
         '''Ping other device via ipv6 address of the ethernet
         @fn test_ethernet_ipv6_ping
@@ -91,7 +88,6 @@ class CommEthernet(oeRuntimeTest):
         #
         self.assertEqual(status, 0, msg="Error messages: %s" % output)
 
-    @tag(FeatureID="IOTOS-489")
     def test_ethernet_ipv6_ssh(self):
         '''SSH other device via ipv6 address of the ethernet
         @fn test_ethernet_ipv6_ssh

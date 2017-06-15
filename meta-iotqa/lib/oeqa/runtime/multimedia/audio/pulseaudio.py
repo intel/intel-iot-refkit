@@ -1,5 +1,4 @@
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 class PulseaudioTest(oeRuntimeTest):
 

@@ -8,7 +8,6 @@ import shutil
 import time
 
 from oeqa.oetest import oeRuntimeTest
-from oeqa.utils.decorators import tag
 
 
 class NodeJSCryptoAPITest(oeRuntimeTest):
@@ -54,7 +53,6 @@ class NodeJSCryptoAPITest(oeRuntimeTest):
         self.target.run('rm -fr ~/test')
 
 
-    @tag(CasesNumber = 32)
     def get_target_nodejs_ver(self):
         '''
         Detect the NodeJS version on the target device.
