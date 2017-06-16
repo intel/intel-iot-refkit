@@ -20,3 +20,6 @@ require conf/distro/include/usrmerge.inc
 
 # Enable basic flatpak support.
 include conf/distro/include/flatpak.inc
+
+# Enable this for flatpak-session/application framework support.
+#include conf/distro/include/flatpak-session.inc
