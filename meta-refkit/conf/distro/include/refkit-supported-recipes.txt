@@ -112,6 +112,7 @@ fixesproto@core
 flac@core
 flatpak@flatpak-layer
 flatpak-image-runtime@flatpak-layer
+flatpak-predefined-repos@flatpak-layer
 flatpak-utils@flatpak-layer
 flex@core
 font-util@core
