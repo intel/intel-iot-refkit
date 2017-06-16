@@ -60,6 +60,7 @@ bison@core
 bluez5@core
 boost@core
 bsdiff@meta-swupd
+bubblewrap@flatpak-layer
 busybox@core
 bzip2@core
 ca-certificates@core
@@ -109,12 +110,17 @@ file@core
 findutils@core
 fixesproto@core
 flac@core
+flatpak@flatpak-layer
+flatpak-image-runtime@flatpak-layer
+flatpak-predefined-repos@flatpak-layer
+flatpak-utils@flatpak-layer
 flex@core
 font-util@core
 fontconfig@core
 fontsproto@core
 formfactor@core
 freetype@core
+fuse@filesystems-layer
 gawk@core
 gcc-runtime@core
 gcc@core
@@ -141,8 +147,11 @@ gmp@core
 gnome-desktop-testing@core
 gnu-config@core
 gnu-efi@core
+gnupg@core
+gnupg1@refkit-core
 gnutls@core
 gobject-introspection@core
+gpgme@core
 gptfdisk@core
 grep@core
 gstreamer1.0-plugins-bad@core
@@ -184,6 +193,7 @@ iptables@core
 iputils@core
 iso-codes@core
 json-c@core
+json-glib@core
 kbd@core
 kbproto@core
 kdl-conversions@ros-layer
@@ -194,6 +204,7 @@ kmod@core
 krb5@openembedded-layer
 libaio@core
 libarchive@core
+libassuan@core
 libatomic-ops@core
 libcap@core
 libccd@ros-layer
@@ -221,6 +232,7 @@ libice@core
 libidn@core
 libinput@core
 libjpeg-turbo@core
+libksba@core
 libmicrohttpd@soletta
 libmpc@core
 libnl@core
@@ -311,6 +323,7 @@ ncurses@core
 netbase@core
 nettle@core
 nodejs@iotweb
+npth@core
 object-recognition-msgs@ros-layer
 ocl-icd@refkit-computervision
 octomap-msgs@ros-layer
@@ -325,11 +338,13 @@ opkg-utils@core
 orc@core
 orocos-kdl@ros-layer
 os-release@core
+ostree@flatpak-layer
 ovmf@core
 packagegroup-.*@refkit.*
 pango@core
 pciutils@core
 perl@core
+pinentry@core
 pixman@core
 pkgconfig@core
 pluginlib@ros-layer

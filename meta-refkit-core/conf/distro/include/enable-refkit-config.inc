@@ -15,3 +15,9 @@ VIRTUAL-RUNTIME_initscripts = ""
 # defaults from OE-core.
 DISTRO_FEATURES_DEFAULT_remove = "${REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE}"
 DISTRO_FEATURES ?= "${DISTRO_FEATURES_DEFAULT} ${DISTRO_FEATURES_LIBC} ${REFKIT_DEFAULT_DISTRO_FEATURES}"
+
+require conf/distro/include/usrmerge.inc
+require conf/distro/include/flatpak.inc
+
+# Enable this for flatpak-session/application framework support.
+require conf/distro/include/flatpak-session.inc
