@@ -68,3 +68,12 @@ IMA_EVM_ROOTFS_SIGNED = "-maxdepth 0 -false"
 IMA_EVM_ROOTFS_HASHED = "-maxdepth 0 -false"
 IMA_EVM_ROOTFS_CLASS = "${@bb.utils.contains('IMAGE_FEATURES', 'ima', 'ima-evm-rootfs', '',d)}"
 inherit ${IMA_EVM_ROOTFS_CLASS}
+
+create_merged_usr_links() {
+    mkdir -p ${IMAGE_ROOTFS}${libdir} ${IMAGE_ROOTFS}${bindir} ${IMAGE_ROOTFS}${sbindir}
+    lnr ${IMAGE_ROOTFS}${libdir} ${IMAGE_ROOTFS}/${baselib}
+    lnr ${IMAGE_ROOTFS}${bindir} ${IMAGE_ROOTFS}/bin
+    lnr ${IMAGE_ROOTFS}${sbindir} ${IMAGE_ROOTFS}/sbin
+}
+ROOTFS_PREPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'create_merged_usr_links;', '', d)}"
+
