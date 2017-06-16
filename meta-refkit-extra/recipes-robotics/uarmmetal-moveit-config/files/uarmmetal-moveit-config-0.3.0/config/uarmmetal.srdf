@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot name="uarmmetal">
+    <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+    <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+    <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+    <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+    <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    <group name="manipulator">
+        <chain base_link="base_link" tip_link="link_end" />
+    </group>
+    <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+    <group_state name="allzeros" group="manipulator">
+        <joint name="base_link_to_base_rot" value="0" />
+        <joint name="base_rot_to_link_1" value="0" />
+        <joint name="link_1_to_link_2" value="0" />
+        <joint name="link_2_to_link_3" value="0" />
+        <joint name="link_3_to_link_end" value="0" />
+    </group_state>
+    <group_state name="home" group="manipulator">
+        <joint name="base_link_to_base_rot" value="-0.55565" />
+        <joint name="base_rot_to_link_1" value="1.08" />
+        <joint name="link_1_to_link_2" value="-2.48" />
+        <joint name="link_2_to_link_3" value="1.4" />
+        <joint name="link_3_to_link_end" value="0" />
+    </group_state>
+    <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
+    <virtual_joint name="FixedBase" type="fixed" parent_frame="world" child_link="base_link" />
+    <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
+    <passive_joint name="base_rot_to_add_3" />
+    <passive_joint name="link_1_to_add_1" />
+    <passive_joint name="link_2_to_add_4" />
+    <passive_joint name="link_2_to_add_5" />
+    <passive_joint name="link_3_to_add_2" />
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="add_1" link2="add_2" reason="Never" />
+    <disable_collisions link1="add_1" link2="add_3" reason="Never" />
+    <disable_collisions link1="add_1" link2="add_4" reason="Never" />
+    <disable_collisions link1="add_1" link2="add_5" reason="Never" />
+    <disable_collisions link1="add_1" link2="base_link" reason="Never" />
+    <disable_collisions link1="add_1" link2="base_rot" reason="Default" />
+    <disable_collisions link1="add_1" link2="link_1" reason="Adjacent" />
+    <disable_collisions link1="add_1" link2="link_2" reason="Never" />
+    <disable_collisions link1="add_1" link2="link_3" reason="Never" />
+    <disable_collisions link1="add_1" link2="link_end" reason="Never" />
+    <disable_collisions link1="add_2" link2="add_4" reason="Never" />
+    <disable_collisions link1="add_2" link2="add_5" reason="Never" />
+    <disable_collisions link1="add_2" link2="link_1" reason="Never" />
+    <disable_collisions link1="add_2" link2="link_2" reason="Never" />
+    <disable_collisions link1="add_2" link2="link_3" reason="Adjacent" />
+    <disable_collisions link1="add_2" link2="link_end" reason="Never" />
+    <disable_collisions link1="add_3" link2="add_4" reason="Never" />
+    <disable_collisions link1="add_3" link2="add_5" reason="Never" />
+    <disable_collisions link1="add_3" link2="base_link" reason="Never" />
+    <disable_collisions link1="add_3" link2="base_rot" reason="Adjacent" />
+    <disable_collisions link1="add_3" link2="link_1" reason="Never" />
+    <disable_collisions link1="add_3" link2="link_2" reason="Never" />
+    <disable_collisions link1="add_3" link2="link_3" reason="Never" />
+    <disable_collisions link1="add_3" link2="link_end" reason="Never" />
+    <disable_collisions link1="add_4" link2="add_5" reason="Never" />
+    <disable_collisions link1="add_4" link2="base_rot" reason="Never" />
+    <disable_collisions link1="add_4" link2="link_1" reason="Never" />
+    <disable_collisions link1="add_4" link2="link_2" reason="Adjacent" />
+    <disable_collisions link1="add_4" link2="link_3" reason="Never" />
+    <disable_collisions link1="add_4" link2="link_end" reason="Never" />
+    <disable_collisions link1="add_5" link2="base_rot" reason="Never" />
+    <disable_collisions link1="add_5" link2="link_2" reason="Adjacent" />
+    <disable_collisions link1="add_5" link2="link_3" reason="Never" />
+    <disable_collisions link1="add_5" link2="link_end" reason="Never" />
+    <disable_collisions link1="base_link" link2="base_rot" reason="Adjacent" />
+    <disable_collisions link1="base_link" link2="link_1" reason="Never" />
+    <disable_collisions link1="base_rot" link2="link_1" reason="Adjacent" />
+    <disable_collisions link1="link_1" link2="link_2" reason="Adjacent" />
+    <disable_collisions link1="link_1" link2="link_3" reason="Never" />
+    <disable_collisions link1="link_1" link2="link_end" reason="Never" />
+    <disable_collisions link1="link_2" link2="link_3" reason="Adjacent" />
+    <disable_collisions link1="link_2" link2="link_end" reason="Default" />
+    <disable_collisions link1="link_3" link2="link_end" reason="Adjacent" />
+</robot>

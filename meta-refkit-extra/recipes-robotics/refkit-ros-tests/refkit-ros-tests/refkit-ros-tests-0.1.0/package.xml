@@ -1,0 +1,18 @@
+<package>
+
+  <name>refkit_ros_tests</name>
+  <version>0.1.0</version>
+  <description>
+     Test ROS nodes for Refkit
+  </description>
+  <author email="dmitry.rozhkov@intel.com">Dmitry Rozhkov</author>
+  <maintainer email="dmitry.rozhkov@intel.com">Dmitry Rozhkov</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">http://todo/</url>
+  <url type="bugtracker">https://todo/issues</url>
+  <url type="repository">https://todo/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

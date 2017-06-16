@@ -1,0 +1,183 @@
+From 9181abfd3313a11e5b43151f233315d7d291cc21 Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Mon, 23 Jan 2017 11:43:07 +0200
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates pluginlib to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros/pluginlib/pull/52]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+
+---
+ CMakeLists.txt                       | 12 ++++++------
+ include/pluginlib/class_loader.h     |  2 +-
+ include/pluginlib/class_loader_imp.h | 26 +++++++++++++-------------
+ package.xml                          |  4 ++--
+ 4 files changed, 22 insertions(+), 22 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index de973b1..bd0c219 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -3,20 +3,20 @@ project(pluginlib)
+ 
+ find_package(catkin REQUIRED COMPONENTS class_loader rosconsole roslib cmake_modules)
+ find_package(Boost REQUIRED COMPONENTS filesystem system)
+-find_package(TinyXML REQUIRED)
++find_package(TinyXML2 REQUIRED)
+ 
+ catkin_python_setup()
+ 
+ catkin_package(
+   INCLUDE_DIRS include
+   CATKIN_DEPENDS class_loader rosconsole roslib
+-  DEPENDS Boost TinyXML
++  DEPENDS Boost TinyXML2
+ )
+ 
+-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
++include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${TinyXML2_INCLUDE_DIRS})
+ 
+ add_executable(plugin_tool src/plugin_tool.cpp)
+-target_link_libraries(plugin_tool ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES})
++target_link_libraries(plugin_tool ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES})
+ 
+ install(TARGETS plugin_tool
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+@@ -37,7 +37,7 @@ if(CATKIN_ENABLE_TESTING)
+ 
+   catkin_add_gtest(${PROJECT_NAME}_utest test/utest.cpp)
+   if(TARGET ${PROJECT_NAME}_utest)
+-    target_link_libraries(${PROJECT_NAME}_utest ${TinyXML_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
++    target_link_libraries(${PROJECT_NAME}_utest ${TinyXML2_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+     add_dependencies(${PROJECT_NAME}_utest test_plugins)
+   endif()
+ 
+@@ -46,7 +46,7 @@ if(CATKIN_ENABLE_TESTING)
+   if(COMPILER_SUPPORTS_CXX11)
+     catkin_add_gtest(${PROJECT_NAME}_unique_ptr_test test/unique_ptr_test.cpp)
+     if(TARGET ${PROJECT_NAME}_unique_ptr_test)
+-      target_link_libraries(${PROJECT_NAME}_unique_ptr_test ${TinyXML_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
++      target_link_libraries(${PROJECT_NAME}_unique_ptr_test ${TinyXML2_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+       set_target_properties(${PROJECT_NAME}_unique_ptr_test PROPERTIES COMPILE_FLAGS -std=c++11 LINK_FLAGS -std=c++11)
+       add_dependencies(${PROJECT_NAME}_unique_ptr_test test_plugins)
+     endif()
+diff --git a/include/pluginlib/class_loader.h b/include/pluginlib/class_loader.h
+index 0752290..6438346 100644
+--- a/include/pluginlib/class_loader.h
++++ b/include/pluginlib/class_loader.h
+@@ -37,7 +37,7 @@
+ #include "pluginlib/pluginlib_exceptions.h"
+ #include "ros/console.h"
+ #include "ros/package.h"
+-#include "tinyxml.h"
++#include "tinyxml2.h"
+ 
+ //Note: pluginlib has traditionally utilized a "lookup name" for classes that does not match its real C++ name. This was
+ //done due to limitations of how pluginlib was implemented. As of version 1.9, a lookup name is no longer necessary and
+diff --git a/include/pluginlib/class_loader_imp.h b/include/pluginlib/class_loader_imp.h
+index 894fdbc..7e0addb 100644
+--- a/include/pluginlib/class_loader_imp.h
++++ b/include/pluginlib/class_loader_imp.h
+@@ -240,9 +240,9 @@ namespace pluginlib
+   std::string ClassLoader<T>::extractPackageNameFromPackageXML(const std::string& package_xml_path)
+  /***************************************************************************/
+   {
+-      TiXmlDocument document;
+-      document.LoadFile(package_xml_path);
+-      TiXmlElement* doc_root_node = document.FirstChildElement("package");
++      tinyxml2::XMLDocument document;
++      document.LoadFile(package_xml_path.c_str());
++      tinyxml2::XMLElement* doc_root_node = document.FirstChildElement("package");
+       if (doc_root_node == NULL)
+       {
+         ROS_ERROR_NAMED("pluginlib.ClassLoader","Could not find a root element for package manifest at %s.", package_xml_path.c_str());
+@@ -251,7 +251,7 @@ namespace pluginlib
+ 
+       assert(doc_root_node == document.RootElement());
+ 
+-      TiXmlElement* package_name_node = doc_root_node->FirstChildElement("name");
++      tinyxml2::XMLElement* package_name_node = doc_root_node->FirstChildElement("name");
+       if(package_name_node == NULL)
+       {
+         ROS_ERROR_NAMED("pluginlib.ClassLoader","package.xml at %s does not have a <name> tag! Cannot determine package which exports plugin.", package_xml_path.c_str());
+@@ -590,28 +590,28 @@ namespace pluginlib
+   /***************************************************************************/
+   {
+     ROS_DEBUG_NAMED("pluginlib.ClassLoader","Processing xml file %s...", xml_file.c_str());
+-    TiXmlDocument document;
+-    document.LoadFile(xml_file);
+-    TiXmlElement * config = document.RootElement();
++    tinyxml2::XMLDocument document;
++    document.LoadFile(xml_file.c_str());
++    tinyxml2::XMLElement * config = document.RootElement();
+     if (config == NULL)
+     {
+       ROS_ERROR_NAMED("pluginlib.ClassLoader","Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.c_str());
+       return;
+     }
+-    if (config->ValueStr() != "library" &&
+-        config->ValueStr() != "class_libraries")
++    if (!(strcmp(config->Value(), "library") == 0 ||
++          strcmp(config->Value(), "class_libraries") == 0))
+     {
+       ROS_ERROR_NAMED("pluginlib.ClassLoader","The XML document \"%s\" given to add must have either \"library\" or \
+           \"class_libraries\" as the root tag", xml_file.c_str());
+       return;
+     }
+     //Step into the filter list if necessary
+-    if (config->ValueStr() == "class_libraries")
++    if (strcmp(config->Value(), "class_libraries") == 0)
+     {
+       config = config->FirstChildElement("library");
+     }
+ 
+-    TiXmlElement* library = config;
++    tinyxml2::XMLElement* library = config;
+     while ( library != NULL)
+     {
+       std::string library_path = library->Attribute("path");
+@@ -625,7 +625,7 @@ namespace pluginlib
+       if (package_name == "")
+         ROS_ERROR_NAMED("pluginlib.ClassLoader","Could not find package manifest (neither package.xml or deprecated manifest.xml) at same directory level as the plugin XML file %s. Plugins will likely not be exported properly.\n)", xml_file.c_str());
+ 
+-      TiXmlElement* class_element = library->FirstChildElement("class");
++      tinyxml2::XMLElement* class_element = library->FirstChildElement("class");
+       while (class_element)
+       {
+         std::string derived_class;
+@@ -658,7 +658,7 @@ namespace pluginlib
+         if(base_class_type == base_class_){
+ 
+           // register class here
+-          TiXmlElement* description = class_element->FirstChildElement("description");
++          tinyxml2::XMLElement* description = class_element->FirstChildElement("description");
+           std::string description_str;
+           if (description)
+             description_str = description->GetText() ? description->GetText() : "";
+diff --git a/package.xml b/package.xml
+index 8984eb2..6a7b410 100644
+--- a/package.xml
++++ b/package.xml
+@@ -23,13 +23,13 @@
+   <build_depend>class_loader</build_depend>
+   <build_depend>rosconsole</build_depend>
+   <build_depend version_gte="1.11.1">roslib</build_depend>
+-  <build_depend>tinyxml</build_depend>
++  <build_depend>tinyxml2</build_depend>
+ 
+   <run_depend>boost</run_depend>
+   <run_depend>class_loader</run_depend>
+   <run_depend>rosconsole</run_depend>
+   <run_depend version_gte="1.11.1">roslib</run_depend>
+-  <run_depend>tinyxml</run_depend>
++  <run_depend>tinyxml2</run_depend>
+ 
+   <export>
+     <pluginlib plugin="${prefix}/test/test_plugins.xml"/>
+-- 
+2.9.3
+

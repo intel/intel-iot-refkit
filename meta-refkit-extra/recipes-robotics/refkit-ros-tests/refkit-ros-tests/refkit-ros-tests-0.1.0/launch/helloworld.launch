@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="refkit_ros_tests_talker" pkg="refkit_ros_tests" type="talker.py" output="screen" required="true" />
+  <node name="refkit_ros_tests_listener" pkg="refkit_ros_tests" type="listener.py" output="screen" required="true" />
+</launch>

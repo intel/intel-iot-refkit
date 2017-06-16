@@ -1,0 +1,41 @@
+From 23f3f4cdebd47822ceb66bccc56d9a3965738f9a Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Thu, 26 Jan 2017 13:43:05 +0200
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates urdfdom_headers to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros/urdfdom_headers/pull/35]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ urdf_world/include/urdf_world/world.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/urdf_world/include/urdf_world/world.h b/urdf_world/include/urdf_world/world.h
+index eb13fc4..f1003da 100644
+--- a/urdf_world/include/urdf_world/world.h
++++ b/urdf_world/include/urdf_world/world.h
+@@ -73,7 +73,7 @@
+ #include <string>
+ #include <vector>
+ #include <map>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ #include <boost/shared_ptr.hpp>
+ #include <boost/weak_ptr.hpp>
+ 
+@@ -101,7 +101,7 @@ public:
+ 
+   std::vector<Entity> models;
+ 
+-  void initXml(TiXmlElement* config);
++  void initXml(tinyxml2::XMLElement* config);
+ 
+   void clear()
+   {
+-- 
+2.7.4
+

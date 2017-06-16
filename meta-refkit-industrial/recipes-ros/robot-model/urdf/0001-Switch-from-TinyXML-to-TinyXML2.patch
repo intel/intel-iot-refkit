@@ -1,0 +1,138 @@
+From 7ad0ae9498063be239e51afe869a0c91083aa7ea Mon Sep 17 00:00:00 2001
+From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+Date: Mon, 23 Jan 2017 11:31:38 +0200
+Subject: [PATCH] Switch from TinyXML to TinyXML2
+
+The library TinyXML is considered to be unmaintained and
+since all future development is focused on TinyXML2 this
+patch updates urdf to use TinyXML2.
+
+Upstream-Status: Submitted [https://github.com/ros/robot_model/pull/205]
+
+Signed-off-by: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
+---
+ CMakeLists.txt       |  8 ++++----
+ include/urdf/model.h | 10 +++++-----
+ src/model.cpp        | 17 +++++++++++------
+ 3 files changed, 20 insertions(+), 15 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f19fb04..b0c76e5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
+   urdf_parser_plugin pluginlib rosconsole_bridge roscpp cmake_modules)
+ 
+ 
+-find_package(TinyXML REQUIRED)
++find_package(TinyXML2 REQUIRED)
+ 
+ find_package(PkgConfig)
+ pkg_check_modules(libpcrecpp libpcrecpp)
+@@ -26,7 +26,7 @@ configure_file(urdfdom_compatibility.h.in "${generated_compat_header}" @ONLY)
+ 
+ catkin_package(
+   LIBRARIES ${PROJECT_NAME}
+-  INCLUDE_DIRS include ${TinyXML_INLCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/include
++  INCLUDE_DIRS include ${TinyXML2_INLCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/include
+   CATKIN_DEPENDS rosconsole_bridge roscpp
+   DEPENDS urdfdom_headers urdfdom Boost pcrecpp
+ )
+@@ -39,13 +39,13 @@ include_directories(
+   ${catkin_INCLUDE_DIRS}
+   ${urdfdom_INCLUDE_DIRS}
+   ${urdfdom_headers_INCLUDE_DIRS}
+-  ${TinyXML_INCLUDE_DIRS}
++  ${TinyXML2_INCLUDE_DIRS}
+   )
+ 
+ link_directories(${Boost_LIBRARY_DIRS} ${catkin_LIBRARY_DIRS})
+ 
+ add_library(${PROJECT_NAME} src/model.cpp src/rosconsole_bridge.cpp)
+-target_link_libraries(${PROJECT_NAME} ${TinyXML_LIBRARIES} ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
++target_link_libraries(${PROJECT_NAME} ${TinyXML2_LIBRARIES} ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+ 
+ if(APPLE)
+   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+diff --git a/include/urdf/model.h b/include/urdf/model.h
+index 794ca34..4735c91 100644
+--- a/include/urdf/model.h
++++ b/include/urdf/model.h
+@@ -41,17 +41,17 @@
+ #include <map>
+ #include <urdf_model/model.h>
+ #include <urdf/urdfdom_compatibility.h>
+-#include <tinyxml.h>
++#include <tinyxml2.h>
+ 
+ namespace urdf{
+ 
+ class Model: public ModelInterface
+ {
+ public:
+-  /// \brief Load Model from TiXMLElement
+-  bool initXml(TiXmlElement *xml);
+-  /// \brief Load Model from TiXMLDocument
+-  bool initXml(TiXmlDocument *xml);
++  /// \brief Load Model from XMLElement
++  bool initXml(tinyxml2::XMLElement *xml);
++  /// \brief Load Model from XMLDocument
++  bool initXml(tinyxml2::XMLDocument *xml);
+   /// \brief Load Model given a filename
+   bool initFile(const std::string& filename);
+   /// \brief Load Model given the name of a parameter on the parameter server
+diff --git a/src/model.cpp b/src/model.cpp
+index a721056..14998fd 100644
+--- a/src/model.cpp
++++ b/src/model.cpp
+@@ -52,6 +52,8 @@
+ #include <fstream>
+ #include <iostream>
+ 
++using namespace tinyxml2;
++
+ namespace urdf{
+ 
+ static bool IsColladaData(const std::string& data)
+@@ -106,7 +108,7 @@ bool Model::initParam(const std::string& param)
+   return Model::initString(xml_string);
+ }
+ 
+-bool Model::initXml(TiXmlDocument *xml_doc)
++bool Model::initXml(XMLDocument *xml_doc)
+ {
+   if (!xml_doc)
+   {
+@@ -114,13 +116,14 @@ bool Model::initXml(TiXmlDocument *xml_doc)
+     return false;
+   }
+ 
+-  std::stringstream ss;
+-  ss << *xml_doc;
++  XMLPrinter printer;
++  xml_doc->Print(&printer);
++  std::string str(printer.CStr());
+ 
+-  return Model::initString(ss.str());
++  return Model::initString(str);
+ }
+ 
+-bool Model::initXml(TiXmlElement *robot_xml)
++bool Model::initXml(XMLElement *robot_xml)
+ {
+   if (!robot_xml)
+   {
+@@ -129,7 +132,9 @@ bool Model::initXml(TiXmlElement *robot_xml)
+   }
+ 
+   std::stringstream ss;
+-  ss << (*robot_xml);
++  XMLPrinter printer;
++  robot_xml->Accept(&printer);
++  ss << printer.CStr();
+ 
+   return Model::initString(ss.str());
+ }
+-- 
+2.9.3
+

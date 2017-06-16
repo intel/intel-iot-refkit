@@ -8,6 +8,7 @@ DISTROFEATURES2OVERRIDES += " \
     refkit-firewall \
     refkit-computervision \
     refkit-gateway \
+    refkit-industrial \
 "
 
 INHERIT += "distrooverrides"

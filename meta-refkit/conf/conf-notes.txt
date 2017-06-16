@@ -9,3 +9,5 @@ Common targets are:
     refkit-image-gateway        (when building an image with tools and
                                  configuration for acting as an IoT sensor 
                                  gateway)
+    refkit-image-industrial     (when building an image with tools and
+                                 configuration for industrial use cases)

@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: uarmmetal_support
+    relative_path: ../uarmmetal_support/urdf/model.urdf
+  SRDF:
+    relative_path: config/uarmmetal.srdf
+  CONFIG:
+    author_name: Dmitry Rozhkov
+    author_email: dmitry.rozhkov@intel.com
+    generated_timestamp: 1494245745

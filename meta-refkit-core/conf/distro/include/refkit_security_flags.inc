@@ -15,6 +15,11 @@ SECURITY_CFLAGS_pn-tbb = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-protobuf = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-glog = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-clang = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-log4cxx = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-python3-lxml = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-python3-netifaces = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-python3-pyyaml = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+SECURITY_CFLAGS_pn-moveit-ros-perception = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 
 # openjdk-8 ends up linking with "-shared -pie -fpie" in some cases (see
 # hotspot/make/linux/makefiles/saproc.make) which then tries (and fails) to
@@ -30,3 +35,4 @@ SECURITY_STRINGFORMAT_pn-giflib = ""
 SECURITY_STRINGFORMAT_pn-gsignond = ""
 SECURITY_STRINGFORMAT_pn-openjdk-8 = ""
 SECURITY_STRINGFORMAT_pn-openjre-8 = ""
+SECURITY_STRINGFORMAT_pn-qhull = ""

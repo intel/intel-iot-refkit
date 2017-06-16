@@ -61,3 +61,4 @@ Profile Summary
 #. refkit-image-common: A configuration with interactive tools but without any special software in it. Recommended target if you are not interested in any given profile.
 #. refkit-image-computervision: A profile with tools and configuration for computer vision use cases.
 #. refkit-image-gateway: A profile with tools and configuration for acting as an IoT sensor.
+#. refkit-image-industrial: A profile with tools for industrial use cases, i.e. ROS Industrial packages intended to be used in industrial robotics applications.

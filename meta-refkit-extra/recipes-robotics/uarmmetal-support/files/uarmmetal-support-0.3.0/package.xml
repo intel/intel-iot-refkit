@@ -1,0 +1,18 @@
+<package>
+
+  <name>uarmmetal_support</name>
+  <version>0.3.0</version>
+  <description>
+     ROS-Industrial support for the uArm Metal.
+  </description>
+  <author email="dmitry.rozhkov@intel.com">Dmitry Rozhkov</author>
+  <maintainer email="dmitry.rozhkov@intel.com">Dmitry Rozhkov</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://todo/</url>
+  <url type="bugtracker">https://todo/issues</url>
+  <url type="repository">https://todo/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
