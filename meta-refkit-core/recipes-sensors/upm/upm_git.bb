@@ -7,7 +7,10 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=66493d54e65bfc12c7983ff2e884f37f"
 
 DEPENDS = "libjpeg-turbo mraa"
 
-SRC_URI = "git://github.com/intel-iot-devkit/upm.git;protocol=http;tag=v${PV}"
+SRCREV = "106b6c706268522ab0168a4ddb19e89ce832e084"
+PV = "1.3.0-git${SRCPV}"
+
+SRC_URI = "git://github.com/intel-iot-devkit/${BPN}.git;protocol=http"
 
 S = "${WORKDIR}/git"
 

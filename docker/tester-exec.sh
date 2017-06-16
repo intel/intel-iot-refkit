@@ -77,13 +77,8 @@ testimg() {
   wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.bmap
   wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.xz -O - | unxz - > ${FILENAME}
   if [ ! -s ${FILENAME} ]; then
-    wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.zip
-    if [ -s ${FILENAME}.zip ]; then
-      unzip ${FILENAME}.zip
-    else
-      echo "ERROR: No file ${FILENAME}.xz or ${FILENAME}.zip found, can not continue."
+      echo "ERROR: No file ${FILENAME}.xz, can not continue."
       exit 1
-    fi
   fi
   set -e
 
