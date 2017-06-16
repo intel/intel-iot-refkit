@@ -22,4 +22,4 @@ require conf/distro/include/usrmerge.inc
 include conf/distro/include/flatpak.inc
 
 # Enable this for flatpak-session/application framework support.
-#include conf/distro/include/flatpak-session.inc
+include conf/distro/include/flatpak-session.inc
