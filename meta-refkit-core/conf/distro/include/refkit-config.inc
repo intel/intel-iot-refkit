@@ -71,6 +71,10 @@ require conf/distro/include/refkit-overrides.inc
 # Global distro settings.
 #########################################################################
 
+# Several components that refkit depends on aren't ready for gcc7 yet.
+# Can be overridden in local.conf with GCCVERSION_df-refkit-config = "7.%"
+GCCVERSION_df-refkit-config ??= "6.3%"
+
 # refkit images distinguish between development and production mode.
 # Features that are useful only for development and dangerous
 # when used on real devices are not enabled in production mode (example:
