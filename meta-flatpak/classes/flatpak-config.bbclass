@@ -63,3 +63,31 @@ FLATPAK_BUILD  ?= "${DISTRO}/${FLATPAK_PN}/build/${BUILD_ID}"
 # This is the GPG key id of our repository signing key. If you set this to
 # empty, signing is disabled altogether.
 FLATPAK_GPGID ?= "refkit-signing@key"
+
+# We can pre-populate the image during build with a set of pre-declared
+# flatpak repositories and associated dedicated flatpak-session users.
+# These repositories will be monitored for flatpaks and any new or updated
+# flatpaks which are tagged for automatic installation will be pulled in
+# and started within the appropriate flatpak session.
+#
+# To declare such a remote/repository, you need to
+#   1) give the remote a unique name
+#   2) provide a remote URL and a GPG public key for signature checking
+#   3) associate a user with the remote
+#
+# The variable FLATPAK_APP_REPOS lists the names of the remotes to pre-
+# declare and put into the image. For every remote <r> you have to provide
+#
+#   1) the remote HTTP URL in ${TOPDIR}/conf/<r>.url
+#   2) the remote GPG signing public key in ${TOPDIR}/conf/<r>.key
+#   3) provide passwd- and group entries for the associated user in
+#        ${TOPDIR}/conf/flatpak-passwd and
+#        ${TOPDIR}/conf/flatpak-group
+#      The GECOS for the associated entry must be of the form
+#      'flatpak user for <r>', where <r> is the remote name. By
+#      convention the user's login ID is also <r>, but this is
+#      not strictly necessary.
+#
+# By default we do not have any pre-declared application repositories,
+# so FLATPAK_APP_REPOS defaults to empty.
+FLATPAK_APP_REPOS ?= ""
