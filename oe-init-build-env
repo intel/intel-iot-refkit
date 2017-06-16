@@ -27,10 +27,8 @@
 #
 if [ -n "$BASH_SOURCE" ]; then
     THIS_SCRIPT=$BASH_SOURCE
-elif [ -n "$ZSH_NAME" ]; then
-    THIS_SCRIPT=$0
 else
-    THIS_SCRIPT="$(pwd)/oe-init-build-env"
+    THIS_SCRIPT=$0
 fi
 
 THIS_SCRIPT_DIR=$(dirname "$THIS_SCRIPT")
