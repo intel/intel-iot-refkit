@@ -11,3 +11,12 @@ Common targets are:
                                  gateway)
     refkit-image-industrial     (when building an image with tools and
                                  configuration for industrial use cases)
+
+If you have the flatpak DISTRO_FEATURE enabled (by default it is on if you
+build with refkit-config enabled), there are two additional flatpak variant
+targets for each image derived from refkit-image:
+
+    -flatpak-runtime            (image variant with flatpak support enabled)
+    -flatpak-sdk                (image variant used as a flatpak BaseSdk for
+                                 building flatpaks suitable to be used on the
+                                 corresponding -flatpak-runtime image variant)
