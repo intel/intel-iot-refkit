@@ -15,7 +15,7 @@ REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES += "${@ '' if (d.getVar('IMAGE_MODE')
 # Example for customization in local.conf when building
 # refkit-image-computervision.bb:
 # IMAGE_BASENAME_pn-refkit-image-computervision = "my-refkit-image-reference"
-# REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL_append = "my-own-package"
-# REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES_append = "dev-pkgs"
+# REFKIT_IMAGE_COMPUTERVISION_EXTRA_INSTALL_append = " my-own-package"
+# REFKIT_IMAGE_COMPUTERVISION_EXTRA_FEATURES_append = " dev-pkgs"
 
 inherit refkit-image

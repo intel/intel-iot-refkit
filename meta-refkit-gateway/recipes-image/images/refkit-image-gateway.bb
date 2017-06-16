@@ -11,7 +11,7 @@ REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES_append = " iotivity nodejs-runtime bluetooth
 # Example for customization in local.conf when building
 # refkit-image-gateway.bb:
 # IMAGE_BASENAME_pn-refkit-image-gateway = "my-refkit-image-gateway"
-# REFKIT_IMAGE_GATEWAY_EXTRA_INSTALL_append = "my-own-package"
-# REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES_append = "dev-pkgs"
+# REFKIT_IMAGE_GATEWAY_EXTRA_INSTALL_append = " my-own-package"
+# REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES_append = " dev-pkgs"
 
 inherit refkit-image

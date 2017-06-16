@@ -28,6 +28,11 @@ set -u
 # create auto.conf using functions in build-common-util.sh
 auto_conf_common
 
+# post-build testing builds images but only .wic is sufficient
+# (default in IMAGE_FSTYPES). We skip compression and bmap formats
+# to optimize testing time
+echo "REFKIT_VM_IMAGE_TYPES = \"\"" >> conf/auto.conf
+
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
