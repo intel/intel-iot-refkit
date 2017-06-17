@@ -1,0 +1,19 @@
+[Unit]
+Description=nftables firewall
+DefaultDependencies=false
+Before=network-pre.target multi-user.target shutdown.target
+Conflicts=shutdown.target
+
+# firewall-config-update makes sure that the firewall configuration has been created
+After=firewall-config-update.service
+# requires first-time update and also the configuration file tracking
+Requires=firewall-config-update.service
+Wants=firewall-config.path
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/nft -I /run/firewall -I /usr/lib/firewall -f /run/firewall/firewall.ruleset
+ExecReload=/usr/sbin/nft -I /run/firewall -I /usr/lib/firewall -f /run/firewall/firewall.ruleset
+
+[Install]
+WantedBy=network.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Update firewall settings
+
+[Service]
+Type=simple
+
+# We can run firewall-update.py even though this service might have been
+# activated via the same command. If there is no change, the
+# zones.ruleset file isn't changed.
+
+ExecStart=/usr/bin/firewall-update.py
+ExecReload=/usr/bin/firewall-update.py

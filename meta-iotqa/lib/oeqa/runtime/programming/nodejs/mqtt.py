@@ -65,7 +65,8 @@ class mqttTest(oeRuntimeTest):
         @param return
         '''
         # Enable the port 1883
-        self.target.run('ip6tables -A INPUT -p tcp --dport 1883 -j ACCEPT')
+        self.target.run("/usr/sbin/nft add chain inet filter mqtt { type filter hook input priority 0\; }")
+        self.target.run("/usr/sbin/nft add rule inet filter mqtt tcp dport 1883 mark set 1")
         (status, output) =  self.target.run("node /tmp/mqtt/mqtt.js")
         self.assertEqual(status, 0)
         self.assertTrue('error' not in output.lower())
@@ -82,4 +83,5 @@ class mqttTest(oeRuntimeTest):
         os.system('rm -rf %s >/dev/null 2>&1' % os.path.join(target_file, 'node_modules'))
         self.target.run('rm -rf /tmp/node_modules')
         self.target.run('rm -rf /tmp/mqtt')
-        self.target.run('ip6tables -D INPUT -p tcp --dport 1883 -j ACCEPT')
+        self.target.run("/usr/sbin/nft flush chain inet filter mqtt")
+        self.target.run("/usr/sbin/nft delete chain inet filter mqtt")

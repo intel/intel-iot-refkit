@@ -4,3 +4,4 @@ oeqa.runtime.connectivity.bluetooth.btcheck
 oeqa.runtime.connectivity.wifi.wifi_connect
 oeqa.runtime.peripherals.mraa.mraa_gpio
 oeqa.runtime.multimedia.audio.alsa
+oeqa.runtime.sanity.nftables

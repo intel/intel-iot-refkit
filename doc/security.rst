@@ -239,3 +239,55 @@ The signing tool uses a 2048bit RSA private key (``REFKIT_DB_KEY``) and a
 PEM formatted X.509 signature (``REFKIT_DB_CERT``). When deploying the DB
 keys on the device, use the DER formatted X.509. See ``meta-refkit/files/secureboot/gen-keys-helper.sh`` for more details on how the test keys can be created.
 
+Firewall support
+================
+
+Default firewall is nftables. The default firewall ruleset itself is
+quite basic: only incoming IPv4 and IPv6 traffic is filtered.
+Applications must by themselves request the permissions they need by
+dropping an nftables script to directory ``/usr/lib/firewall/services/``
+or ``/etc/firewall/services/``. The nftables script should be named with
+the package name to avoid file name conflicts.
+
+There are two main ways for writing the script. First way is the
+fastest, and is suitable for applications and services which only need
+to have certain TCP or UDP port ranges open. The service has a chain
+which contains the rules for processing the packet. The chain is then
+added as a jump target to tcp map (``tcp_service_map``) or udp map
+(``udp_service_map``), which map from port numbers or well-known
+services to the chains. In this example, tcp port 22 (ssh) is mapped to
+chain ``openssh-sshd``, which then accepts connections from LAN
+interfaces. The interface definitions are included from
+``zones.ruleset``.
+
+.. code:: nft
+
+    #!/usr/sbin/nft
+
+    table inet filter {
+        include "zones.ruleset"
+        chain openssh-sshd {
+            iif @ZONE_LAN accept;
+       }
+    }
+    
+    add element inet filter tcp_service_map {ssh : jump openssh-sshd};
+
+The second way is to set up a new input chain with priority 0 and policy
+``accept``. The chain must tag packets belonging to the service there
+with mark ``accept_packet``. This method is especially suitable for
+services which require network traffic other than tcp or udp, such as
+ICMP packets. It carries a performance penalty, however. The following
+example is equivalent with the previous example.
+
+.. code:: nft
+
+    #!/usr/sbin/nft
+    
+    table inet filter {
+        include "zones.ruleset"
+        chain openssh-sshd {
+            type filter hook input priority 0; policy accept;
+            tcp dport ssh iif @ZONE_LAN mark set $accept_packet;
+        }
+    }

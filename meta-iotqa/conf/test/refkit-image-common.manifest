@@ -9,3 +9,4 @@ oeqa.runtime.peripherals.mraa.mraa_hello
 oeqa.runtime.peripherals.mraa.mraa_gpio
 oeqa.runtime.multimedia.audio.alsa
 oeqa.runtime.peripherals.upm.upm
+oeqa.runtime.sanity.nftables

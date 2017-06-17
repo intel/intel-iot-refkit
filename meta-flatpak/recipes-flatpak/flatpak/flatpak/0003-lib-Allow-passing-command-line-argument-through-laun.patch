@@ -1,0 +1,135 @@
+From 559597e3687bd1cebb70ebcd55e674e0df9a9390 Mon Sep 17 00:00:00 2001
+From: Krisztian Litkey <krisztian.litkey@intel.com>
+Date: Fri, 4 Nov 2016 10:38:22 +0200
+Subject: [PATCH 3/3] lib: Allow passing command line argument through launch.
+
+Added a new function flatpak_installation_launch_with_args which is
+actually a copy of the original flatpak_installation_launch slightly
+modified to allow passing argument to the launched application. Also
+changed the original flatpak_installation_launch to call this new
+function with 0, NULL as the argument list.
+
+Signed-off-by: Krisztian Litkey <krisztian.litkey@intel.com>
+---
+ lib/flatpak-installation.c | 58 ++++++++++++++++++++++++++++++++++++++--------
+ lib/flatpak-installation.h |  9 +++++++
+ 2 files changed, 57 insertions(+), 10 deletions(-)
+
+diff --git a/lib/flatpak-installation.c b/lib/flatpak-installation.c
+index 12803d7..370c854 100644
+--- a/lib/flatpak-installation.c
++++ b/lib/flatpak-installation.c
+@@ -492,16 +492,18 @@ flatpak_installation_get_storage_type (FlatpakInstallation *self)
+ }
+ 
+ /**
+- * flatpak_installation_launch:
++ * flatpak_installation_launch_with_args:
+  * @self: a #FlatpakInstallation
+  * @name: name of the app to launch
+  * @arch: (nullable): which architecture to launch (default: current architecture)
+  * @branch: (nullable): which branch of the application (default: "master")
+  * @commit: (nullable): the commit of @branch to launch
++ * @argc: number of command line arguments to pass to the application
++ * @argv: (nullable): command line arguments to pass to the application
+  * @cancellable: (nullable): a #GCancellable
+  * @error: return location for a #GError
+  *
+- * Launch an installed application.
++ * Launch an installed application with the given arguments.
+  *
+  * You can use flatpak_installation_get_installed_ref() or
+  * flatpak_installation_get_current_installed_app() to find out what builds
+@@ -510,13 +512,15 @@ flatpak_installation_get_storage_type (FlatpakInstallation *self)
+  * Returns: %TRUE, unless an error occurred
+  */
+ gboolean
+-flatpak_installation_launch (FlatpakInstallation *self,
+-                             const char          *name,
+-                             const char          *arch,
+-                             const char          *branch,
+-                             const char          *commit,
+-                             GCancellable        *cancellable,
+-                             GError             **error)
++flatpak_installation_launch_with_args (FlatpakInstallation *self,
++				       const char          *name,
++				       const char          *arch,
++				       const char          *branch,
++				       const char          *commit,
++				       int                  argc,
++				       char                *argv[],
++				       GCancellable        *cancellable,
++				       GError             **error)
+ {
+   g_autoptr(FlatpakDir) dir = flatpak_installation_get_dir (self);
+   g_autofree char *app_ref = NULL;
+@@ -539,11 +543,45 @@ flatpak_installation_launch (FlatpakInstallation *self,
+                           NULL,
+                           FLATPAK_RUN_FLAG_BACKGROUND,
+                           NULL,
+-                          NULL, 0,
++                          argv, argc,
+                           cancellable, error);
+ }
+ 
+ 
++/**
++ * flatpak_installation_launch:
++ * @self: a #FlatpakInstallation
++ * @name: name of the app to launch
++ * @arch: (nullable): which architecture to launch (default: current architecture)
++ * @branch: (nullable): which branch of the application (default: "master")
++ * @commit: (nullable): the commit of @branch to launch
++ * @cancellable: (nullable): a #GCancellable
++ * @error: return location for a #GError
++ *
++ * Launch an installed application.
++ *
++ * You can use flatpak_installation_get_installed_ref() or
++ * flatpak_installation_get_current_installed_app() to find out what builds
++ * are available, in order to get a value for @commit.
++ *
++ * Returns: %TRUE, unless an error occurred
++ */
++gboolean
++flatpak_installation_launch (FlatpakInstallation *self,
++                             const char          *name,
++                             const char          *arch,
++                             const char          *branch,
++                             const char          *commit,
++                             GCancellable        *cancellable,
++                             GError             **error)
++{
++  return flatpak_installation_launch_with_args(self, name,
++					       arch, branch, commit,
++					       0, NULL,
++					       cancellable, error);
++}
++
++
+ static FlatpakInstalledRef *
+ get_ref (FlatpakDir          *dir,
+          const char          *full_ref,
+diff --git a/lib/flatpak-installation.h b/lib/flatpak-installation.h
+index 089d510..c5d352b 100644
+--- a/lib/flatpak-installation.h
++++ b/lib/flatpak-installation.h
+@@ -148,6 +148,15 @@ FLATPAK_EXTERN gboolean             flatpak_installation_launch (FlatpakInstalla
+                                                                  const char          *commit,
+                                                                  GCancellable        *cancellable,
+                                                                  GError             **error);
++FLATPAK_EXTERN gboolean             flatpak_installation_launch_with_args (FlatpakInstallation *self,
++                                                                 const char          *name,
++                                                                 const char          *arch,
++                                                                 const char          *branch,
++                                                                 const char          *commit,
++                                                                 int                  argc,
++                                                                 char                *argv[],
++                                                                 GCancellable        *cancellable,
++                                                                 GError             **error);
+ FLATPAK_EXTERN GFileMonitor        *flatpak_installation_create_monitor (FlatpakInstallation *self,
+                                                                          GCancellable        *cancellable,
+                                                                          GError             **error);
+-- 
+2.7.4
+

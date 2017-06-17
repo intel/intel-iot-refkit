@@ -1,0 +1,77 @@
+#!/usr/sbin/nft
+
+flush ruleset;
+
+include "variables.ruleset"
+
+table inet filter {{
+
+    include "zones.ruleset"
+
+    map tcp_service_map {{
+        type inet_service : verdict
+    }}
+
+    map udp_service_map {{
+        type inet_service : verdict
+    }}
+
+    chain input {{
+        # Run this later than service and application scripts (priority 1)
+        # and drop all packets that don't match to the the rules.
+        type filter hook input priority 1; policy drop;
+
+        # Accept packets tagged by services and applications.
+        mark $accept_packet accept;
+
+        # Accept packets belonging to established and related connections.
+        ct state established,related accept;
+
+        # Allow packets to localhost interfaces.
+        iif @ZONE_LOCAL accept;
+
+        # Check if the services have declared custom rules.
+        tcp dport vmap @tcp_service_map;
+        udp dport vmap @udp_service_map;
+
+        # Allow some icmpv6 to make IPv6 work (see RFC 4890). This
+        # configuration is for an "end host firewall", protecting a
+        # single device. In order to use the device as a router or as a
+        # bridge, enable the relevant options as explained in the RFC.
+        # For home gateway router use, see RFC 6092.
+
+        # Allow basic IPv6 functionality.
+        ip6 nexthdr icmpv6 icmpv6 type {{
+            destination-unreachable,
+            packet-too-big,
+            time-exceeded,
+            parameter-problem,
+            echo-request,
+            echo-reply
+        }} accept;
+
+        # Allow auto configuration support.
+        ip6 nexthdr icmpv6 icmpv6 type {{
+            nd-neighbor-solicit,
+            nd-neighbor-advert,
+            nd-router-advert,
+            nd-router-solicit
+        }} ip6 hoplimit 255 accept;
+
+        # Allow multicast listener discovery on link-local addresses.
+        ip6 nexthdr icmpv6 icmpv6 type {{
+            mld-listener-query,
+            mld-listener-report,
+            mld-listener-reduction
+        }} ip6 saddr fe80::/10 accept;
+
+        # Allow multicast router discovery messages on link-local
+        # addresses (hop limit 1).
+        ip6 nexthdr icmpv6 icmpv6 type {{
+            nd-router-advert,
+            nd-router-solicit
+        }} ip6 hoplimit 1 ip6 saddr fe80::/10 accept;
+    }}
+}}
+
+{service_chains}

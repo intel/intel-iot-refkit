@@ -1,0 +1,12 @@
+#!/usr/sbin/nft
+
+table inet filter {
+    include "zones.ruleset"
+
+    chain avahi {
+        # allow multicast for clients in ZONE_LAN
+        iif @ZONE_LAN accept;
+    }
+}
+
+add element inet filter udp_service_map {5353 : jump avahi};

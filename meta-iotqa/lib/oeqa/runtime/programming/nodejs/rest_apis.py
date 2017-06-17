@@ -149,7 +149,8 @@ class RESTAPITest(oeRuntimeTest):
                             'chmod +x /tmp/nodeunit-master/bin/nodeunit'
                            )
 
-        cls.tc.target.run("/usr/sbin/iptables -w -A INPUT -p udp --dport 5683 -j ACCEPT")
+        cls.tc.target.run("/usr/sbin/nft add chain inet filter rest_api { type filter hook input priority 0\; }")
+        cls.tc.target.run("/usr/sbin/nft add rule inet filter rest_api udp dport 5683 accept")
         cls.tc.target.run('/opt/iotivity/examples/resource/c/SimpleClientServer/ocserver -o 0')
         for api, api_js in cls.rest_api_js_files.items():
             cls.tc.target.run('cd %s; node %s' % (cls.target_rest_api_dir, api_js) )
@@ -1502,4 +1503,5 @@ class RESTAPITest(oeRuntimeTest):
         cls.tc.target.run('rm -f /tmp/master.tar')
         cls.tc.target.run('rm -rf /tmp/modules')
 
-        cls.tc.target.run("/usr/sbin/iptables -w -D INPUT -p udp --dport 5683 -j ACCEPT")
+        cls.tc.target.run("/usr/sbin/nft flush chain inet filter rest_api")
+        cls.tc.target.run("/usr/sbin/nft delete chain inet filter rest_api")

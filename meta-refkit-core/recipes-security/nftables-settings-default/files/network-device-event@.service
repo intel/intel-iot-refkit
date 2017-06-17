@@ -1,0 +1,15 @@
+# Update firewall zones every time the network interfaces change (a VPN
+# interface is started, USB network card is removed, etc).
+
+[Unit]
+Description=Network device trigger (%I)
+BindsTo=sys-subsystem-net-devices-%i.device
+# no need to track changes to interfaces before firewall has been
+# configured
+After=sys-subsystem-net-devices-%i.device firewall.target
+
+[Service]
+ExecStart=/usr/bin/firewall-update.py --only-zones
+ExecStop=/usr/bin/firewall-update.py --only-zones
+Type=forking
+RemainAfterExit=yes

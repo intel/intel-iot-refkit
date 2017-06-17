@@ -55,10 +55,8 @@ class IOtvtWiFi(oeRuntimeTest):
         add_group("tester", target=cls.tc.targets[1])
         add_user("iotivity-tester", "tester", target=cls.tc.targets[1])
         # Setup firewall accept for multicast, on both sides
-        run_as("root", "/usr/sbin/iptables -w -A INPUT -p udp --dport 5683 -j ACCEPT", target=cls.tc.targets[0])
-        run_as("root", "/usr/sbin/iptables -w -A INPUT -p udp --dport 5684 -j ACCEPT", target=cls.tc.targets[0])
-        run_as("root", "/usr/sbin/iptables -w -A INPUT -p udp --dport 5683 -j ACCEPT", target=cls.tc.targets[1])
-        run_as("root", "/usr/sbin/iptables -w -A INPUT -p udp --dport 5684 -j ACCEPT", target=cls.tc.targets[1])
+        run_as("root", "/usr/sbin/nft add rule inet filter input udp dport {5683, 5684} accept", target=cls.tc.targets[0])
+        run_as("root", "/usr/sbin/nft add rule inet filter input udp dport {5683, 5684} accept", target=cls.tc.targets[1])
 
         # check if image contains iotivity example applications
         (status, output) = run_as("root", "ls /opt/iotivity/examples/resource/", target=cls.tc.targets[0])
