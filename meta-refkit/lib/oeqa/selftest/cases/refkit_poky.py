@@ -199,9 +199,9 @@ BBFILES ?= ""
         self.testinc_bblayers_path = self.old_testinc_bblayers_path
 
 
-    def add_refkit_layers(self):
+    def add_refkit_layers(self, filter=[]):
         """Add all layers also active in the parent refkit build dir."""
-        self.append_bblayers_config('BBLAYERS += "%s"' % (' '.join([self.layers[x] for x in self.layers.keys() if x not in self.poky_layers])))
+        self.append_bblayers_config('BBLAYERS += "%s"' % (' '.join([self.layers[x] for x in self.layers.keys() if x not in self.poky_layers and (not filter or x in filter)])))
 
     def test_refkit_conf_signature(self):
         """Ensure that including the refkit config does not change the signature of other layers."""
@@ -226,13 +226,17 @@ BBFILES ?= ""
     def test_common_poky_config(self):
         """
         A full image build test of the common image,
-        without the refkit-config.inc.
+        without the refkit-config.inc. We cannot guarantee that content from other
+        layers than OE-core and meta-refkit-core actually builds in such
+        a configuration (additional layers might not be compatible with
+        OE-core master yet), so we limit testing to OE-core and our own
+        additional content.
 
         Poky uses sysvinit. Actually building an image runs
         also postinst and various rootfs manipulation code,
         and some of that might assume that systemd is used.
         """
-        self.add_refkit_layers()
+        self.add_refkit_layers(filter=['meta-refkit-core'])
 
         # We need an image that we can log into, so zap the root password.
         self.append_config('''
