@@ -1,0 +1,16 @@
+#!/usr/sbin/nft
+
+# The idea is that if a service is positively sure that a packet is
+# meant for it _and_ it wants to accept it, it needs to tag it with the
+# "accept_packet" mark.  If the service thinks a packet doesn't belong
+# to it, it just needs to accept it using the "accept" verdict. In a
+# (rare) case when the service knows that a packet belongs to it but it
+# needs to drop or reject it, the service can just use "drop" or
+# "reject" verdicts to stop the packet processing.
+#
+# Note that it's harmless to select "accept" verdict in the recipe,
+# since the packet will be processed by other chains too, and a "drop"
+# or "reject" in any one of those is enough to drop or reject the
+# packet.
+
+define accept_packet = 0x1

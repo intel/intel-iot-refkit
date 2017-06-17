@@ -1,0 +1,1 @@
+SUBSYSTEM=="net", ENV{SYSTEMD_WANTS}="network-device-event@$name.service"

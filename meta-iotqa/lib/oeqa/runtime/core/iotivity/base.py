@@ -27,13 +27,10 @@ class IotvtRuntimeTest(oeRuntimeTest):
         # Set up firewall
         port_range_cmd = "cat /proc/sys/net/ipv4/ip_local_port_range"
         (status, output) = cls.tc.target.run(port_range_cmd)
-        port_range = "%s:%s" % tuple(output.split())
+        port_range = output.split()
 
-        iptables_cmd = "/usr/sbin/ip6tables -w -A INPUT -s fe80::/10 \
-                -p udp -m udp --dport %s -j ACCEPT"
-        cls.tc.target.run(iptables_cmd % "5683")
-        cls.tc.target.run(iptables_cmd % "5684")
-        cls.tc.target.run(iptables_cmd % port_range)
+        cls.tc.target.run("/usr/sbin/nft add chain inet filter iotivity { type filter hook input priority 0\; }")
+        cls.tc.target.run("/usr/sbin/nft add rule inet filter iotivity ip6 saddr fe80::/10 udp dport {5683, 5684, %s-%s} mark set 1" % (port_range[0], port_range[1]))
 
         # Start server
         resource_cmd = "/opt/iotivity/examples/resource/cpp/%s > /tmp/%s &"
@@ -57,5 +54,7 @@ class IotvtRuntimeTest(oeRuntimeTest):
     @classmethod
     def tearDownClass(cls):
 
+        cls.tc.target.run("/usr/sbin/nft flush chain inet filter iotivity")
+        cls.tc.target.run("/usr/sbin/nft delete chain inet filter iotivity")
         remove_user("iotivity-tester")
         cls.tc.target.run("killall simpleserver simpleclient")

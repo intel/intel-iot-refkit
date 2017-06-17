@@ -1,0 +1,13 @@
+#!/usr/sbin/nft
+
+table inet filter {
+    include "zones.ruleset"
+
+    chain openssh-sshd {
+        # accept connections from LAN
+        iif @ZONE_LAN accept;
+    }
+}
+
+# if tcp port is 22, we'll jump to chain openssh-sshd
+add element inet filter tcp_service_map {ssh : jump openssh-sshd};

@@ -1,0 +1,14 @@
+[Unit]
+Description=Track changes to firewall zone ruleset and service chains
+# do not track paths before firewall service is enabled
+After=firewall-config-update.service
+# break down the ordering cycle with basic.target
+DefaultDependencies=false
+
+[Path]
+ReloadOnTrigger=true
+PathChanged=/run/firewall/zones.ruleset
+PathChanged=/usr/lib/firewall/services
+PathChanged=/etc/firewall/services
+PathChanged=/usr/lib/firewall/zones.config
+PathChanged=/etc/firewall/zones.config

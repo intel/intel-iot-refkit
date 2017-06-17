@@ -1,0 +1,32 @@
+From 448424558b9cd3978fd61801172d76fa334d9a53 Mon Sep 17 00:00:00 2001
+From: Krisztian Litkey <kli@iki.fi>
+Date: Sat, 10 Sep 2016 22:35:06 +0300
+Subject: [PATCH 1/3] autogen.sh: fall back to no gtkdocize if it is there but
+ fails.
+
+---
+ autogen.sh | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/autogen.sh b/autogen.sh
+index 1cd3cee..c3a7bd4 100755
+--- a/autogen.sh
++++ b/autogen.sh
+@@ -37,7 +37,13 @@ else
+     # gtkdocize needs the macro directory to exist before
+     # we call autoreconf
+     mkdir -p m4
+-    gtkdocize || exit $?
++    gtkdocize || {
++    rm -f gtk-doc.make
++    cat > gtk-doc.make <<EOF
++EXTRA_DIST =
++CLEANFILES =
++EOF
++}
+ fi
+ 
+ autoreconf --force --install --verbose || exit $?
+-- 
+2.7.4
+

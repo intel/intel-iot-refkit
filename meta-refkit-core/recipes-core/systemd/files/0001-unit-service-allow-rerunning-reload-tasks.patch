@@ -1,0 +1,63 @@
+From 9fc2a417a4725f6a63790adcc924ef7b03430a77 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Tue, 25 Apr 2017 14:21:23 +0300
+Subject: [PATCH 1/2] unit, service: allow rerunning reload tasks.
+
+In case a "reload" job cannot be cleanly merged to a previous job of the
+same type, the job state is set to be "waiting". This triggers
+reprocessing which doesn't lead to anything due to safeguards in unit.c
+and service.c. Relax the conditions so that reload jobs can be rerun
+when merge isn't possible.
+
+Upstream-status: Submitted [https://github.com/systemd/systemd/pull/5839]
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+
+---
+ src/core/service.c | 2 +-
+ src/core/unit.c    | 7 ++-----
+ 2 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/src/core/service.c b/src/core/service.c
+index a63c6d8..316a13e 100644
+--- a/src/core/service.c
++++ b/src/core/service.c
+@@ -2127,7 +2127,7 @@ static int service_reload(Unit *u) {
+ 
+         assert(s);
+ 
+-        assert(s->state == SERVICE_RUNNING || s->state == SERVICE_EXITED);
++        assert(s->state == SERVICE_RUNNING || s->state == SERVICE_EXITED || s->state == SERVICE_RELOAD);
+ 
+         service_enter_reload(s);
+         return 1;
+diff --git a/src/core/unit.c b/src/core/unit.c
+index 25ea5a8..acece94 100644
+--- a/src/core/unit.c
++++ b/src/core/unit.c
+@@ -1706,9 +1706,9 @@ bool unit_can_stop(Unit *u) {
+ }
+ 
+ /* Errors:
++ *         -EINVAL:   Unit is not loaded.
+  *         -EBADR:    This unit type does not support reloading.
+  *         -ENOEXEC:  Unit is not started.
+- *         -EAGAIN:   An operation is already in progress. Retry later.
+  */
+ int unit_reload(Unit *u) {
+         UnitActiveState state;
+@@ -1723,10 +1723,7 @@ int unit_reload(Unit *u) {
+                 return -EBADR;
+ 
+         state = unit_active_state(u);
+-        if (state == UNIT_RELOADING)
+-                return -EALREADY;
+-
+-        if (state != UNIT_ACTIVE) {
++        if (state != UNIT_ACTIVE && state != UNIT_RELOADING) {
+                 log_unit_warning(u, "Unit cannot be reloaded because it is inactive.");
+                 return -ENOEXEC;
+         }
+-- 
+2.9.3
+

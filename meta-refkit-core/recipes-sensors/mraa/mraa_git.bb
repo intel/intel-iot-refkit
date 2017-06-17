@@ -12,7 +12,7 @@ SRC_URI = "git://github.com/intel-iot-devkit/${BPN}.git;protocol=http"
 
 S = "${WORKDIR}/git"
 
-inherit cmake distutils-base
+inherit cmake distutils3-base
 
 DEPENDS += "json-c"
 

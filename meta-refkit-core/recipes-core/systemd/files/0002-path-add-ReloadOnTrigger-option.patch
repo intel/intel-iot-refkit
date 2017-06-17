@@ -1,0 +1,79 @@
+From 001a6e9f17f47e7e710bf44abe043763c58bee11 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Fri, 21 Apr 2017 16:03:49 +0300
+Subject: [PATCH 2/2] path: add ReloadOnTrigger option.
+
+Changes triggered by .path units cause the target unit to be started.
+However, this causes events to be lost: if the target service is running
+and another file event triggers the .path unit, the next job start
+request gets merged in the previously running one.
+
+Add "ReloadOnTrigger" option to .path units. If enabled, the request to
+the target unit is not "start", but "start_or_reload". In this case, if
+the service is already started, future triggers to the .path unit will
+cause reload events to the service. This limits the available service
+types though, and can only be used with those services which can be
+reloaded.
+
+Upstream-status: Submitted [https://github.com/systemd/systemd/pull/5839]
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+
+---
+ src/core/load-fragment-gperf.gperf.m4 | 1 +
+ src/core/path.c                       | 6 +++++-
+ src/core/path.h                       | 2 ++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/load-fragment-gperf.gperf.m4 b/src/core/load-fragment-gperf.gperf.m4
+index cb9e6fe..b6f901d 100644
+--- a/src/core/load-fragment-gperf.gperf.m4
++++ b/src/core/load-fragment-gperf.gperf.m4
+@@ -404,6 +404,7 @@ Path.DirectoryNotEmpty,          config_parse_path_spec,             0,
+ Path.Unit,                       config_parse_trigger_unit,          0,                             0
+ Path.MakeDirectory,              config_parse_bool,                  0,                             offsetof(Path, make_directory)
+ Path.DirectoryMode,              config_parse_mode,                  0,                             offsetof(Path, directory_mode)
++Path.ReloadOnTrigger,            config_parse_bool,                  0,                             offsetof(Path, reload_on_trigger)
+ m4_dnl
+ CGROUP_CONTEXT_CONFIG_ITEMS(Slice)m4_dnl
+ m4_dnl
+diff --git a/src/core/path.c b/src/core/path.c
+index 83f794b..85be01c 100644
+--- a/src/core/path.c
++++ b/src/core/path.c
+@@ -464,6 +464,7 @@ static void path_enter_running(Path *p) {
+         _cleanup_(sd_bus_error_free) sd_bus_error error = SD_BUS_ERROR_NULL;
+         Unit *trigger;
+         int r;
++        JobType type = JOB_START;
+ 
+         assert(p);
+ 
+@@ -478,7 +479,10 @@ static void path_enter_running(Path *p) {
+                 return;
+         }
+ 
+-        r = manager_add_job(UNIT(p)->manager, JOB_START, trigger, JOB_REPLACE, &error, NULL);
++        if (p->reload_on_trigger)
++                type = JOB_RELOAD_OR_START;
++
++        r = manager_add_job(UNIT(p)->manager, type, trigger, JOB_REPLACE, &error, NULL);
+         if (r < 0)
+                 goto fail;
+ 
+diff --git a/src/core/path.h b/src/core/path.h
+index 4230c8f..0bb0609 100644
+--- a/src/core/path.h
++++ b/src/core/path.h
+@@ -79,6 +79,8 @@ struct Path {
+         bool make_directory;
+         mode_t directory_mode;
+ 
++        bool reload_on_trigger;
++
+         PathResult result;
+ };
+ 
+-- 
+2.9.3
+
