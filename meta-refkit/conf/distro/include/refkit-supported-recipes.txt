@@ -110,8 +110,8 @@ file@core
 findutils@core
 fixesproto@core
 flac@core
-flatpak@flatpak-layer
 flatpak-image-runtime@flatpak-layer
+flatpak@flatpak-layer
 flex@core
 font-util@core
 fontconfig@core
@@ -145,8 +145,8 @@ gmp@core
 gnome-desktop-testing@core
 gnu-config@core
 gnu-efi@core
-gnupg@core
 gnupg1@refkit-core
+gnupg@core
 gnutls@core
 gobject-introspection@core
 gpgme@core
