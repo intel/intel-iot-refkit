@@ -4,6 +4,8 @@ REFKIT_QA_IMAGE_SYMLINK_WHITELIST = " \
     /proc/mounts \
     /run/lock \
     /run/resolv.conf \
+    /run/systemd/resolve/resolv.conf \
+    /run/connman/resolv.conf \
     /var/volatile/log \
     /var/volatile/tmp \
 "

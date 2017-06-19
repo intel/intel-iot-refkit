@@ -10,7 +10,10 @@ DEPENDS = "libjpeg-turbo mraa"
 SRCREV = "106b6c706268522ab0168a4ddb19e89ce832e084"
 PV = "1.3.0-git${SRCPV}"
 
-SRC_URI = "git://github.com/intel-iot-devkit/${BPN}.git;protocol=http"
+SRC_URI = " \
+    git://github.com/intel-iot-devkit/${BPN}.git;protocol=http \
+    file://ads1x15-fixed-case-logic-in-getThresh-function.patch \
+"
 
 S = "${WORKDIR}/git"
 
