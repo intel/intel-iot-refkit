@@ -17,7 +17,6 @@ python3-protobuf@refkit-extra
 python3-pycparser@meta-python
 python3-pyrealsense@refkit-extra
 python3-six@core
-refkit-ros-tests@refkit-extra
 robot-state-publisher@ros-layer
 snappy@refkit-extra
 std-srvs@ros-layer

@@ -378,6 +378,7 @@ randrproto@core
 read-map@iotqa
 readline@core
 recordproto@core
+refkit-ros-tests@iotqa
 refkit.*image.*@refkit.*
 renderproto@core
 resource-retriever@ros-layer
