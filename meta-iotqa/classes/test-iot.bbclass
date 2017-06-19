@@ -27,7 +27,7 @@ inherit testimage
 DEPLOY_DIR_TESTSUITE ?= "${DEPLOY_DIR}/testsuite/${IMAGE_BASENAME}"
 
 # Extra target binaries not installed in the target image, required for image testing.
-IOTQA_TESTIMAGEDEPENDS += "mraa-test read-map shm-util upm-test"
+IOTQA_TESTIMAGEDEPENDS += "mraa-test read-map shm-util upm-test refkit-ros-tests"
 
 # When added to the task dependencies below, they get build before running those tasks.
 IOTQA_TASK_DEPENDS = "${@ ' '.join([x + ':do_deploy_files' for x in '${IOTQA_TESTIMAGEDEPENDS}'.split()])}"

@@ -1,0 +1,2 @@
+# Tests for industrial profile
+oeqa.runtime.robotics.ros.ros_helloworld
