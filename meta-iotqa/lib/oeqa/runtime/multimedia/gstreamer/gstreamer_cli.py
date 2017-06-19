@@ -9,9 +9,6 @@ class GstreamerCommandlineTest(oeRuntimeTest):
         self.assertEqual(status, 0, msg="Error messages: %s" % output)
 
     def test_gst_launch_can_create_video_pipeline(self):
-        (status, output) = self.target.run('gst-launch-1.0 -v fakesrc')
-        self.assertEqual(status, 0, msg="Error messages: %s" % output)
-
         (status, output) = self.target.run('gst-launch-1.0 -v fakesrc silent=false num-buffers=3 ! fakesink silent=false')
         self.assertEqual(status, 0, msg="Error messages: %s" % output)
 
