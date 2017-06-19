@@ -145,7 +145,6 @@ REFKIT_IMAGE_FEATURES_COMMON ?= " \
     connectivity \
     ssh-server-openssh \
     alsa \
-    sensors \
     ${@ 'common-test' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' } \
 "
 REFKIT_IMAGE_INSTALL_COMMON ?= ""

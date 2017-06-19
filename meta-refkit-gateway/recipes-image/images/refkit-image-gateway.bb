@@ -6,7 +6,12 @@ REFKIT_IMAGE_GATEWAY_EXTRA_INSTALL ?= "${REFKIT_IMAGE_INSTALL_COMMON}"
 REFKIT_IMAGE_EXTRA_FEATURES += "${REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES}"
 REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_IMAGE_GATEWAY_EXTRA_INSTALL}"
 
-REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES_append = " iotivity nodejs-runtime bluetooth-audio"
+REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES += " \
+    bluetooth-audio \
+    iotivity \
+    nodejs-runtime \
+    sensors \
+"
 
 # Example for customization in local.conf when building
 # refkit-image-gateway.bb:
