@@ -1,0 +1,5 @@
+# Tests for gateway profile
+oeqa.runtime.programming.nodejs.apprt_nodejs
+oeqa.runtime.core.iotivity.client
+oeqa.runtime.multimedia.audio.pulseaudio
+oeqa.runtime.sanity.flatpak
