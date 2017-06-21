@@ -3,3 +3,4 @@ oeqa.runtime.programming.nodejs.apprt_nodejs
 oeqa.runtime.core.iotivity.client
 oeqa.runtime.multimedia.audio.pulseaudio
 oeqa.runtime.sanity.flatpak
+oeqa.runtime.sanity.flatpak-session
