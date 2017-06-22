@@ -77,7 +77,7 @@ REFKIT_CI_SDK_TARGETS=""
 # as possible.
 REFKIT_CI_ESDK_TARGETS=""
 # Following targets would be executed with do_test_iot_export task
-REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway \
+REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway refkit-image-industrial \
 ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
     'refkit-image-gateway-flatpak-runtime', '', d)} \
 "
