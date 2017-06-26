@@ -82,9 +82,6 @@ if [ -d ${_DEPL}/swupd/${TARGET_MACHINE} ]; then
 fi
 
 if [ -d ${_DEPL}/sdk ]; then
-    # run eSDK publish script with destination set to sdk-data/TARGET_MACHINE/
-    # script name is dynamic, used via wildard. NB! works while there is only one sdk/*-toolchain-ext*.sh
-    ${WORKSPACE}/openembedded-core/scripts/oe-publish-sdk ${_DEPL}/sdk/*-toolchain-ext*.sh ${_DEPL}/sdk-data/${TARGET_MACHINE}/
     # publish installer .sh file to sdk/
     create_remote_dirs ${_RSYNC_DEST} sdk/${TARGET_MACHINE}
     rsync -av ${_DEPL}/sdk/*.sh ${_RSYNC_DEST}/sdk/${TARGET_MACHINE}/
