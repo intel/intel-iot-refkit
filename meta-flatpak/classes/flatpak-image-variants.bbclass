@@ -8,6 +8,8 @@ IMAGE_FEATURES[validitems] += " \
 
 FEATURE_PACKAGES_flatpak = " \
     packagegroup-flatpak \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak-session', \
+           'packagegroup-flatpak-session', '', d)} \
 "
 
 #

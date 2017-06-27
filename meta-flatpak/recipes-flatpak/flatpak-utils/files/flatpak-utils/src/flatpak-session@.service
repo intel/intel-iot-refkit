@@ -1,0 +1,18 @@
+[Unit]
+Description=Automatic flatpak login session for user/remote %i.
+After=systemd-user-sessions.service network.service
+Before=flatpak-update.service
+
+[Service]
+User=%i
+WorkingDirectory=~
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+PAMName=login
+RestartForceExitStatus=69
+Type=simple
+ExecStart=/usr/bin/flatpak-session -vvv start -r 69
+
+[Install]
+WantedBy=multi-user.target

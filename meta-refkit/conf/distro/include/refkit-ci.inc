@@ -94,6 +94,8 @@ REFKIT_CI_TEST_RUNS=" \
   refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
   refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
   refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
+      'refkit-image-gateway-flatpak-runtime,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot', '', d)} \
 "
 
 # Dont use disk space monitor in CI builds, to avoid frequent

@@ -1,0 +1,26 @@
+flatpak-utils is a collection of extra utilities for Intel IoT RefKit.
+
+Currently flatpak-utils contains two extra binaries for dealing with
+'flatpak sessions'. A 'flatpak session' is an automatically started
+login session which runs one or more flatpak applications from a single
+flatpak provide/remote. Each such remote has a dedicated user associated
+with it and the flatpak applications are run within the login session
+of that dedicated user.
+
+There is currently a single binary provided which can be run in three
+different modes:
+
+- systemd generator
+
+  A systemd generator used to generate a systemd service for each
+  configured flatpak session during system initialization.
+
+- session daemon
+
+  A daemon used to run within each flatpak session to start the
+  flatpaks for that session.
+
+- update daemon
+
+  A daemon used to monitor remotes, pull in available updates,
+  and restart any affected flatpak sessions.
