@@ -26,11 +26,9 @@ def testinfo_data = ""
 def ci_git_commit = ""
 def global_sum_log = ""
 def added_commits = ""
-def builder_node = ""
-def builder_wspace = ""
 def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
-int num_build_dirs_to_keep = 4
+int num_builds_to_keep = 4
 
 // Define global environment common for all docker sessions
 def script_env = """
@@ -49,9 +47,6 @@ try {
     timestamps {
         node('rk-docker') {
             ws("workspace/${slot_name}${ci_build_id}") {
-                // remember node and workspace needed by workspace cleaner
-                builder_node = "${env.NODE_NAME}"
-                builder_wspace = "${env.WORKSPACE}"
                 set_gh_status_pending(is_pr, 'Prepare for build')
                 stage('Cleanup workspace') {
                     deleteDir()
@@ -60,7 +55,10 @@ try {
                     checkout_content(is_pr)
                 }
                 stage('Build docker image') {
-                    build_docker_image(image_name)
+                    parallel(
+                        "build-docker-image": { build_docker_image(image_name) },
+                        "cleanup": { ws("workspace") { trim_build_dirs(slot_name, num_builds_to_keep) }}
+                    )
                 }
                 def docker_image = docker.image(image_name)
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
@@ -104,15 +102,6 @@ try {
             } // ws
         } // node
     } // timestamps
-
-    // insert older trees deletion job into tester jobs array
-    test_runs["clean_older_workspaces"] = {
-        node(builder_node) {
-            ws("workspace") {
-                trim_build_dirs(slot_name, num_build_dirs_to_keep)
-            }
-        }
-    }
 
     test_targets = testinfo_data.split("\n")
     for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
