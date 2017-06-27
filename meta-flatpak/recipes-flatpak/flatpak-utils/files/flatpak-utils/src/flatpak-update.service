@@ -1,0 +1,12 @@
+[Unit]
+Description=Monitor and pull in available updates for flatpaks.
+After=systemd-user-sessions.service network.service
+
+[Service]
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/bin/flatpak-session -vvv update --poll-interval 5m
+
+[Install]
+WantedBy=multi-user.target

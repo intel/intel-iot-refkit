@@ -1,0 +1,18 @@
+#
+# Target for autostarting flatpak sessions.
+#
+# This target is used to collect services that create sessions for users
+# corresponding to flatpak remotes and starts flatpaks from the remotes
+# in the corresponding user sessions.
+#
+
+[Unit]
+Description=Flatpak Sessions
+Documentation=man:systemd.special(7)
+Conflicts=rescue.service rescue.target
+After=network.target
+AllowIsolate=no
+RefuseManualStart=no
+
+[Install]
+WantedBy=multi-user.target
