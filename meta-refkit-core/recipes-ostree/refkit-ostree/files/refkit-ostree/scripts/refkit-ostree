@@ -1,0 +1,714 @@
+#!/bin/sh
+
+# Partition UUIDs for internal storage and removable media.
+INTERNAL_UUID='12345678-9abc-def0-0fed-cba987654320'
+EXTERNAL_UUID='12345678-9abc-def0-0fed-cba987654321'
+
+# Our distro name.
+DISTRO='refkit'
+
+# update poll interval
+POLL_INTERVAL=30
+
+# upgrade poll and apply markers
+POLL_MARKER=/run/ostree.polling
+APPLY_MARKER=/run/ostree.applying
+POST_UPDATE_MARKER=/var/.ostree.updated
+
+# Print an informational message.
+info_msg () {
+    [ -n "$INITRAMFS" ] && echo "$*" > /dev/console || echo "$*"
+}
+
+# Print an error message.
+error_msg () {
+    [ -n "$INITRAMFS" ] && echo "$*" > /dev/console || echo "error: $*"
+}
+
+# Print a fatal error message, starting a shell if we're in development mode.
+fatal_msg () {
+    if [ -n "$INITRAMFS" ]; then
+        if grep -q "imagetype=development" /proc/cmdline; then
+            error_msg "$*"
+            /bin/sh
+        else
+            echo "$*" > /dev/console
+            exit 1
+        fi
+    else
+        echo "fatal error: $*"
+        exit 1
+    fi
+}
+
+# Print a debug message.
+debug_msg () {
+    if [ -z "$DEBUG" ]; then
+        return 0
+    fi
+    [ -n "$INITRAMFS" ] && echo "$*" > /dev/console || echo "D: $*"
+}
+
+# Stat a filesystem entry for device and and inode number.
+dev_inode () {
+    local _path="$1"
+    local _var="${2:-DEVNODE}"
+    local _dev=""
+    local _inode=""
+    local _line="$(stat $_path | grep ^Device: | tr -s '\t' ' ')"
+
+    if [ -z "$_line" ]; then
+        return 1
+    fi
+
+    _line=${_line#Device: }
+    _dev=${_line%%/*}
+    _line=${_line#*Inode: }
+    _inode=${_line%% *}
+
+    eval "${_var}=\"$_dev:$_inode\""
+
+    return 0
+}
+
+# Determine the device corresponding to the currently mounted root.
+root_device () {
+    local _var="${1:-ROOTDEV}"
+    local _dev
+
+    _dev=$(cat /proc/mounts | grep ' / ' | cut -d ' ' -f 1)
+
+    if [ -z "$_dev" ]; then
+        return 1
+    fi
+
+    _dev=$(realpath $_dev)
+
+    eval "$_var=\"$_dev\""
+    return 0
+}
+
+# Determine the EFI device path (part #1 on the same block device as our root).
+efi_device () {
+    local _var="${1:-EFIDEV}"
+    local _efi
+
+    if ! root_device _efi; then
+        return 1
+    fi
+
+    _efi="${_efi%[0-9]*}1"
+
+    eval "$_var=\"$_efi\""
+    return 0
+}
+
+# Determine root partition UUID
+root_uuid () {
+    local _var="${1:-ROOT_UUID}"
+    local _val
+
+    _val=$(cat /proc/cmdline | tr -s '\t' ' ' | tr ' ' '\n' | grep root=)
+
+    if [ -z "$_val" ]; then
+        return 1
+    fi
+
+    _val=${_val#root=PARTUUID=}
+
+    eval "$_var=\"$_val\""
+    return 0
+}
+
+# Discover BootLoaderSpec-compliant boot loader entries.
+ostree_loader_entries () {
+    local _boot=${1:-/boot}
+    local _evar=${2:-ENTRY}
+    local _ovar=${3:-PATH}
+    local _ecurr=""; _eprev=""
+    local _ocurr=""; _oprev=""
+    local _vcurr=0; _vprev=0
+    local _e _v _o
+
+    # Discover all loader entries $1/loader/entries/ostree-*.conf.
+    # Parse the found ones for version and kernel command-line then
+    # pick the two most recent ones.
+    for _e in $_boot/loader/entries/ostree-*.conf; do
+        _v=$(grep '^version ' $_e)
+        _v=${_v#version }
+        _o=$(grep '^options ' $_e)
+        _o=${_o#options }
+
+        if [ $_v -gt $_vcurr ]; then
+            _vprev=$_vcurr
+            _eprev=$_ecurr
+            _oprev=$_ocurr
+            _vcurr=$_v
+            _ecurr=$_e
+            _ocurr=$_o
+        elif [ $_v -gt $_vprev ]; then
+            _vprev=$_v
+            _eprev=$_e
+            _oprev=$_o
+        fi
+    done
+ 
+    if [ -z "$_ecurr" ]; then
+        return 1
+    fi
+
+    eval "${_evar}_CURR=\"$_ecurr\""
+    eval "${_evar}_PREV=\"$_eprev\""
+    eval "${_ovar}_CURR=\"${_ocurr#ostree=}\""
+    eval "${_ovar}_PREV=\"${_oprev#ostree=}\""
+
+    return 0
+}
+
+# Get the canonical (real) path of an ostree deployment/boot entry.
+ostree_canonical_path () {
+    local _var=${2:-CANONICAL} _c
+    
+    if [ -z "$1" ]; then
+        return 1
+    fi
+
+    _c=$(realpath $1)
+
+    if [ -z "$_c" ]; then
+        return 1
+    fi
+
+    eval "$_var=\"$_c\""
+    return 0
+}
+
+# Get the boot entry path of an ostree deployment.
+ostree_boot_path () {
+    local _var="${2:-BOOT}" _b
+    local _pnode _bnode
+
+    if ! dev_inode $1 _pnode; then
+        return 1
+    fi
+
+    for _b in /sysroot/ostree/boot.0/$DISTRO/*/?; do
+        if ! dev_inode $_b/. _bnode; then
+            return 1
+        fi
+        if [ "$_pnode" = "$_bnode" ]; then
+            eval "$_var=\"${_b#/sysroot}\""
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Discover currently running ostree entry.
+ostree_running_entry () {
+    local _var="${1:-RUNNING}"
+    local _r_stat _e_stat
+
+    if ! dev_inode / _r_stat; then
+        return 1
+    fi
+
+    for _e in /sysroot/ostree/deploy/$DISTRO/deploy/*.?; do
+        if ! dev_inode $_e _e_stat; then
+            return 1
+        fi
+
+        if [ "$_r_stat" = "$_e_stat" ]; then
+            eval "$_var=\"${_e#/sysroot}\""
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Make the given directories/mount points movable.
+make_movable () {
+    for _d in $*; do
+        debug_msg "making $_d movable..."
+        mount --bind $_d $_d || return 1
+    done
+
+    return 0
+}
+
+# Fill in the missing details in an ostree deployment root.
+prepare_root () {
+    local _root=$1
+
+    #
+    # We need to prepare the ostree deployment root to be kosher for
+    # pivot-rooting and thus eventually becoming the final root.
+    # This involves stitching it together from several pieces to fill
+    # in the missing details. Currently we do this as follows:
+    #
+    #   - bind-mount the common /var into the deployment
+    #   - bind-mount the common /boot into the deployment
+    #   - bind-mount the common /home into the deployment
+
+    debug_msg "preparing $_root for pivot-rooting..."
+
+    cd $_root
+
+    mount --bind ../../var var || return 1
+    mount --bind /rootfs/boot $_root/boot || return 1
+    mount --bind /rootfs/home $_root/home || return 1
+
+    cd - > /dev/null
+
+    return 0
+}
+
+# Shuffle the ostree deployment around so that we eventually pivot-root it.
+shuffle_root () {
+    local _root="$1"
+
+    #
+    # This code mimicks the last bits of ostree-prepare-root. It shuffles
+    # /sysroot, /rootfs, and the chosen ostree deployment root ($_root) around
+    # so that /rootfs becomes $_root/sysroot and $_root becomes /rootfs. Then
+    # eventually after the final pivot-root we end up with
+    #
+    #   - current $_root (IOW the ostree deployment root) as /
+    #   - current /rootfs as /sysroot
+    #
+    # The only tricky/difficult to follow extra bit here is that we have to
+    # do these operations with an extra step to avoid trying to move the
+    # eventual /sysroot (now /rootfs) under itself.
+
+    debug_msg "shuffling /sysroot, /rootfs and $_root for pivot-rooting..."
+
+    cd $_root
+
+    # make /rootfs $_root/sysroot and $_root /rootfs
+    mkdir -p /sysroot.tmp || return 1
+    mount --move $_root /sysroot.tmp || return 1
+    mount --move /rootfs sysroot || return 1
+    mount --move . /rootfs || return 1
+
+    cd - > /dev/null
+
+    return 0
+}
+
+# Prepare the initramfs environment for pivot-rooting into an ostree deployment.
+initramfs_prepare_root () {
+    local _entry_CURR _entry_PREV _path_CURR _path_PREV
+
+    info_msg "* ostree: preparing ostree rootfs for booting..."
+
+    # Discover, and parse loader entries.
+    if ! ostree_loader_entries /rootfs/boot _entry _path; then
+        fatal_msg "failed to discover loader entries"
+    fi
+
+    # Pick the ostree deployment root from the latest entry.
+    OSTREE_ROOT="$_path_CURR"
+    info_msg "active ostree entry: $OSTREE_ROOT"
+
+    # Prepare the deployment root for becoming the final runtime root, then
+    # shuffle /rootfs, /sysroot and the deployment root around so that we
+    # finally end up pivot-rooting into the deployment with /rootfs ending
+    # up as /sysroot under it.
+    make_movable /rootfs$OSTREE_ROOT
+    prepare_root /rootfs$OSTREE_ROOT
+    shuffle_root /rootfs$OSTREE_ROOT
+}
+
+# Patch /proc/cmdline with the right ostree kernel argument.
+patch_proc_cmdline () {
+    local _tmpdir=${1:-/run}
+    local _options="$2"
+    local _patched=$_tmpdir/cmdline.patched
+
+    info_msg "* Patching /proc/cmdline with ostree arguments..."
+
+    if [ -z "$_options" ]; then
+        if ! ostree_loader_entries /boot ENTRY OPTIONS; then
+            error_msg "failed to discover loader entries"
+            return 1
+        else
+            _options="$OPTIONS_CURR"
+        fi
+    fi
+
+    if cat /proc/cmdline | grep -q ostree=; then
+        if cat /proc/cmdline | grep -q $_options; then
+            return 0
+        else
+            return 1
+        fi
+    fi
+
+    cat /proc/cmdline | tr -d '\n' > $_patched
+    echo " ostree=$_options" >> $_patched
+    chmod og-w $_patched
+    mount -o ro --bind $_patched /proc/cmdline
+
+    return $?
+}
+
+# Undo patching /proc/cmdline with ostree arguments.
+reset_proc_cmdline () {
+    info_msg "* Resetting /proc/cmdline..."
+    
+    while cat /proc/mounts | grep -q /proc/cmdline; do
+        if ! umount /proc/cmdline; then
+            return 1
+        fi
+    done
+
+    return 0
+}
+
+# Mount the EFI partition under the given path or /boot/efi.
+mount_efi () {
+    local _path="${1:-/boot/efi}"
+    local _dev
+
+    info_msg "* Mounting EFI partition (at $_path)..."
+
+    if cat /proc/mounts | grep ' vfat ' | grep -q " $_path "; then
+        return 0
+    fi
+
+    if ! efi_device _dev; then
+        return 1
+    fi
+
+    mount -t vfat $_dev $_path
+}
+
+#  Fetch any pending updates without applying them.
+fetch_updates () {
+    info_msg "* Fetching OS updates..."
+
+    touch $POLL_MARKER
+    ostree admin upgrade --pull-only
+    rm -f $POLL_MARKER
+}
+
+# Apply any locally pending updates.
+apply_updates () {
+    local _latest _entry_CURR _entry_PREV _path_CURR _path_PREV _running
+    local _l _r
+
+    info_msg "* Applying pending OS updates..."
+
+    if ! ostree_running_entry _running; then
+        fatal_msg "failed to discover running entry"
+    fi
+
+    info_msg "running version: $_running"
+
+    reset_proc_cmdline
+    if ! patch_proc_cmdline /run "ostree=$_running"; then
+        return 1
+    fi
+
+    touch $APPLY_MARKER
+    ostree admin upgrade --deploy-only
+    rm -f $APPLY_MARKER
+
+    if ! ostree_loader_entries /boot _entry _path; then
+        fatal_msg "failed to discover loader entries"
+    fi
+
+    _latest=$(realpath $_path_CURR)
+
+    info_msg "latest version: $_latest"
+
+    dev_inode $_running _r
+    dev_inode $_latest _l
+
+    if [ "$_l" = "$_r" ]; then
+        info_msg "no updates, $_running is already running"
+        return 0
+    fi
+}
+
+# Check and update the UEFI combo app if necessary.
+update_uefi_app () {
+    local _entry_CURR _entry_PREV _path_CURR _path_PREV
+    local _root _uuid _arch _active _latest _efiboot _ostreeboot _ok
+
+    info_msg "* Updating UEFI combo app..."
+
+    if ! ostree_loader_entries /boot _entry _path; then
+        fatal_msg "failed to discover loader entries"
+    fi
+
+    if ! mount_efi; then
+        fatal_msg "failed to mount EFI partition"
+    fi
+
+    if ! root_uuid _uuid; then
+        fatal_msg "failed to determine root partition UUID"
+    fi
+
+    _root=${_path_CURR}
+    _arch=$(uname -m)
+
+    case $_arch in
+        *64) _active=bootx64.efi;;
+        *)   _active=bootia32.efi;;
+    esac
+
+    case $_uuid in
+        $INTERNAL_UUID) _latest="$_active.int";;
+        $EXTERNAL_UUID) _latest="$_active.ext";;
+        *) fatal_msg "unexpected root partition UUID $_uuid";;
+    esac
+
+    _efiboot=/boot/efi/EFI/BOOT
+    _ostreeboot=$_root/usr/lib/ostree-boot
+
+    if cmp $_efiboot/$_active $_ostreeboot/$_latest* > /dev/null; then
+        info_msg "UEFI combo app already up to date."
+        return 0
+    fi
+
+    info_msg "Updating UEFI combo app..."
+    if ! cp $_efiboot/$_active $_efiboot/$_active.old; then
+        fatal_msg "Failed to save old UEFI combo app."
+    fi
+
+    # Leap of faith...
+    cp $_ostreeboot/$_latest* $_efiboot/$_active
+    _ok=$?
+
+    if [ $_ok != 0 ]; then
+        # Ugh, we're screwed... try to restore the original.
+        mv $_efiboot/$_active.old $_efiboot/$_active
+    fi
+
+    sync
+
+    if [ $_ok != 0 ]; then
+        fatal_msg "Failed to update UEFI combo app."
+    fi
+
+    info_msg "UEFI combo app updated."
+
+    return 0
+}
+
+# Pull and apply any updates, update UEFI combo app if necessary.
+update () {
+    info_msg "* Updating OS..."
+
+    fetch_updates && apply_updates && update_uefi_app
+}
+
+# SIGUSR handler
+sigusr1_handler () {
+    info_msg "* Received SIGUSR1, polling for updates"
+    fetch_updates
+}
+
+# Sit around in a loop sleeping and periodically polling for updates.
+update_daemon () {
+    local _i _n
+
+    trap "sigusr1_handler" SIGUSR1
+
+    # signal(1) does not have an option to exit on receipt of signals.
+    # Hence, a naive loop with a single sleep(1) would only get around
+    # to handle any received signals once the sleep is done... which in
+    # our case would be completely pointless. Therefore we kludge this
+    # around by breaking up our interval in 10 second chunks to let our
+    # SIGUSR1 handler kick in with a worst-case delay of 10 seconds.
+
+    info_msg "Entering update poll loop (interval: $POLL_INTERVAL seconds)"
+
+    _n=$(($POLL_INTERVAL / 10))
+    while true; do
+        info_msg "* Polling for available upgdates..."
+        fetch_updates
+        _i=0
+        while [ $_i -lt $_n ]; do
+            sleep 10
+            let _i=$_i+1
+        done
+    done
+}
+
+# Roll back to the previously active version.
+rollback () {
+    info_msg "* Rollback not implemented..."
+}
+
+# Perform a post-update check.
+post_update_check () {
+    if [ -e $POST_UPDATE_MARKER ]; then
+        info_msg "* Performing post-update check..."
+        rm -f $POST_UPDATE_MARKER
+    else
+        info_msg "* Post-update marker ($POST_UPDATE_MARKER) not present..."
+    fi
+
+    return 0
+}
+
+# Perform a post-update failure/recovery actions if an update failed.
+post_update_recovery () {
+    info_msg "* Performing post-update failure recovery..."
+    rollback
+}
+
+# Determine the curently running version.
+running_version () {
+    local _entry _bp
+
+    if ! ostree_running_entry _entry; then
+        fatal_msg "failed to discover running entry"
+    fi
+
+    info_msg "Running entry: $_entry"
+
+    if ! ostree_boot_path /; then
+        error_msg "failed to determine boot path using stat"
+        return 1
+    fi
+
+    _bp=$(readlink $BOOT)
+    info_msg "Boot path: $BOOT ($_bp)"
+
+    return 0
+}
+
+# Determine the latest version.
+latest_version () {
+    local _entry_CURR _entry_PREV _path_CURR _path_PREV
+
+    if ! ostree_loader_entries /boot _entry _path; then
+        fatal_msg "failed to discover running entry"
+    fi
+
+    info_msg "Latest entry: $_path_CURR"
+}
+
+# Print minimal help on usage.
+print_help () {
+    echo "$0 [--debug] command"
+    echo ""
+    echo "The possible commands are:"
+    echo "    prepare-root: prepare root for booting"
+    echo "    patch-proc-cmdline: patch /proc/cmdline with ostree=..."
+    echo "    mount-efi: mount the right EFI partition on /boot/efi/EFI"
+    echo "    fetch-updates: fetch updates without applying them"
+    echo "    apply-updates: apply fetched pending updates"
+    echo "    update-uefi-app: apply UEFI app if necessary"
+    echo "    update: fetch and apply updates, update UEFI app"
+    echo "    update-daemon: sit in a loop, fetching updates."
+    echo "    rollback: not implemented"
+    echo "    running-version: show the running ostree deployment"
+    echo "    latest-version: show the latest available deployment"
+    echo "    *: patch /proc/cmdline, then exec ostree with the given arguments"
+}
+
+
+#############################################
+# main script
+
+if [ -d /rootfs ]; then
+    INITRAMFS=yes
+fi
+
+# Parse and remove command-line options.
+while [ "${1#-}" != "$1" ]; do
+    case $1 in
+        -d|--debug)
+            DEBUG=true
+            shift
+            ;;
+        -h|--help)
+            print_help
+            exit 0
+            ;;
+        --poll-interval|-i)
+            POLL_INTERVAL=$2
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Unknown option \'$1\', assuming an ostree native option."
+            break
+            ;;
+    esac
+done
+
+if [ "$1" = "-d" -o "$1" = "--debug" ]; then
+    DEBUG=true
+    shift
+fi
+
+case $1 in
+    initramfs-prepare-root|prepare-root)
+        initramfs_prepare_root
+        ;;
+
+    patch-proc-cmdline)
+        patch_proc_cmdline
+        ;;
+
+    mount-efi)
+        mount_efi
+        ;;
+
+    fetch-updates)
+        fetch_updates
+        ;;
+
+    apply-updates)
+        apply_updates
+        ;;
+
+    update-uefi-app)
+        update_uefi_app
+        ;;
+
+    update)
+        update
+        ;;
+
+    update-daemon)
+        update_daemon
+        ;;
+
+    rollback)
+        ;;
+
+    post-update-check)
+        post_update_check
+        ;;
+
+    post-update-recovery)
+        post_update_recovery
+        ;;
+
+    running-version|running)
+        running_version
+        ;;
+
+    latest-version|latest)
+        latest_version
+        ;;
+
+    # pass the rest directly to ostree
+    *)
+        patch_proc_cmdline
+        exec ostree $*
+        ;;
+esac
+
+exit $?

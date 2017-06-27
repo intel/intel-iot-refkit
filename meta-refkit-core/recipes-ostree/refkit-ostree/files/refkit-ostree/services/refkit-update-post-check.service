@@ -1,0 +1,14 @@
+[Unit]
+Description=Perform post-update checks at the first boot after an update.
+After=network.target
+ConditionPathExists=/var/.ostree.updated
+
+[Service]
+Type=oneshot
+ExecStart=/usr/share/refkit-ostree/hooks/post-update-check
+# OnFailure=ostree-post-update-failure.target
+RemainAfterExit=Yes
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target

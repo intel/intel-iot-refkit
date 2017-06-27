@@ -1,0 +1,6 @@
+[Unit]
+Description=OSTree Post-Update Failure Mode
+Documentation=man:systemd.special(7)
+Requires=ostree-post-update-failure.service
+After=emergency.service
+AllowIsolate=yes

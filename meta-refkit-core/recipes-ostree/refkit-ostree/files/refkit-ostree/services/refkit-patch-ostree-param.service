@@ -1,0 +1,13 @@
+[Unit]
+Description=Patch kernel command line with ostree parameter
+DefaultDependencies=no
+After=systemd-remount-fs.service systemd-tmpfiles-setup.service tmp.mount
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/refkit-ostree-update --patch-procfs
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
