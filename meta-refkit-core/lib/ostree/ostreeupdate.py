@@ -153,18 +153,17 @@ class OSTreeUpdate(string.Formatter):
         #     /mnt -> /var/mnt
         #     /tmp -> /sysroot/tmp
         #
-        # We slightly diverge from the suggestions (for a reason) and
-        # actually set up the following deployment symlinks:
+        # In this model, /var can be a persistent second data partition.
+        # We just use one partition, so instead we have:
         #
-        #     /home -> /sysroot/home
-        #     /mnt -> /var/mnt
-        #     /tmp -> /sysroot/tmp
+        #     /boot = mount point for persistent /boot directory in the root partition
+        #     /var = mount point for persistent /ostree/deploy/refkit/var
+        #     /home = mount point for persistent /home directory in the root partition
+        #     /mnt = symlink to var/mnt
+        #     /tmp = symlink to sysroot/tmp (persistent)
         #
         # Additionally,
         #     /etc is moved to /usr/etc as the default config
-        #
-        # TODO: this no longer matches the actual implementation, to be
-        # updated.
 
         sysroot = os.path.join(self.OSTREE_SYSROOT, 'sysroot')
         bb.utils.mkdirhier(sysroot)
@@ -173,6 +172,7 @@ class OSTreeUpdate(string.Formatter):
         for dir, link in (
                 ('boot', None),
                 ('var', None),
+                ('home', None),
                 ('mnt', 'var/mnt'),
                 ('tmp', 'sysroot/tmp'),
         ):
@@ -282,7 +282,6 @@ class OSTreeUpdate(string.Formatter):
         bb.note(self.format('Creating EFI mount point /boot/efi in OSTree rootfs {OSTREE_ROOTFS} ...'))
         bb.utils.mkdirhier(os.path.join(self.OSTREE_ROOTFS, 'boot', 'efi'))
 
-        # TODO: if /home is persistent, why have it in the repo in the first place?
         bb.note(self.format('Copying pristine rootfs {IMAGE_ROOTFS}/home to OSTree rootfs {OSTREE_ROOTFS} ...'))
         oe.path.copyhardlinktree(os.path.join(self.IMAGE_ROOTFS, 'home'),
                                  os.path.join(self.OSTREE_ROOTFS, 'home'))
