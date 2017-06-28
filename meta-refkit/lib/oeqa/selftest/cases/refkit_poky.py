@@ -54,7 +54,7 @@ class RefkitPokyMeta(type):
     Generates different instances of test_compat_meta_<layer> for each refkit layer.
     """
     def __new__(mcs, name, bases, dict):
-        def gen_test(refkit_layer):
+        def add_test(dict, refkit_layer, path):
             def test(self):
                 """
                 Test Yocto Compatible 2.0 status of each refkit layer.
@@ -66,7 +66,7 @@ class RefkitPokyMeta(type):
                 cmd = "%s/scripts/yocto-compat-layer.py --dependency %s -- %s" % (
                     self.layers['meta-refkit'],
                     ' '.join(self.layers.values()),
-                    self.layers[refkit_layer])
+                    path)
                 # "world" does not include images. We need to enable them explicitly, otherwise
                 # their dependencies won't be checked. Only "development" mode is guaranteed to
                 # work out-of-the-box. However, images change their signatures when adding
@@ -93,11 +93,20 @@ REFKIT_IMAGE_MODE = "development"
                 if 'INFO: FAILED' in result.output:
                     self.fail(result.output)
                 self.logger.info('%s:\n%s' % (cmd, result.output))
-            return test
 
-        for refkit_layer in [x for x in RefkitLayers.layers.keys() if x.startswith('meta-refkit')]:
             test_name = 'test_compat_%s' % refkit_layer.replace('-', '_')
-            dict[test_name] = gen_test(refkit_layer)
+            dict[test_name] = test
+
+        # Test all active refkit layers.
+        for refkit_layer in [x for x in RefkitLayers.layers.keys() if x.startswith('meta-refkit')]:
+            add_test(dict, refkit_layer, RefkitLayers.layers[refkit_layer])
+
+        # And also all inactive ones that we find next to meta-refkit.
+        root_dir = os.path.dirname(RefkitLayers.layers['meta-refkit'])
+        for entry in os.listdir(root_dir):
+            if entry.startswith('meta-refkit') and entry not in RefkitLayers.layers:
+                add_test(dict, entry, os.path.join(root_dir, entry))
+
         return type.__new__(mcs, name, bases, dict)
 
 class TestRefkitPokyBase(OESelftestTestCase, RefkitLayers):
