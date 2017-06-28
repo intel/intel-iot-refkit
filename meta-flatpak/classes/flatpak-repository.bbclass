@@ -7,6 +7,22 @@ inherit flatpak-config
 REFKIT_SIGNING_KEYS += "${FLATPAK_GPGID}"
 inherit refkit-signing-keys
 
+# These are lists of files we check to determine the flatpak
+# runtime type of an image if it is not directly visible from
+# the image name. This did not used to be necessary before we
+# made the gateway image a flatpak-enabled (flatpak-runtime)
+# by itself, but now it is. Actually we could now drop the
+# other, image name based, tests altogether...
+FLATPAK_RUNTIME_FILES = " \
+    /usr/bin/flatpak \
+"
+
+FLATPAK_SDK_FILES = " \
+    /usr/bin/flatpak /usr/bin/gcc /usr/bin/make \
+    /usr/bin/patch /usr/bin/pkg-config \
+    /usr/include/stdio.h /usr/include/stdlib.h \
+"
+
 #
 # Create and populate a primary flatpak repository from/for an image.
 #
@@ -20,9 +36,29 @@ fakeroot do_flatpak_populate_repository () {
        *-flatpak-runtime) RUNTIME_TYPE=BasePlatform;;
        *-flatpak-sdk)     RUNTIME_TYPE=BaseSdk;;
        *)
-          echo "${IMAGE_BASENAME} is not a flatpak-enabled image..."
-          return 0
-          ;;
+           RUNTIME_TYPE=BaseSdk
+           for f in ${FLATPAK_SDK_FILES}; do
+               if [ ! -e ${IMAGE_ROOTFS}/$f ]; then
+                   RUNTIME_TYPE=""
+                   break
+               fi
+           done
+
+           if [ -z "$RUNTIME_TYPE" ]; then
+               RUNTIME_TYPE=BasePlatform
+               for f in ${FLATPAK_RUNTIME_FILES}; do
+                   if [ ! -e ${IMAGE_ROOTFS}/$f ]; then
+                       RUNTIME_TYPE=""
+                       break
+                   fi
+               done
+           fi
+
+           if [ -z "$RUNTIME_TYPE" ]; then
+               echo "${IMAGE_BASENAME} is not a flatpak-enabled image..."
+               return 0
+           fi
+           ;;
    esac
 
    echo "${IMAGE_BASENAME} is a flatpak $RUNTIME_TYPE image"
@@ -89,9 +125,29 @@ fakeroot do_flatpak_export_repository () {
        *-flatpak-runtime) RUNTIME_TYPE=BasePlatform;;
        *-flatpak-sdk)     RUNTIME_TYPE=BaseSdk;;
        *)
-          echo "${IMAGE_BASENAME} is not a flatpak-enabled image..."
-          return 0
-          ;;
+           RUNTIME_TYPE=BaseSdk
+           for f in ${FLATPAK_SDK_FILES}; do
+               if [ ! -e ${IMAGE_ROOTFS}/$f ]; then
+                   RUNTIME_TYPE=""
+                   break
+               fi
+           done
+
+           if [ -z "$RUNTIME_TYPE" ]; then
+               RUNTIME_TYPE=BasePlatform
+               for f in ${FLATPAK_RUNTIME_FILES}; do
+                   if [ ! -e ${IMAGE_ROOTFS}/$f ]; then
+                       RUNTIME_TYPE=""
+                       break
+                   fi
+               done
+           fi
+
+           if [ -z "$RUNTIME_TYPE" ]; then
+               echo "${IMAGE_BASENAME} is not a flatpak-enabled image..."
+               return 0
+           fi
+           ;;
    esac
 
    echo "${IMAGE_BASENAME} is a flatpak $RUNTIME_TYPE image"
