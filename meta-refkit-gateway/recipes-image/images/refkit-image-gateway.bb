@@ -11,6 +11,7 @@ REFKIT_IMAGE_GATEWAY_EXTRA_FEATURES += " \
     iotivity \
     nodejs-runtime \
     sensors \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', 'flatpak', '', d)} \
 "
 
 # Example for customization in local.conf when building
