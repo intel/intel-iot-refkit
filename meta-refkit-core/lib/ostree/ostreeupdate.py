@@ -239,40 +239,18 @@ class OSTreeUpdate(string.Formatter):
         bb.note('Deploying sysroot from OSTree sysroot repository...')
         self.run_ostree('admin --sysroot={OSTREE_ROOTFS} deploy --os={OSTREE_OS} updates:{OSTREE_BRANCHNAME}')
 
+        # OSTree initialized var for our OS, but we want the original rootfs content instead.
+        src = os.path.join(self.IMAGE_ROOTFS, 'var')
+        dst = os.path.join(self.OSTREE_ROOTFS, 'ostree', 'deploy', self.OSTREE_OS, 'var')
+        bb.note(self.format('Copying /var from rootfs to OSTree rootfs as {} ...', dst))
+        shutil.rmtree(dst)
+        oe.path.copyhardlinktree(src, dst)
+
         if self.OSTREE_REMOTE:
             bb.note(self.format('Setting OSTree remote to {OSTREE_REMOTE} ...'))
             self.run_ostree('remote add --repo={OSTREE_ROOTFS}/ostree/repo '
                              '--gpg-import={OSTREE_GPGDIR}/pubring.gpg '
                              'updates {OSTREE_REMOTE}')
-
-    # TODO: initialize /ostree/deploy/refkit/var/ from original rootfs
-#tmp-glibc/work/intel_corei7_64-refkit-linux/refkit-image-common-ostree/1.0-r0/rootfs.ostree/ostree/deploy/refkit/var/
-#├── lib
-#├── lock -> ../run/lock
-#├── log
-#├── run -> ../run
-#└── tmp
-
-#tmp-glibc/work/intel_corei7_64-refkit-linux/refkit-image-common-ostree/1.0-r0/rootfs/var/
-#├── backups
-#├── cache
-#│   └── opkg
-#├── lib
-#│   ├── alsa
-#│   │   └── asound.state
-#│   ├── dbus
-#│   ├── misc
-#│   ├── opkg
-#│   ├── systemd
-#│   └── tpm
-#├── local
-#├── lock -> ../run/lock
-#├── log -> volatile/log
-#├── run -> ../run
-#├── spool
-#│   └── mail
-#├── tmp -> volatile/tmp
-#└── volatile
 
 
     def finalize_sysroot(self):

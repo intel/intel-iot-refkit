@@ -26,6 +26,7 @@ class SystemUpdateModify(object):
         'files',
         'home',
         'kernel',
+        'var',
     ]
 
     # Some /etc config files that we can modify by appending
@@ -136,6 +137,20 @@ class SystemUpdateModify(object):
 
     def verify_home(self, testname, is_update, qemu, test):
         cmd = "cat /home/root/home-test-file"
+        status, output = qemu.run_serial(cmd)
+        test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+        test.assertEqual(output, 'original: hello world')
+
+    def modify_var(self, testname, is_update, rootfs):
+        """
+        Full images take the /var content from the rootfs,
+        but later /var does not get updated.
+        """
+        with open(os.path.join(rootfs, 'var', 'var-test-file'), 'w') as f:
+            f.write('update: hello world\n' if is_update else 'original: hello world\n')
+
+    def verify_var(self, testname, is_update, qemu, test):
+        cmd = "cat /var/var-test-file"
         status, output = qemu.run_serial(cmd)
         test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
         test.assertEqual(output, 'original: hello world')
