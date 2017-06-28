@@ -1,8 +1,5 @@
 #!/bin/sh
 
-DISTRO='refkit'
-SCRIPT='/usr/bin/refkit-ostree'
-
 # We consider the ostree module always enabled if it is installed.
 ostree_enabled () {
     if [ -d /rootfs/ostree/deploy ]; then
@@ -29,27 +26,145 @@ ostree_debug () {
     debug "ostree: $*"
 }
 
-# Find our ostree helper/wrapper script in on of the deployments.
-ostree_discover_wrapper () {
-    # TODO: how can we be sure that we pick the "right" refkit-ostree,
-    # whatever "right" means - the latest one, the one matching the initramfs?
-    for _e in /rootfs/ostree/deploy/$DISTRO/deploy/*.?; do
-        if [ -x $_e$SCRIPT ]; then
-            WRAPPER="$_e$SCRIPT"
-            break
+# Discover BootLoaderSpec-compliant boot loader entries.
+ostree_loader_entries () {
+    local _boot=${1:-/boot}
+    local _evar=${2:-ENTRY}
+    local _ovar=${3:-PATH}
+    local _ecurr=""; _eprev=""
+    local _ocurr=""; _oprev=""
+    local _vcurr=0; _vprev=0
+    local _e _v _o
+
+    # Discover all loader entries $1/loader/entries/ostree-*.conf.
+    # Parse the found ones for version and kernel command-line then
+    # pick the two most recent ones.
+    for _e in $_boot/loader/entries/ostree-*.conf; do
+        _v=$(grep '^version ' $_e)
+        _v=${_v#version }
+        _o=$(grep '^options ' $_e)
+        _o=${_o#options }
+
+        if [ $_v -gt $_vcurr ]; then
+            _vprev=$_vcurr
+            _eprev=$_ecurr
+            _oprev=$_ocurr
+            _vcurr=$_v
+            _ecurr=$_e
+            _ocurr=$_o
+        elif [ $_v -gt $_vprev ]; then
+            _vprev=$_v
+            _eprev=$_e
+            _oprev=$_o
         fi
     done
+ 
+    if [ -z "$_ecurr" ]; then
+        return 1
+    fi
 
-    [ -n "$WRAPPER" ] && return 0 || return 1
+    eval "${_evar}_CURR=\"$_ecurr\""
+    eval "${_evar}_PREV=\"$_eprev\""
+    eval "${_ovar}_CURR=\"${_ocurr#ostree=}\""
+    eval "${_ovar}_PREV=\"${_oprev#ostree=}\""
+
+    return 0
+}
+
+# Make the given directories/mount points movable.
+ostree_make_movable () {
+    for _d in $*; do
+        ostree_info "making $_d movable..."
+        mount --bind $_d $_d || return 1
+    done
+
+    return 0
+}
+
+# Fill in the missing details in an ostree deployment root.
+ostree_prepare_root () {
+    local _root=$1
+
+    #
+    # We need to prepare the ostree deployment root to be kosher for
+    # pivot-rooting and thus eventually becoming the final root.
+    # This involves stitching it together from several pieces to fill
+    # in the missing details. Currently we do this as follows:
+    #
+    #   - bind-mount the common /var into the deployment
+    #   - bind-mount the common /boot into the deployment
+    #   - bind-mount the common /home into the deployment
+
+    ostree_info "preparing $_root for pivot-rooting..."
+
+    cd $_root
+
+    mount --bind ../../var var || return 1
+    mount --bind /rootfs/boot $_root/boot || return 1
+    mount --bind /rootfs/home $_root/home || return 1
+
+    cd - > /dev/null
+
+    return 0
+}
+
+# Shuffle the ostree deployment around so that we eventually pivot-root it.
+ostree_shuffle_root () {
+    local _root="$1"
+
+    #
+    # This code mimicks the last bits of ostree-prepare-root. It shuffles
+    # /sysroot, /rootfs, and the chosen ostree deployment root ($_root) around
+    # so that /rootfs becomes $_root/sysroot and $_root becomes /rootfs. Then
+    # eventually after the final pivot-root we end up with
+    #
+    #   - current $_root (IOW the ostree deployment root) as /
+    #   - current /rootfs as /sysroot
+    #
+    # The only tricky/difficult to follow extra bit here is that we have to
+    # do these operations with an extra step to avoid trying to move the
+    # eventual /sysroot (now /rootfs) under itself.
+
+    ostree_info "shuffling /sysroot, /rootfs and $_root for pivot-rooting..."
+
+    cd $_root
+
+    # make /rootfs $_root/sysroot and $_root /rootfs
+    mkdir -p /sysroot.tmp || return 1
+    mount --move $_root /sysroot.tmp || return 1
+    mount --move /rootfs sysroot || return 1
+    mount --move . /rootfs || return 1
+
+    cd - > /dev/null
+
+    return 0
+}
+
+# Prepare the initramfs environment for pivot-rooting into an ostree deployment.
+ostree_initramfs_prepare_root () {
+    local _entry_CURR _entry_PREV _path_CURR _path_PREV
+
+    ostree_info "* ostree: preparing ostree rootfs for booting..."
+
+    # Discover, and parse loader entries.
+    if ! ostree_loader_entries /rootfs/boot _entry _path; then
+        fatal_msg "failed to discover loader entries"
+    fi
+
+    # Pick the ostree deployment root from the latest entry.
+    OSTREE_ROOT="$_path_CURR"
+    ostree_info "active ostree entry: $OSTREE_ROOT"
+
+    # Prepare the deployment root for becoming the final runtime root, then
+    # shuffle /rootfs, /sysroot and the deployment root around so that we
+    # finally end up pivot-rooting into the deployment with /rootfs ending
+    # up as /sysroot under it.
+    ostree_make_movable /rootfs$OSTREE_ROOT
+    ostree_prepare_root /rootfs$OSTREE_ROOT
+    ostree_shuffle_root /rootfs$OSTREE_ROOT
 }
 
 # Run the ostree image setup sequence.
 ostree_run () {
-    if ! ostree_discover_wrapper; then
-        ostree_fatal "could not find $SCRIPT in any deployment..."
-    fi
-
-    # TODO: can we really rely on executing anything from the rootfs
-    # inside the initramfs? Theoretically they could be 
-    $WRAPPER initramfs-prepare-root
+    ostree_initramfs_prepare_root
 }
