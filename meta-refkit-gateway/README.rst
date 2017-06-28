@@ -32,8 +32,8 @@ Patches
 See the "Submitting Patches" section in the top-level ``README.rst``.
 
 
-Adding the refkit-computervision layer to your build
-====================================================
+Adding the refkit-gateway layer to your build
+=============================================
 
 See the "Layer Overview and Reuse" section in ``doc/introduction.rst``
 for details.
