@@ -52,7 +52,7 @@ REFKIT_VM_IMAGE_TYPES ?= "wic.xz wic.bmap"
 #
 REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
 # NB: run image-installer last until YOCTO #11443 gets fixed.
-REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit_poky refkit_license_check image_installer"
+REFKIT_CI_POSTBUILD_SELFTESTS="secureboot refkit_poky refkit_license_check refkit_ostree.RefkitOSTreeUpdateTestAll image_installer"
 #
 # Automated build targets
 # Those targets should be space separated list of items,
@@ -94,6 +94,8 @@ REFKIT_CI_TEST_RUNS=" \
   refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
   refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
   refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
   ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
       'refkit-image-gateway-flatpak-runtime,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot', '', d)} \
 "

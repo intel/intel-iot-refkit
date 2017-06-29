@@ -1,0 +1,2 @@
+SUBSYSTEM=="leds",ACTION=="add",RUN += "/bin/chgrp -R leds /sys%p"
+SUBSYSTEM=="leds",ACTION=="add",RUN += "/bin/chmod -R g+rwx /sys%p"

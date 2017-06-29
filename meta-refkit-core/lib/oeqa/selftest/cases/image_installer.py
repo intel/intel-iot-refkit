@@ -115,7 +115,7 @@ class ImageInstaller(OESelftestTestCase):
                    )
             status, output = qemu.run_serial(cmd, timeout=300)
             self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
-            bb.note('Installed successfully:\n%s' % output)
+            self.logger.info('Installed successfully:\n%s' % output)
             self.assertTrue(output.endswith('Installed refkit-image-common-%s.wic on vdb successfully.' % self.image_arch))
 
         # Test installation by replacing the normal image with our internal one.

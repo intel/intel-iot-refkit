@@ -1,3 +1,6 @@
+# Additional sanity checks.
+inherit ostree-sanity
+
 # /run, /proc, /var/volatile and /dev only get mounted at runtime.
 REFKIT_QA_IMAGE_SYMLINK_WHITELIST = " \
     /dev/null \
