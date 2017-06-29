@@ -78,8 +78,6 @@ REFKIT_CI_SDK_TARGETS=""
 REFKIT_CI_ESDK_TARGETS=""
 # Following targets would be executed with do_test_iot_export task
 REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway refkit-image-industrial \
-${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
-    'refkit-image-gateway-flatpak-runtime', '', d)} \
 "
 
 # Execute automatic tests for following images with corresponding
@@ -96,8 +94,6 @@ REFKIT_CI_TEST_RUNS=" \
   refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
   refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
   refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
-  ${@bb.utils.contains('DISTRO_FEATURES', 'flatpak', \
-      'refkit-image-gateway-flatpak-runtime,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot', '', d)} \
 "
 
 # Dont use disk space monitor in CI builds, to avoid frequent
