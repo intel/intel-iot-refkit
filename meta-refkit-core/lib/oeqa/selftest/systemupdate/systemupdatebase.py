@@ -250,8 +250,7 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
         self.write_config('BBFILES_append = " %s"' % os.path.abspath(self.IMAGE_BBAPPEND))
         create_image_bbappend(False)
         self.logger.info('Building base image')
-        result = bitbake(self.IMAGE_PN)
-        self.logger.info('bitbake output: %s' % result.output)
+        result = bitbake(self.IMAGE_PN, output_log=self.logger)
 
         # Copying the entire deploy directory via hardlinks is relatively cheap
         # and gives us everything required to run qemu.
@@ -264,7 +263,7 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
         # during the next rebuild.
         create_image_bbappend(True)
         self.logger.info('Building updated image')
-        bitbake(self.IMAGE_PN)
+        bitbake(self.IMAGE_PN, output_log=self.logger)
 
         # Change DEPLOY_DIR_IMAGE so that we use our copy of the
         # images from before the update. Further customizations for booting can

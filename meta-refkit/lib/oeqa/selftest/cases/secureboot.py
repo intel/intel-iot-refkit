@@ -46,11 +46,7 @@ class SecureBootTests(OESelftestTestCase):
     def setUpLocal(self):
 
         if not SecureBootTests.ovmf_keys_enrolled:
-            print('\n')
-            print('Building ovmf-shell-image-enrollkeys')
-            bitbake('ovmf-shell-image-enrollkeys')
-            print('Building ovmf')
-            bitbake('ovmf')
+            bitbake('ovmf ovmf-shell-image-enrollkeys', output_log=self.logger)
 
             bb_vars = get_bb_vars(['TMPDIR', 'DEPLOY_DIR_IMAGE'])
 
@@ -80,14 +76,11 @@ class SecureBootTests(OESelftestTestCase):
     def tearDownLocal(self):
         # Seems this is mandatory between the tests (a signed image is booted
         # when running test_boot_unsigned_image after test_boot_signed_image).
-        print('Cleaning...%s' % self.test_image)
-        bitbake('-c clean %s' % self.test_image)
+        bitbake('-c clean %s' % self.test_image, output_log=self.logger)
 
     @classmethod
     def tearDownClass(self):
-
-        print('Cleaning...')
-        bitbake('ovmf-shell-image-enrollkeys:do_cleanall')
+        bitbake('ovmf-shell-image-enrollkeys:do_cleanall', output_log=self.logger)
         rmtree(self.ovmf_dir, ignore_errors=True)
 
     def secureboot_with_image(self, signing_key="", efishell=False, boot_timeout=600):
@@ -103,10 +96,8 @@ class SecureBootTests(OESelftestTestCase):
             config += 'REFKIT_IMAGE_EXTRA_FEATURES_append = " secureboot"\n'
             config += 'REFKIT_IMAGE_EXTRA_INSTALL_append = " efivar"\n'
 
-        print('Building %s' % self.test_image)
-
         self.write_config(config)
-        bitbake(self.test_image)
+        bitbake(self.test_image, output_log=self.logger)
         self.remove_config(config)
 
         # Some of the cases depend on the timeout to expire. Allow overrides
