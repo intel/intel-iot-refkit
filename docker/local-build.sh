@@ -8,7 +8,7 @@ fi
 CURRENT_PROJECT=refkit
 BUILD_DIR=${BUILD_DIR:-${WORKSPACE}/build}
 BUILD_CACHE_DIR=$BUILD_DIR/bb-cache
-BUILDOS="opensuse-42.2"
+BUILDOS="crops-yocto-ubuntu-16"
 GIT_PROXY_COMMAND=oe-git-proxy
 TARGET_MACHINE="intel-corei7-64"
 
