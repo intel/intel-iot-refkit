@@ -1,6 +1,6 @@
 from oeqa.selftest.systemupdate.systemupdatebase import SystemUpdateBase
 
-from oeqa.utils.commands import runqemu, get_bb_var
+from oeqa.utils.commands import runqemu, get_bb_vars, bitbake
 
 import errno
 import http.server
@@ -26,6 +26,15 @@ IMAGE_FEATURES_append = " ostree"
     # slirp network.
     OSTREE_SERVER = '10.0.2.100:8080'
 
+    # Global variables are the same for all recipes,
+    # but RECIPE_SYSROOT_NATIVE is specific to socat-native.
+    BB_VARS = get_bb_vars([
+        'DEPLOY_DIR',
+        'MACHINE',
+        'RECIPE_SYSROOT_NATIVE',
+        ],
+                          'socat-native')
+
     def track_for_cleanup(self, name):
         """
         Run a single test with NO_CLEANUP=<anything> oe-selftest to not clean up after the test.
@@ -47,7 +56,7 @@ IMAGE_FEATURES_append = " ostree"
         self.track_for_cleanup(self.ostree_netcat.name)
 
         qemuboot_conf = os.path.join(self.image_dir_test,
-                                     '%s-%s.qemuboot.conf' % (self.IMAGE_PN, get_bb_var('MACHINE')))
+                                     '%s-%s.qemuboot.conf' % (self.IMAGE_PN, self.BB_VARS['MACHINE']))
         with open(qemuboot_conf) as f:
             conf = f.read()
         with open(qemuboot_conf, 'w') as f:
@@ -66,7 +75,7 @@ IMAGE_FEATURES_append = " ostree"
         # image here, so we just assume that it is in the usual place.
         # For the sake of simplicity we change into that directory
         # because then we can use SimpleHTTPRequestHandler.
-        ostree_repo = os.path.join(get_bb_var('DEPLOY_DIR'), 'ostree-repo')
+        ostree_repo = os.path.join(self.BB_VARS['DEPLOY_DIR'], 'ostree-repo')
         old_cwd = os.getcwd()
         server = None
         try:
@@ -93,11 +102,16 @@ IMAGE_FEATURES_append = " ostree"
             self.logger.info('serving OSTree repo %s on port %d' % (ostree_repo, port))
             helper = threading.Thread(name='OSTree HTTPD', target=server.serve_forever)
             helper.start()
+            # netcat can't be assumed to be present. Build and use socat instead.
+            # It's a bit more complicated but has the advantage that it is in OE-core.
+            socat = os.path.join(self.BB_VARS['RECIPE_SYSROOT_NATIVE'], 'usr', 'bin', 'socat')
+            if not os.path.exists(socat):
+                bitbake('socat-native:do_addto_recipe_sysroot', output_log=self.logger)
+            self.assertExists(socat, 'socat-native was not built as expected')
             with open(self.ostree_netcat.name, 'w') as f:
                 f.write('''#!/bin/sh
-exec netcat 2>>/tmp/ostree.log localhost 9999
-#exec socat 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
-''' % port)
+exec %s 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
+''' % (socat, port))
 
             cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree update''' % self.OSTREE_SERVER
             status, output = qemu.run_serial(cmd, timeout=600)
