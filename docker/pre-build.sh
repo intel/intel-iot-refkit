@@ -45,7 +45,5 @@ _tests=`grep REFKIT_CI_PREBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe
 if [ -n "$_tests" ]; then
   oe-selftest --run-tests ${_tests}
 fi
-# remove build/ dir to clean tester-related config and results
-rm -fr ${WORKSPACE}/build
-
-
+# build/ should not pollute next stages: don't delete, it has test results
+mv -f ${WORKSPACE}/build ${WORKSPACE}/build.pre
