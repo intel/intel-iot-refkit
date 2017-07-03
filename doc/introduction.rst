@@ -27,6 +27,15 @@ By default the Reference Kit runs on Intel's `meta-intel BSP`_ platforms.
 .. _`meta-intel BSP`: https://www.yoctoproject.org/product/meta-intel-bsp-layer
 
 
+The `Yocto Project extensible software development kit`_ (eSDK) is comes
+pre-configured and pre-tested in Reference Kit repository but the users of
+it must build the SDK installer themselves. By default, the eSDK type is
+"minimal" which implies at least the ``SSTATE_MIRROR`` setting must be adjusted
+when building distributable eSDKs. For more documentation on how to customize and
+re-configure the eSDK, see the "Appendig B. Customizing the Extensible SDK"
+in the `Yocto Project extensible software development kit`_ manual.
+
+.. _`Yocto Project extensive software development kit`: http://www.yoctoproject.org/docs/latest/sdk-manual/sdk-manual.html
 .. _`Yocto Project release cadence`: https://wiki.yoctoproject.org/wiki/Planning#Roadmaps_and_Schedules
 .. _`Yocto Project Bugzilla`: https://bugzilla.yoctoproject.org/
 .. _`Yocto Project git`: http://git.yoctoproject.org/

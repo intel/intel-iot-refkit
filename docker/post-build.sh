@@ -28,6 +28,8 @@ set -u
 # create auto.conf using functions in build-common-util.sh
 auto_conf_common
 
+auto_conf_testsdk
+
 # post-build testing builds images but only .wic is sufficient
 # (default in IMAGE_FSTYPES). We skip compression and bmap formats
 # to optimize testing time
@@ -51,6 +53,12 @@ for target in linux-intel ${_images}; do
     echo "$target: nothing changed or bitbake-diffsigs failed"
   fi
 done
+
+_esdks=""
+for esdk in `grep REFKIT_CI_ESDK_TEST_TARGETS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ a-zA-Z0-9_-]//g'`; do
+  _esdks="$_esdks ${esdk}:do_testsdkext"
+done
+bitbake ${_esdks}
 
 _tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ .a-zA-Z0-9_-]//g'`
 if [ -n "$_tests" ]; then

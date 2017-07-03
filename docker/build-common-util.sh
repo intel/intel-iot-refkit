@@ -63,3 +63,9 @@ INHERIT += "buildhistory-extra"
 BUILDHISTORY_DIR ?= "${BUILDHISTORY_TMP}"
 EOF
 }
+
+auto_conf_testsdk() {
+    cat >> conf/auto.conf << EOF
+INHERIT += "testsdk"
+EOF
+}

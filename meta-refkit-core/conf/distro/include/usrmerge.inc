@@ -8,9 +8,9 @@ export base_libdir = "${base_prefix}/usr/${baselib}"
 export nonarch_base_libdir = "${base_prefix}/usr/lib"
 
 #nativesdk
-base_bindir_nativesdk = "${bindir_nativesdk}"
-base_sbindir_nativesdk = "${sbindir_nativesdk}"
-base_libdir_nativesdk = "${libdir_nativesdk}"
+base_bindir_class-nativesdk = "${SDKPATHNATIVE}${base_bindir_nativesdk}"
+base_sbindir_class-nativesdk = "${SDKPATHNATIVE}${base_sbindir_nativesdk}"
+base_libdir_class-nativesdk = "${SDKPATHNATIVE}${base_libdir_nativesdk}"
 
 target_base_libdir_class-cross = "${target_base_prefix}/usr/lib"
 

@@ -73,9 +73,9 @@ REFKIT_CI_BUILD_TARGETS=" \
 # Following targets would be executed with do_populate_sdk task
 REFKIT_CI_SDK_TARGETS=""
 # Following targets would be executed with do_populate_sdk_ext task.
-# Uses the fully-populated image to ensure that the eSDK is as complete
-# as possible.
-REFKIT_CI_ESDK_TARGETS=""
+REFKIT_CI_ESDK_TARGETS="refkit-image-common refkit-image-gateway"
+# Following targets would be executed with do_testsdkext task.
+REFKIT_CI_ESDK_TEST_TARGETS="refkit-image-common refkit-image-gateway"
 # Following targets would be executed with do_test_iot_export task
 REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision refkit-image-gateway refkit-image-industrial \
 "
