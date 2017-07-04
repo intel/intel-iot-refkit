@@ -109,6 +109,9 @@ PREFERRED_PROVIDER_virtual/opencl-headers-cxx_df-refkit-config = "opencl-headers
 # remove readline support from Bluez to reduce GPLv3 dependencies
 BAD_RECOMMENDATIONS_append_df-refkit-config = " bluez5-client"
 
+# Make ROS use python3 to run its core scripts
+ROS_USE_PYTHON3_df-refkit-config = "yes"
+
 ########################################################################
 # Changes that can be done via PACKAGECONFIG are meant to be done
 # here instead of via .bbappends. SECURITY_* changes go into
