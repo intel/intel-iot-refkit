@@ -54,6 +54,13 @@ try {
                 stage('Checkout content') {
                     checkout_content(is_pr)
                 }
+                if ( !is_pr ) {
+                    ci_git_commit = sh(returnStdout: true,
+                                       script: "git rev-parse HEAD")
+                    // This command expects that each new master build is based on a github merge
+                    added_commits = sh(returnStdout: true,
+                                       script: "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /'")
+                }
                 stage('Build docker image') {
                     parallel(
                         "build-docker-image": { build_docker_image(image_name) },
@@ -101,12 +108,6 @@ try {
                 tester_summary = readFile "docker/tester-create-summary.sh"
                 qemu_script = readFile "docker/run-qemu.exp"
                 testinfo_data = readFile "${target_machine}.testinfo.csv"
-                if ( !is_pr ) {
-                    ci_git_commit = readFile("ci_git_commit").trim()
-                    // This command expects that each new master build is based on a github merge
-                    sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
-                    added_commits = readFile("added_commits")
-                }
             } // ws
         } // node
     } // timestamps
@@ -186,7 +187,7 @@ try {
         }
     } else {
         // send summary email after non-PR build
-        email = "Git commit hash: ${ci_git_commit} \n\n"
+        email = "Git commit hash: ${ci_git_commit}\n"
         email += "Added commits:\n\n${added_commits}\n"
         email += "Test results:\n\n${summary}"
         def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
