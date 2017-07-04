@@ -9,6 +9,7 @@ import oe.path
 import base64
 import pathlib
 import pickle
+import subprocess
 
 class SystemUpdateModify(object):
     """
@@ -26,6 +27,7 @@ class SystemUpdateModify(object):
         'files',
         'home',
         'kernel',
+        'user',
         'var',
     ]
 
@@ -39,6 +41,9 @@ class SystemUpdateModify(object):
         ( 'ssl/openssl.cnf', 'symlink' ),
         ( 'ssh/sshd_config', None ),
     ]
+
+    # Users can be created locally without conflicting with system updates.
+    LOCAL_USERS = True
 
     def modify_image_build(self, testname, updates, is_update):
         """
@@ -154,6 +159,48 @@ class SystemUpdateModify(object):
         status, output = qemu.run_serial(cmd)
         test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
         test.assertEqual(output, 'original: hello world')
+
+    def modify_user(self, testname, is_update, rootfs):
+        """
+        Add a new system user during the update, and another real user on the device.
+        Both users are expected to be present after the update.
+        """
+        if is_update:
+            subprocess.check_output('useradd --root %s --system test_update_sys_user' % rootfs,
+                                    shell=True, stderr=subprocess.STDOUT)
+
+    def verify_user(self, testname, is_update, qemu, test):
+        if self.LOCAL_USERS:
+            if not is_update:
+                # Create a local user. This implies modifying /etc/passwd|shadow|group,
+                # which then must be handled by the update mechanism.
+                cmd = 'adduser -D test_update_local_user'
+                status, output = qemu.run_serial(cmd, timeout=30)
+                test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+
+            # Local user must exist before and after update, including the home directory.
+            cmd = 'su test_update_local_user -c "id -nu"'
+            status, output = qemu.run_serial(cmd)
+            test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+            test.assertEqual(output, 'test_update_local_user')
+            cmd = 'su test_update_local_user -c "id -ng"'
+            status, output = qemu.run_serial(cmd)
+            test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+            test.assertEqual(output, 'test_update_local_user')
+            cmd = 'diff -r /etc/skel /home/test_update_local_user'
+            status, output = qemu.run_serial(cmd)
+            test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+
+        if is_update:
+            # Check for new user created by update.
+            cmd = 'su test_update_sys_user -c "id -nu"'
+            status, output = qemu.run_serial(cmd)
+            test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+            test.assertEqual(output, 'test_update_sys_user')
+            cmd = 'su test_update_sys_user -c "id -ng"'
+            status, output = qemu.run_serial(cmd)
+            test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+            test.assertEqual(output, 'test_update_sys_user')
 
     def _do_modifications(self, d, testname, updates, is_update):
         """

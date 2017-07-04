@@ -26,6 +26,13 @@ IMAGE_FEATURES_append = " ostree"
     # slirp network.
     OSTREE_SERVER = '10.0.2.100:8080'
 
+    def __init__(self, *args, **kwargs):
+        # Although we have the "stateless" distro feature, nss-altfiles and the associated
+        # patches are not active and thus creating users locally prevents further updates
+        # of /etc/passwd as part of a system update.
+        self.IMAGE_MODIFY.LOCAL_USERS = False
+        super().__init__(*args, **kwargs)
+
     def track_for_cleanup(self, name):
         """
         Run a single test with NO_CLEANUP=<anything> oe-selftest to not clean up after the test.
