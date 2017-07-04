@@ -14,6 +14,9 @@ ARG gid=1000
 
 USER root
 
+RUN zypper --no-color --non-interactive install --no-recommends \
+           python3-unittest-xml-reporting python3-six
+
 RUN groupadd -o -g ${gid} ${group} \
 	&& useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
