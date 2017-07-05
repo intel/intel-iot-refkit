@@ -47,6 +47,7 @@ try {
     timestamps {
         node('rk-docker') {
             ws("workspace/${slot_name}${ci_build_id}") {
+                builder_node = "${env.NODE_NAME}"
                 set_gh_status_pending(is_pr, 'Prepare for build')
                 stage('Cleanup workspace') {
                     deleteDir()
@@ -67,10 +68,9 @@ try {
                         "cleanup": { ws("workspace") { trim_build_dirs(slot_name, num_builds_to_keep) }}
                     )
                 }
-                def docker_image = docker.image(image_name)
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
-                docker_image.inside(run_args) {
+                docker.image(image_name).inside(run_args) {
                     set_gh_status_pending(is_pr, 'Pre-build tests')
                     params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
@@ -93,13 +93,6 @@ try {
                             sh "${params}"
                         }
                     }
-                    set_gh_status_pending(is_pr, 'Post-build tests')
-                    params = ["${script_env}", "docker/post-build.sh"].join("\n")
-                    stage('Post-build tests') {
-                        sh "${params}"
-                        summary += sh(returnStdout: true,
-                                      script: "docker/tester-create-summary.sh 'oe-selftest: post-build' '' build/TestResults_*/TEST- 0")
-                    }
                 } // docker_image
                 archiveArtifacts allowEmptyArchive: true,
                                  artifacts: 'build*/TestResults_*/TEST-*.xml'
@@ -111,6 +104,19 @@ try {
             } // ws
         } // node
     } // timestamps
+
+    // insert post-build test into same list where daft tests will be, for parallel run
+    test_runs['post-build-test'] = {
+        node(builder_node) {
+            ws("workspace/${slot_name}${ci_build_id}") {
+                build_docker_image(image_name)
+                docker.image(image_name).inside(run_args) {
+                    params = ["${script_env}", "docker/post-build.sh"].join("\n")
+                    sh "${params}"
+                }
+            }
+        }
+    }
 
     test_targets = testinfo_data.split("\n")
     for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
