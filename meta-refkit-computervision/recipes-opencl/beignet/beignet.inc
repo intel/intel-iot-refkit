@@ -49,6 +49,8 @@ do_install_append_class-target () {
     # Remove AppStream metadata so that the packages won't conflict
     rm ${D}${datadir}/metainfo/com.intel.beignet.metainfo.xml
     rmdir --ignore-fail-on-non-empty -p ${D}${datadir}/metainfo
+
+    rm -r ${D}${includedir}
 }
 
 do_install_class-native() {
