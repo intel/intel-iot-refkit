@@ -115,7 +115,7 @@ class LicensingTest(OESelftestTestCase):
 
         # Create the root filesystem. It's enough for getting a package
         # list.
-        bitbake('-c rootfs %s' % test_image)
+        bitbake('-c rootfs %s' % test_image, output_log=self.logger)
 
         # Find package list manifest.
         manifest = self._get_latest_manifest(imagename, deploydir)

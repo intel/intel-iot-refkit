@@ -59,9 +59,7 @@ class ImageInstaller(OESelftestTestCase):
             # temporarily in a way that it overrides some other IMAGE_MODE setting in local.conf.
             self.append_config('IMAGE_MODE_forcevariable = "development"')
             targets = 'refkit-installer-image ovmf swtpm-wrappers-native'
-            print('Starting: bitbake %s' % targets)
-            result = bitbake(targets)
-            print(result.output)
+            result = bitbake(targets, output_log=self.logger)
             ImageInstaller.image_is_ready = True
 
         # We create the directory under ${TMPDIR} and thus can avoid

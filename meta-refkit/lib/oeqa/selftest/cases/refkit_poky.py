@@ -265,7 +265,7 @@ class TestRefkitPokyBuilds(TestRefkitPokyBase):
         self.append_config('''
 REFKIT_IMAGE_EXTRA_FEATURES_append = " empty-root-password"
 ''')
-        bitbake('refkit-image-common')
+        bitbake('refkit-image-common', output_log=self.logger)
         with runqemu('refkit-image-common',
                      ssh=False,
                      image_fstype='wic',
@@ -288,7 +288,7 @@ REFKIT_IMAGE_EXTRA_FEATURES_append = " empty-root-password"
 require conf/distro/include/enable-refkit-config.inc
 REFKIT_IMAGE_MODE = "development"
 ''')
-        bitbake('refkit-image-common')
+        bitbake('refkit-image-common', output_log=self.logger)
         with runqemu('refkit-image-common',
                      ssh=False,
                      image_fstype='wic',
