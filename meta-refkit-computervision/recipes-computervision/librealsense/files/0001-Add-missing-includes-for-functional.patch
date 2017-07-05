@@ -1,0 +1,42 @@
+From 7b1581644c5fbdec3a22cd512557b391dc74ebf0 Mon Sep 17 00:00:00 2001
+From: Till Hofmann <thofmann@fedoraproject.org>
+Date: Wed, 22 Mar 2017 14:23:24 +0100
+Subject: [PATCH] Add missing includes for <functional>
+
+Newer GCC versions (>=7) fail with an error if the header is not
+included an std::function is used.
+
+Upstream-Status: Backport [https://github.com/IntelRealSense/librealsense/commit/7b1581644c5fbdec3a22cd512557b391dc74ebf0]
+
+---
+ src/device.cpp | 1 +
+ src/types.h    | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/device.cpp b/src/device.cpp
+index 2194769..8918cb1 100644
+--- a/src/device.cpp
++++ b/src/device.cpp
+@@ -11,6 +11,7 @@
+ #include <algorithm>
+ #include <sstream>
+ #include <iostream>
++#include <functional>
+ 
+ using namespace rsimpl;
+ using namespace rsimpl::motion_module;
+diff --git a/src/types.h b/src/types.h
+index 0455c83..a964bf3 100644
+--- a/src/types.h
++++ b/src/types.h
+@@ -22,6 +22,7 @@
+ #include <atomic>
+ #include <map>          
+ #include <algorithm>
++#include <functional>
+ 
+ const uint8_t RS_STREAM_NATIVE_COUNT    = 5;
+ const int RS_USER_QUEUE_SIZE = 20;
+-- 
+2.1.4
+

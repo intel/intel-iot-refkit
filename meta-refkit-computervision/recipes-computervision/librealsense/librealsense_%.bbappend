@@ -10,6 +10,7 @@ PACKAGES_df-refkit-computervision = "${PN} ${PN}-dbg ${PN}-dev ${PN}-examples ${
 SRC_URI_append_df-refkit-computervision = " \
     file://0001-scripts-removed-bashisms.patch \
     file://0001-examples-control-building-of-the-graphical-examples.patch \
+    file://0001-Add-missing-includes-for-functional.patch \
 "
 
 RDEPENDS_${PN}_remove_df-refkit-computervision = "bash"
