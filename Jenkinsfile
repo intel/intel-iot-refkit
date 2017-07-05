@@ -49,9 +49,7 @@ try {
             ws("workspace/${slot_name}${ci_build_id}") {
                 builder_node = "${env.NODE_NAME}"
                 set_gh_status_pending(is_pr, 'Prepare for build')
-                stage('Cleanup workspace') {
-                    deleteDir()
-                }
+                deleteDir() // although dir should be brand new, empty just in case
                 stage('Checkout content') {
                     checkout_content(is_pr)
                 }
