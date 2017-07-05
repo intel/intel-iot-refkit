@@ -44,7 +44,7 @@ fakeroot do_generate_signing_keys () {
                 if [ ! -e ${dir}/$id.sec ]; then
                     echo "Waiting for generation of signing key $id..."
                     sleep 1
-                    let slept=$slept+1
+                    slept=$( expr $slept + 1 )
                 else
                     echo "Got signing key $id..."
                     break
