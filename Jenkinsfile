@@ -24,7 +24,7 @@ def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def test_runs = [:]
 def testinfo_data = ""
 def ci_git_commit = ""
-def global_sum_log = ""
+def summary = ""
 def added_commits = ""
 def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
@@ -54,6 +54,13 @@ try {
                 stage('Checkout content') {
                     checkout_content(is_pr)
                 }
+                if ( !is_pr ) {
+                    ci_git_commit = sh(returnStdout: true,
+                                       script: "git rev-parse HEAD")
+                    // This command expects that each new master build is based on a github merge
+                    added_commits = sh(returnStdout: true,
+                                       script: "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /'")
+                }
                 stage('Build docker image') {
                     parallel(
                         "build-docker-image": { build_docker_image(image_name) },
@@ -68,6 +75,8 @@ try {
                     params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
                         sh "${params}"
+                        summary += sh(returnStdout: true,
+                                      script: "docker/tester-create-summary.sh 'oe-selftest: pre-build' '' build.pre/TestResults_*/TEST- 0")
                     }
                     try {
                         set_gh_status_pending(is_pr, 'Building')
@@ -88,17 +97,17 @@ try {
                     params = ["${script_env}", "docker/post-build.sh"].join("\n")
                     stage('Post-build tests') {
                         sh "${params}"
+                        summary += sh(returnStdout: true,
+                                      script: "docker/tester-create-summary.sh 'oe-selftest: post-build' '' build/TestResults_*/TEST- 0")
                     }
                 } // docker_image
+                archiveArtifacts allowEmptyArchive: true,
+                                 artifacts: 'build*/TestResults_*/TEST-*.xml'
+                step_xunit('build*/TestResults_*/TEST-*.xml')
                 tester_script = readFile "docker/tester-exec.sh"
+                tester_summary = readFile "docker/tester-create-summary.sh"
                 qemu_script = readFile "docker/run-qemu.exp"
                 testinfo_data = readFile "${target_machine}.testinfo.csv"
-                if ( !is_pr ) {
-                    ci_git_commit = readFile("ci_git_commit").trim()
-                    // This command expects that each new master build is based on a github merge
-                    sh "git rev-list HEAD^...HEAD --oneline --no-merges | sed 's/[^ ]* /    /' > added_commits"
-                    added_commits = readFile("added_commits")
-                }
             } // ws
         } // node
     } // timestamps
@@ -114,6 +123,7 @@ try {
                 deleteDir() // clean workspace
                 echo "image_info: ${one_target_testinfo}"
                 writeFile file: 'tester-exec.sh', text: tester_script
+                writeFile file: 'tester-create-summary.sh', text: tester_summary
                 writeFile file: 'run-qemu.exp', text: qemu_script
                 // append newline so that tester-exec.sh can parse it using "read"
                 one_target_testinfo += "\n"
@@ -123,7 +133,7 @@ try {
                     withEnv(["CI_BUILD_ID=${ci_build_id}",
                         "MACHINE=${test_machine}",
                         "TEST_DEVICE=${test_device}" ]) {
-                            sh 'chmod a+x tester-exec.sh run-qemu.exp && ./tester-exec.sh'
+                            sh 'chmod a+x tester-exec.sh tester-create-summary.sh run-qemu.exp && ./tester-exec.sh'
                     }
                 } catch (Exception e) {
                     throw e
@@ -132,7 +142,7 @@ try {
                     // Here one tester adds it's summary piece to the global buffer.
                     // Grab lock as we deal with global data from multiple workers
                     lock(resource: "global_data") {
-                        global_sum_log += readFile "results-summary-${test_device}.${img}.log"
+                        summary += readFile "results-summary-${test_device}.${img}.log"
                         archiveArtifacts allowEmptyArchive: true,
                                          artifacts: '*.log, *.xml'
                     }
@@ -140,7 +150,7 @@ try {
                 // without locking we may lose tester result set(s)
                 // if testers run xunit step in nearly same time
                 lock(resource: "step-xunit") {
-                    step_xunit()
+                    step_xunit('TEST-*.xml')
                 }
             } // node
         } // test_runs =
@@ -168,7 +178,7 @@ try {
     if (currentBuild.result == null) {
         currentBuild.result = 'SUCCESS'
     }
-    echo "Finally: build result is ${currentBuild.result}"
+    echo "Finally: build result is ${currentBuild.result}\nSummary:\n${summary}"
     if (is_pr) {
         if (currentBuild.result == 'UNSTABLE') {
             setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
@@ -177,9 +187,9 @@ try {
         }
     } else {
         // send summary email after non-PR build
-        email = "Git commit hash: ${ci_git_commit} \n\n"
+        email = "Git commit hash: ${ci_git_commit}\n"
         email += "Added commits:\n\n${added_commits}\n"
-        email += "Test results:\n\n${global_sum_log}"
+        email += "Test results:\n\n${summary}"
         def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
         echo "${email}"
         node('rk-mailer') {
@@ -260,7 +270,7 @@ def set_gh_status_pending(is_pr, _msg) {
     }
 }
 
-def step_xunit() {
+def step_xunit(_pattern) {
     step([$class: 'XUnitPublisher',
     testTimeMargin: '3000',
     thresholdMode: 1,
@@ -279,7 +289,7 @@ def step_xunit() {
         [$class: 'JUnitType',
             deleteOutputFiles: true,
             failIfNotNew: true,
-            pattern: 'TEST-*.xml',
+            pattern: "${_pattern}",
             skipNoTestFiles: false,
             stopProcessingIfError: true]]])
 }
