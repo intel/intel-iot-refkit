@@ -125,6 +125,11 @@ class RefkitOSTreeUpdateTestAll(RefkitOSTreeUpdateBase):
         """
         self.do_update('test_update_all', self.IMAGE_MODIFY.UPDATES)
 
+    # TODO: a test that "ostree admin config-diff" doesn't show any unexpected modifications
+    # directly after booting. That's necessary because each such modification will prevent
+    # updating the modified file as part of a system update. One example for such a change
+    # was adding "nobody" to /etc/group (https://bugzilla.yoctoproject.org/show_bug.cgi?id=11766).
+
 class RefkitOSTreeUpdateMeta(type):
     """
     Generates individual instances of test_update_<update>, one for each type of change.
