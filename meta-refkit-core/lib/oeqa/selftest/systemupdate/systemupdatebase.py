@@ -37,7 +37,7 @@ class SystemUpdateModify(object):
     # - modifying file locally before update which then must
     #   be used instead of the updated system file
     ETC_FILES = [
-        ( 'nsswitch.conf', 'edit' ),
+        ( 'host.conf', 'edit' ),
         ( 'ssl/openssl.cnf', 'symlink' ),
         ( 'ssh/sshd_config', None ),
     ]
@@ -111,6 +111,7 @@ class SystemUpdateModify(object):
         if is_update:
             for file, operation in self.ETC_FILES:
                 path = os.path.join(rootfs, 'etc', file)
+                assert os.path.exists(path)
                 with open(path, 'ab') as f:
                     f.write(b'\n# system update test\n')
                 if operation == 'symlink':
@@ -121,7 +122,7 @@ class SystemUpdateModify(object):
         if not is_update:
             for file, operation in self.ETC_FILES:
                 if operation == 'edit':
-                    cmd = "echo '# edited locally' >>/etc/%s" % file
+                    cmd = "ls -l /etc/{0} && echo '# edited locally' >>/etc/{0}".format(file)
                     status, output = qemu.run_serial(cmd)
                     test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
         else:
