@@ -8,21 +8,20 @@ SRC_URI = "git://anongit.freedesktop.org/beignet;nobranch=1 \
 SRC_URI_append_class-native = " file://0001-reduced-native-for-1.3.1.patch"
 SRC_URI_append_class-target = " file://0001-Run-native-gbe_bin_generater-to-compile-built-in-ker.patch"
 
-BBCLASSEXTEND = "native"
-
 # CMake cannot digest "+" in pathes -> replace it with dots.
 PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
 SRCREV = "6804cca263edd11fd03b2d7f5b7ba034d9a013c3"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right
-DEPENDS = "${PN}-native clang libdrm mesa ocl-icd ncurses"
+DEPENDS = "clang libdrm mesa ocl-icd ncurses"
+DEPENDS_append_class-target = " beignet-native"
 DEPENDS_class-native = "clang-native"
 
 # To solve the PCI_ID problem, we use the target from filename for
 # installing the library.
 
-CL_HW_TARGET ?= "${@d.getVar('PN').split('-')[1]}"
+CL_HW_TARGET ?= "${@ "" if d.getVar('PN').endswith('-native') else d.getVar('PN').split('-')[1]}"
 
 inherit cmake pkgconfig pythonnative
 
@@ -50,6 +49,8 @@ do_install_append_class-target () {
     # Remove AppStream metadata so that the packages won't conflict
     rm ${D}${datadir}/metainfo/com.intel.beignet.metainfo.xml
     rmdir --ignore-fail-on-non-empty -p ${D}${datadir}/metainfo
+
+    rm -r ${D}${includedir}
 }
 
 do_install_class-native() {

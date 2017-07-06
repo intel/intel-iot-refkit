@@ -35,7 +35,7 @@ when building distributable eSDKs. For more documentation on how to customize an
 re-configure the eSDK, see the "Appendig B. Customizing the Extensible SDK"
 in the `Yocto Project extensible software development kit`_ manual.
 
-.. _`Yocto Project extensive software development kit`: http://www.yoctoproject.org/docs/latest/sdk-manual/sdk-manual.html
+.. _`Yocto Project extensible software development kit`: http://www.yoctoproject.org/docs/latest/sdk-manual/sdk-manual.html
 .. _`Yocto Project release cadence`: https://wiki.yoctoproject.org/wiki/Planning#Roadmaps_and_Schedules
 .. _`Yocto Project Bugzilla`: https://bugzilla.yoctoproject.org/
 .. _`Yocto Project git`: http://git.yoctoproject.org/
