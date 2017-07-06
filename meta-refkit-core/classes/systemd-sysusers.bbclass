@@ -70,6 +70,14 @@ systemd_sysusers_create () {
                     ;;
                 esac
             done
+
+            # We are done with the file, it's not needed anymore.
+            # This is also a workaround for systemd creating a "nobody"
+            # group for the "u nobody" entry in basic.conf.
+            # The code above doesn't do that because there is a "nobody"
+            # user already in /etc/passwd. Probably the base configuration
+            # should have a similar group (https://bugzilla.yoctoproject.org/show_bug.cgi?id=11766).
+            rm "$conf"
         fi
     done
 }
