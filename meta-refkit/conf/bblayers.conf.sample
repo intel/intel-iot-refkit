@@ -1,6 +1,6 @@
 # LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
 # changes incompatibly
-LCONF_VERSION = "8"
+LCONF_VERSION = "9"
 
 BBPATH = "${TOPDIR}"
 BBFILES ?= ""
@@ -15,7 +15,7 @@ REFKIT_LAYERS = " \
   ##OEROOT##/../meta-refkit-computervision \
   ##OEROOT##/../meta-refkit-industrial \
   ##OEROOT##/../meta-oic \
-  ##OEROOT##/../meta-iot-web \
+  ##OEROOT##/../iot-web-layers/meta-iot-web \
   ##OEROOT##/../meta-iotqa \
   ##OEROOT##/../meta-security \
   ##OEROOT##/../meta-security-isafw \

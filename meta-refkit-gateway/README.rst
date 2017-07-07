@@ -22,7 +22,7 @@ This layer depends on::
    layers: oic
    branch: master
 
-   URI: https://github.com/ostroproject/meta-iot-web.git
+   URI: https://github.com/intel/iot-web-layers/meta-iot-web
    layers: iotweb
    branch: master
 
