@@ -47,6 +47,9 @@ REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-firewall"
 # Reconfigure several upstream recipes for the computer vision profile.
 REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-computervision"
 
+# Reconfigure/patch upstream recipes for the gateway vision profile.
+REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-gateway"
+
 # Reconfigure several upstream recipes for the industrial profile.
 REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-industrial"
 
