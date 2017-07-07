@@ -1,67 +1,59 @@
+# This file is meant to be included in a distro configuration.
+# It adds support for the "stateless" distro and image feature,
+# without actually turning them on.
+#
+# Addditional .inc files define the actual changes that a
+# distro might want to apply.
+
+# The stateless.bbclass modifies how some recipes are built
+# when "stateless" is in DISTRO_FEATURES, so it needs to
+# be inherited globally. This can be removed once STATELESS_SRC
+# is no longer needed.
 INHERIT += "stateless"
 
-###########################################################################
+# Required to find local patches.
+FILESEXTRAPATHS_prepend = "${@ bb.utils.contains('DISTRO_FEATURES', 'stateless', '${META_REFKIT_CORE_BASE}/files/stateless/${PN}:', '', d) }"
 
-# Temporary overrides until IoT Reference OS Kit is fully stateless.
+# Some entries in /etc simply have to be there, so we whitelist them
+# to avoid failing the QA check for stateless images.
 
-# This entry here allows everything in /etc because IoT Reference OS Kit is
-# not actually stateless yet. We merely use the stateless.bbclass
-# to remove files from /etc which get written on the device
-# and thus must be excluded from images and, more importantly,
-# swupd bundles.
-STATELESS_ETC_WHITELIST += "*"
-
-# Empty directories must be kept.
-STATELESS_ETC_DIR_WHITELIST += "*"
-
-###########################################################################
-
-# As step towards full stateless IoT Reference OS Kit, we now
-# treat some files in /etc as conceptually read-only (i.e. neither
-# modified by the OS at runtime nor by an admin). Anything contained
-# in the rootfs directories will get bundled and added or updated when
-# running "swupd update".
-#
-# The implication is that we must keep certain files out of the rootfs
-# which do get modified at runtime, because otherwise there are
-# "swupd verify" failures.
-
-# mtab needs to be a symlink to /proc/mounts, probably forever.
-# There is no point in patching that out of binaries, nor is there
-# a need to customize it, so the symlink can remain there as read-only
-# system component.
+# mtab is a symlink to /proc/mounts.
 STATELESS_ETC_WHITELIST += "mtab"
 
-# OE-core puts some files into /etc which systemd then later overwrites
-# unconditionally via /usr/lib/tmpfile.d/etc.conf or creates dynamically
-# (machine-id). Therefore we can remove the redundant files from our rootfs
-# by not packaging them in the first place.
-STATELESS_RM_pn-systemd += " \
-    resolv.conf \
-"
-
-# machine-id has to be present in images at least as an empty file
-# because we might boot with the rootfs read/only. Otherwise
-# creating it during early boot fails (see
-# systemd/src/core/machine-id-setup.c).
+# /etc/machine-id could be removed if (and only if) the rootfs gets mounted rw.
+# Note that this also triggers the ConditionFirstBoot, something
+# that is not normally done in OE-core. It causes systemd to
+# auto-enable units according to their [Install] sections, and
+# at least for wpa_supplicant that is broken (https://www.reddit.com/r/archlinux/comments/4mnkyu/timeout_during_boot/?st=j03jwv0d&sh=14c1a955
+# http://lists.infradead.org/pipermail/hostap/2017-March/037330.html)
+# Therefore we always keep it.
 STATELESS_ETC_WHITELIST += "machine-id"
 
-# These files must be ignored by swupd.
-STATEFUL_FILES += "/etc/machine-id"
-SWUPD_FILE_BLACKLIST_append = " ${STATEFUL_FILES}"
+# /etc/fstab can be removed only under special circumstances:
+# - no local file systems besides root
+# - rootfs gets mounted rw immediately
+# - no additional special mount options for root that need
+#   to be applied via remount
+#
+# This is too complicated to check here, therefore /etc/fstab
+# is left in place by default. A distro where fstab is known
+# to be not needed can do:
+# STATELESS_RM_ROOTFS += "fstab"
+# STATELESS_ETC_WHITELIST_remove = "fstab"
+STATELESS_ETC_WHITELIST += "fstab"
 
-# Depend on the installed components and thus has to be computed on
-# the device. Handled by systemd during booting or updates.
-STATELESS_RM_ROOTFS += " \
-    udev/hwdb.bin \
-"
-
-# Disable creation of /etc/ld.so.cache in images and bundles. The file
-# gets already recreated by systemd anyway when booting. Has to be
-# done by unsetting LDCONFIGDEPEND (checked by rootfs.py, which
-# creates the ld.so.cache) for all IoT Reference OS Kit images, but not the
-# refkit-initramfs, so we cannot set it unconditionally.
+# If we want to be stateless, override the /etc/build default.
+# It currently gets created after STATELESS_MV_ROOTFS, so
+# we can't do it that way.
 python () {
-    if bb.data.inherits_class('refkit-image', d):
-        d.setVar('LDCONFIGDEPEND', '')
+    buildinfo_file = d.getVar('IMAGE_BUILDINFO_FILE')
+    if bb.utils.contains('IMAGE_FEATURES', 'stateless', True, False, d) and \
+       buildinfo_file is not None and buildinfo_file == '/etc/build':
+       d.setVar('IMAGE_BUILDINFO_FILE', '${libdir}/build')
 }
+
+# /etc/xdg/systemd/user symlinks to this, so keep the directory even when empty.
+STATELESS_ETC_DIR_WHITELIST += "systemd/user"
+
+# Likewise for /usr/lib/ssl/certs -> /etc/ssl/certs and ssl/private.
+STATELESS_ETC_DIR_WHITELIST += "ssl/certs ssl/private"
