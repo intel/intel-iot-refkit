@@ -35,12 +35,23 @@ or other suitable global configuration file::
 
     REFKIT_IMAGE_EXTRA_FEATURES += "ostree"
 
-To use your GPG signing key pair for signing and verifying the OSTree
-repository commits, assuming your keys are in the keyrings in <gpg-home>
-with key ID release@example.org, add the following to your local.conf or
-other suitable global Yocto configuration file::
+For development images (*REFKIT_IMAGE_MODE* set to *'development'*), there
+is no need to generate any keys. The default configuration uses pregenerated
+keys already present in the git repository for such images. For production
+images you can generate a pair of signing keys with the following command::
 
-    OSTREE_GPGDIR = "<gpg-home>"
+    meta-refkit-core/files/gnupg/generate-keys.sh $(pwd)/gpg release@example.org
+
+This will generate a pair of private and public GPG keys with the key ID
+release@example.org, put them into the GPG keyring at $(pwd)/gpg and also
+export them to the files $(pwd)/release@example.org.{pub,sec}.
+
+To use these newly generated keys for signing and verifying the OSTree
+repository commits, add the following to your local.conf or other suitable
+global configuration file (replace $(pwd) with the path to your
+top-level intel-iot-refkit directory)::
+
+    OSTREE_GPGDIR = "$(pwd)/gpg"
     OSTREE_GPGID  = "release@example.org"
 
 Assuming you want to use your build machine, build.example.org, in this
@@ -86,16 +97,10 @@ following commands::
     ln -sf ostree-repo ostree
     ostree trivial-httpd --port 80
 
-A third alternative is use a simple Python HTTP server, for instance the
-one from the project at::
+A third alternative is to use a simple Python HTTP server, for instance
+the `one <http://git.yoctoproject.org/cgit/cgit.cgi/poky/tree/meta/lib/oeqa/utils/httpserver.py>_` from OpenEmbedded Core.
 
-    http://git.yoctoproject.org/cgit/cgit.cgi/poky/tree/meta/lib/oeqa/utils/httpserver.py
-
-which is also available in the refkit source tree as::
-
-    openembedded-core/meta/lib/oeqa/utils/httpserver.py
-
-Now with teh above configuration in place, and an HTTP server running,
+Now with the above configuration in place, and an HTTP server running,
 subsequent builds should get automatically exported and pulled in as
 updates by the clients running one of your refkit images.
 

@@ -121,16 +121,14 @@ publishing the permanent OSTree repository require some planning and
 customization. Also check the :file:`howtos/OSTree.rst` for more instructions
 and tips on how to use OSTree for system updates.
 
-In development images, the default is to use a generated GPG key from
-:file:`tmp-glibc/deploy/gnupg/` and a "permanent" OSTree repository in
-:file:`tmp-glibc/deploy/ostree-repo/`. In other words, removing
-:file:`tmp-glibc` really starts from scratch.
+In development images, the default is to use a pregenerated GPG key from
+the pregenerated GPG keyring in :file:`meta-refkit-core/files/gnupg` and a
+"permanent" OSTree repository in :file:`tmp-glibc/deploy/ostree-repo/`.
+In other words, removing :file:`tmp-glibc` really starts from scratch.
 
 Extra work is necessary when images from previous builds are still
 meant to be updateable:
 
-#. The GPG key must be stored elsewhere (see ``OSTREE_GPGDIR`` and
-   ``OSTREE_GPGID``).
 #. The public OSTree repo must be stored elsewhere (see ``OSTREE_REPO``) *or*
 #. after a successful build, the new commit in :file:`tmp-glibc/deploy/ostree-repo/`
    must be moved to a different, more permanent OSTree repo with the

@@ -66,23 +66,17 @@ OSTREE_COMMIT_SUBJECT ?= 'Build ${BUILD_ID} of ${PN} in ${DISTRO}'
 # This can be set to an empty string to disable publishing.
 OSTREE_REPO ?= "${DEPLOY_DIR}/ostree-repo"
 
-# OSTREE_GPGDIR is where our GPG keyring is generated/located at and
+# OSTREE_GPGDIR is where our GPG keyring is located at and
 # OSTREE_GPGID is the default key ID we use to sign (commits in) the
 # repository. These two need to be customized for real builds.
 #
-# In development images the default is to use a key that gets
-# generated automatically on demand by refkit-signing-keys.bbclass.
-# Production images do not have a default.
+# In development images the default is to use a pregenerated key from
+# an in-repo keyring. Production images do not have a default.
 #
-# Beware that generating keys can hang when the kernel runs out
-# of entropy for /dev/random, and the current refkit-signing-keys.bbclass
-# does not handle setting REFKIT_SIGNING_KEY in image recipes like
-# we do here. TODO: replace with pre-generated keys?
-OSTREE_GPGDIR ?= "${REFKIT_SIGNING_GPGDIR}"
+OSTREE_GPGDIR ?= "${@ '' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else '${META_REFKIT_CORE_BASE}/files/gnupg' }"
 OSTREE_GPGID_DEFAULT = "${@d.getVar('DISTRO').replace(' ', '_') + '-development-signing@key'}"
-REFKIT_SIGNING_KEYS_append = " ${OSTREE_GPGID_DEFAULT}"
 OSTREE_GPGID ?= "${@ '' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else '${OSTREE_GPGID_DEFAULT}' }"
-inherit refkit-signing-keys
+
 python () {
     if bb.utils.contains('IMAGE_FEATURES', 'ostree', True, False, d) and \
        not d.getVar('OSTREE_GPGID'):
