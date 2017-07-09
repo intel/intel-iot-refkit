@@ -99,7 +99,14 @@ exec netcat 2>>/tmp/ostree.log localhost 9999
 #exec socat 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
 ''' % port)
 
-            cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree update''' % self.OSTREE_SERVER
+            # Use the updater, refkit-ostree-update, in a one-shot mode
+            # attempting just a single update cycle for the test case.
+            # Also override the post-apply hook to only run the UEFI app
+            # update hook. It is a bit of a hack but we don't want the rest
+            # of the hooks run, especially not the reboot hook, to avoid
+            # prematurely rebooting the qemu instance and this is the easiest
+            # way to achieve just that for now.
+            cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree-update --one-shot --post-apply-hook /usr/share/refkit-ostree/hooks/post-apply.d/00-update-uefi-app''' % self.OSTREE_SERVER
             status, output = qemu.run_serial(cmd, timeout=600)
             self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
             self.logger.info('Successful (?) update:\n%s' % output)
