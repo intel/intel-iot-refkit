@@ -55,7 +55,7 @@ FEATURE_PACKAGES_debug = "initramfs-module-debug"
 IMAGE_FEATURES += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'ostree', 'ostree', '', d)} \
 "
-FEATURE_PACKAGES_ostree = "initramfs-framework-ostree"
+FEATURE_PACKAGES_ostree = "initramfs-framework-ostree refkit-ostree-initramfs"
 
 IMAGE_LINGUAS = ""
 
