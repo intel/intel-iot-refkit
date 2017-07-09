@@ -14,6 +14,11 @@ ARG gid=1000
 
 USER root
 
+#RUN apt-get install -y python3-unittest2 python3-six
+RUN apt-get install -y python3-pip
+RUN pip3 install unittest-xml-reporting
+
+
 RUN groupadd -o -g ${gid} ${group} \
 	&& useradd -d "$JENKINS_HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
 
