@@ -91,9 +91,10 @@ OSTree tool
   working in the running OS, the initramfs also overrides :file:`/proc/cmdline`
   with a version that has the expected ``ostree`` boot parameter.
 
-``refkit-ostree_git.bb``
-  Some on-target helper script, partly used by the initramfs and partly
-  used as wrapper around the actual :command:`ostree`.
+``refkit-ostree.bb``
+  On-target helper scripts and binaries. Partly (/usr/bin/refkit-ostree) used
+  by the initramfs ostree module (/etc/init.d/91-ostree), the rest is and is
+  used by the refkit ostree updater (/usr/bin/refkit-ostree-update).
 
 ``ostree-image.bbclass``
   This helper class gets inherited automatically by ``refkit-image.bbclass``
@@ -117,7 +118,8 @@ OSTree Usage
 See the comments in ``ostree-image.bbclass`` for instructions on how
 to configure the image creation. In particular, image signing and
 publishing the permanent OSTree repository require some planning and
-customization.
+customization. Also check the :file:`howtos/OSTree.rst` for more instructions
+and tips on how to use OSTree for system updates.
 
 In development images, the default is to use a generated GPG key from
 :file:`tmp-glibc/deploy/gnupg/` and a "permanent" OSTree repository in
@@ -144,13 +146,14 @@ into the release process for a product.
 
 .. deltas: https://ostree.readthedocs.io/en/latest/manual/repository-management/#derived-data-static-deltas-and-the-summary-file
 
-Once a device has booted into an OSTree-enabled image, the
-:command:`ostree` command can be used as usual. Updates are configured
-in :file:`/ostree/repo/config` to pull new OS releases from the
-``OSTREE_REMOTE`` URL that was set at build time.
-
-Beware that system updates should be done with :command:`refkit-ostree
-update`, because that will also update the UEFI combo app.
+Once a device has booted into an OSTree-enabled image, if the rekit-update
+service has been enabled and running (which it is by default), any updates
+should get automatically pulled in and activated by a reboot of the device.
+If manual updates are preferred, the refkit-update service should be stopped
+and/or disabled. Manual updates can be triggered by running
+:command:`refkit-ostree-update --one-shot`. Updates are configured in
+:file:`/ostree/repo/config` to pull new OS releases from the ``OSTREE_REMOTE``
+URL that was set at build time.
 
 OSTree Filesystem
 -----------------
