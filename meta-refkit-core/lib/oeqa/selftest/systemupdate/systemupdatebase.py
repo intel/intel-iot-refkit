@@ -7,8 +7,11 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqem
 import oe.path
 
 import base64
+import fnmatch
 import pathlib
 import pickle
+import shutil
+import subprocess
 
 class SystemUpdateModify(object):
     """
@@ -172,12 +175,18 @@ class SystemUpdateBase(OESelftestTestCase):
     # The image that will get built, booted and updated.
     IMAGE_PN = 'core-image-minimal'
 
-    # The .bbappend name which matches IMAGE_PN.
+    # The image used for preparing the update. Usually
+    # the same, but some update mechanisms may also
+    # support switching between images.
+    IMAGE_PN_UPDATE = IMAGE_PN
+
+    # The .bbappend name which matches IMAGE_PN resp. IMAGE_PN_UPDATE.
     # For example, OSTree might build and boot "core-image-minimal-ostree",
     # but the actual image recipe is "core-image-minimal" and thus
     # we would need "core-image-minimal.bbappend". Also allows to handle
     # cases where the bbappend file name must have a wildcard.
     IMAGE_BBAPPEND = 'core-image-minimal.bbappend'
+    IMAGE_BBAPPEND_UPDATE = IMAGE_BBAPPEND
 
     # Additional image settings that will get written into the IMAGE_BBAPPEND.
     IMAGE_CONFIG = ''
@@ -223,8 +232,10 @@ class SystemUpdateBase(OESelftestTestCase):
             applied also to image variants.
             """
 
-            self.track_for_cleanup(self.IMAGE_BBAPPEND)
-            with open(self.IMAGE_BBAPPEND, 'w') as f:
+            bbappend = self.IMAGE_BBAPPEND_UPDATE if is_update else self.IMAGE_BBAPPEND
+            self.append_config('BBFILES_append = " %s"' % os.path.abspath(bbappend))
+            self.track_for_cleanup(bbappend)
+            with open(bbappend, 'w') as f:
                 f.write('''
 python system_update_test_modify () {
     import base64
@@ -247,23 +258,24 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
        self.IMAGE_MODIFY.modify_image_build(testname, updates, is_update)))
 
         # Creating a .bbappend for the image will trigger a rebuild.
-        self.write_config('BBFILES_append = " %s"' % os.path.abspath(self.IMAGE_BBAPPEND))
+        # To avoid this, use separate image recipes.
         create_image_bbappend(False)
         self.logger.info('Building base image')
         result = bitbake(self.IMAGE_PN, output_log=self.logger)
 
         # Copying the entire deploy directory via hardlinks is relatively cheap
         # and gives us everything required to run qemu.
-        self.image_dir = get_bb_var('DEPLOY_DIR_IMAGE')
+        vars = get_bb_vars(['DEPLOY_DIR_IMAGE', 'IMAGE_LINK_NAME'], self.IMAGE_PN)
+        self.image_dir = vars['DEPLOY_DIR_IMAGE']
         self.image_dir_test = self.image_dir + '.test'
         # self.track_for_cleanup(self.image_dir_test)
         oe.path.copyhardlinktree(self.image_dir, self.image_dir_test)
-
-        # Now we change our .bbappend so that the updated state is generated
-        # during the next rebuild.
-        create_image_bbappend(True)
-        self.logger.info('Building updated image')
-        bitbake(self.IMAGE_PN, output_log=self.logger)
+        # Make a full copy of the ovmf firmware image files,
+        # because those might get modified. Just to be on the safe side,
+        # also copy all of our image related files. Usually,
+        # the next bitbake() call will rebuild the image file, but not
+        # when the image recipes are different.
+        self.clone_files(self.image_dir, ('ovmf*', vars['IMAGE_LINK_NAME'] + '*'))
 
         # Change DEPLOY_DIR_IMAGE so that we use our copy of the
         # images from before the update. Further customizations for booting can
@@ -275,9 +287,31 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
         # Boot image, verify before and after update.
         with self.boot_image(overrides) as qemu:
             self.verify_image(testname, False, qemu, updates)
+
+            # Now we change our .bbappend so that the updated state is generated
+            # during the next rebuild.
+            create_image_bbappend(True)
+            self.logger.info('Building updated image')
+            bitbake(self.IMAGE_PN_UPDATE, output_log=self.logger)
+
             reboot = self.update_image(qemu)
             if not reboot:
                 self.verify_image(testname, True, qemu, updates)
         if reboot:
             with self.boot_image(overrides) as qemu:
                 self.verify_image(testname, True, qemu, updates)
+
+    def clone_files(self, dirname, file_patterns):
+        """
+        Make real copys of files matching the file patterns, i.e. this
+        replaces hardlinks with unique files that can be modified without
+        affecting other copies.
+        """
+        for entry in os.listdir(dirname):
+            old = os.path.join(dirname, entry)
+            if os.path.isfile(old) and \
+               not os.path.islink(old) and \
+               any(map(lambda x: fnmatch.fnmatch(entry, x), file_patterns)):
+                new = old + '.tmp'
+                shutil.copy2(old, new)
+                os.rename(new, old)

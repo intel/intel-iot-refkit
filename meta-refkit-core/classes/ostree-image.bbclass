@@ -93,6 +93,11 @@ python () {
 # Host the content of OSTREE_REPO there.
 OSTREE_REMOTE ?= "https://update.example.org/ostree/"
 
+# These variables are read by OSTreeUpdate and thus contribute to the vardeps.
+def ostree_update_vardeps(d):
+    from ostree.ostreeupdate import VARIABLES
+    return ' '.join(VARIABLES)
+
 # Take a pristine rootfs as input, shuffle its layout around to make it
 # OSTree-compatible, commit the rootfs into a per-build bare-user OSTree
 # repository, and finally produce an OSTree-enabled rootfs by cloning
@@ -101,6 +106,7 @@ fakeroot python do_ostree_prepare_rootfs () {
     from ostree.ostreeupdate import OSTreeUpdate
     OSTreeUpdate(d).prepare_rootfs()
 }
+do_ostree_prepare_rootfs[vardeps] += "${@ ostree_update_vardeps(d) }"
 
 # .pub/.sec keys get created in the current directory, so
 # we have to be careful to always run from the same directory,
@@ -138,6 +144,7 @@ fakeroot python do_ostree_publish_rootfs () {
     else:
        bb.note("OSTree: OSTREE_REPO repository not set, not publishing.")
 }
+do_ostree_publish_rootfs[vardeps] += "${@ ostree_update_vardeps(d) }"
 
 python () {
     # Don't do anything when OSTree image feature is off.
