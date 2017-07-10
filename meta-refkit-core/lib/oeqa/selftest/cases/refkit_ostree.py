@@ -16,11 +16,10 @@ class RefkitOSTreeUpdateBase(SystemUpdateBase):
 
     # We test the normal refkit-image-common with
     # OSTree system update enabled.
-    IMAGE_PN = 'refkit-image-common'
-    IMAGE_BBAPPEND = 'refkit-image-common.bbappend'
-    IMAGE_CONFIG = '''
-IMAGE_FEATURES_append = " ostree"
-'''
+    IMAGE_PN = 'refkit-image-update-ostree'
+    IMAGE_PN_UPDATE = IMAGE_PN
+    IMAGE_BBAPPEND = IMAGE_PN + '.bbappend'
+    IMAGE_BBAPPEND_UPDATE = IMAGE_BBAPPEND
 
     # Address and port of OSTree HTTPD inside the virtual machine's
     # slirp network.
@@ -107,8 +106,7 @@ exec netcat 2>>/tmp/ostree.log localhost 9999
         finally:
             os.chdir(old_cwd)
             if server:
-                # server.shutdown() has been seen to hang when handling exceptions,
-                # so it isn't getting called at the moment.
+                server.shutdown()
                 server.server_close()
 
 class RefkitOSTreeUpdateTestAll(RefkitOSTreeUpdateBase):
@@ -134,3 +132,26 @@ class RefkitOSTreeUpdateMeta(type):
 
 class RefkitOSTreeUpdateTestIndividual(RefkitOSTreeUpdateBase, metaclass=RefkitOSTreeUpdateMeta):
     pass
+
+class RefkitOSTreeUpdateTestDev(RefkitOSTreeUpdateTestAll, metaclass=RefkitOSTreeUpdateMeta):
+    """
+    This class avoids rootfs rebuilding by using two separate image
+    recipes. It's using slight tricks like overriding the OSTREE_BRANCH,
+    so the other tests are more realistic. Use this one when debugging problems.
+    """
+
+    IMAGE_PN_UPDATE = 'refkit-image-update-ostree-modified'
+    IMAGE_BBAPPEND_UPDATE = IMAGE_PN_UPDATE + '.bbappend'
+
+    def setUpLocal(self):
+        super().setUpLocal()
+        def create_image_bb(pn):
+            bb = pn + '.bb'
+            self.track_for_cleanup(bb)
+            self.append_config('BBFILES_append = " %s"' % os.path.abspath(bb))
+            with open(bb, 'w') as f:
+                f.write('require ${META_REFKIT_CORE_BASE}/recipes-images/images/refkit-image-common.bb\n')
+                f.write('OSTREE_BRANCHNAME = "${DISTRO}/${MACHINE}/%s"\n' % self.IMAGE_PN)
+                f.write('''IMAGE_FEATURES_append = "${@ bb.utils.filter('DISTRO_FEATURES', 'stateless', d)}"\n''')
+        create_image_bb(self.IMAGE_PN)
+        create_image_bb(self.IMAGE_PN_UPDATE)
