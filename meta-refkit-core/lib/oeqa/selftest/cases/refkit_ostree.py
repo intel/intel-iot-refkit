@@ -1,6 +1,6 @@
 from oeqa.selftest.systemupdate.systemupdatebase import SystemUpdateBase
 
-from oeqa.utils.commands import runqemu, get_bb_var
+from oeqa.utils.commands import runqemu, get_bb_vars, bitbake
 
 import errno
 import http.server
@@ -16,15 +16,23 @@ class RefkitOSTreeUpdateBase(SystemUpdateBase):
 
     # We test the normal refkit-image-common with
     # OSTree system update enabled.
-    IMAGE_PN = 'refkit-image-common'
-    IMAGE_BBAPPEND = 'refkit-image-common.bbappend'
-    IMAGE_CONFIG = '''
-IMAGE_FEATURES_append = " ostree"
-'''
+    IMAGE_PN = 'refkit-image-update-ostree'
+    IMAGE_PN_UPDATE = IMAGE_PN
+    IMAGE_BBAPPEND = IMAGE_PN + '.bbappend'
+    IMAGE_BBAPPEND_UPDATE = IMAGE_BBAPPEND
 
     # Address and port of OSTree HTTPD inside the virtual machine's
     # slirp network.
     OSTREE_SERVER = '10.0.2.100:8080'
+
+    # Global variables are the same for all recipes,
+    # but RECIPE_SYSROOT_NATIVE is specific to socat-native.
+    BB_VARS = get_bb_vars([
+        'DEPLOY_DIR',
+        'MACHINE',
+        'RECIPE_SYSROOT_NATIVE',
+        ],
+                          'socat-native')
 
     def track_for_cleanup(self, name):
         """
@@ -47,7 +55,7 @@ IMAGE_FEATURES_append = " ostree"
         self.track_for_cleanup(self.ostree_netcat.name)
 
         qemuboot_conf = os.path.join(self.image_dir_test,
-                                     '%s-%s.qemuboot.conf' % (self.IMAGE_PN, get_bb_var('MACHINE')))
+                                     '%s-%s.qemuboot.conf' % (self.IMAGE_PN, self.BB_VARS['MACHINE']))
         with open(qemuboot_conf) as f:
             conf = f.read()
         with open(qemuboot_conf, 'w') as f:
@@ -66,7 +74,7 @@ IMAGE_FEATURES_append = " ostree"
         # image here, so we just assume that it is in the usual place.
         # For the sake of simplicity we change into that directory
         # because then we can use SimpleHTTPRequestHandler.
-        ostree_repo = os.path.join(get_bb_var('DEPLOY_DIR'), 'ostree-repo')
+        ostree_repo = os.path.join(self.BB_VARS['DEPLOY_DIR'], 'ostree-repo')
         old_cwd = os.getcwd()
         server = None
         try:
@@ -93,11 +101,16 @@ IMAGE_FEATURES_append = " ostree"
             self.logger.info('serving OSTree repo %s on port %d' % (ostree_repo, port))
             helper = threading.Thread(name='OSTree HTTPD', target=server.serve_forever)
             helper.start()
+            # netcat can't be assumed to be present. Build and use socat instead.
+            # It's a bit more complicated but has the advantage that it is in OE-core.
+            socat = os.path.join(self.BB_VARS['RECIPE_SYSROOT_NATIVE'], 'usr', 'bin', 'socat')
+            if not os.path.exists(socat):
+                bitbake('socat-native:do_addto_recipe_sysroot', output_log=self.logger)
+            self.assertExists(socat, 'socat-native was not built as expected')
             with open(self.ostree_netcat.name, 'w') as f:
                 f.write('''#!/bin/sh
-exec netcat 2>>/tmp/ostree.log localhost 9999
-#exec socat 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
-''' % port)
+exec %s 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
+''' % (socat, port))
 
             cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree update''' % self.OSTREE_SERVER
             status, output = qemu.run_serial(cmd, timeout=600)
@@ -107,8 +120,7 @@ exec netcat 2>>/tmp/ostree.log localhost 9999
         finally:
             os.chdir(old_cwd)
             if server:
-                # server.shutdown() has been seen to hang when handling exceptions,
-                # so it isn't getting called at the moment.
+                server.shutdown()
                 server.server_close()
 
 class RefkitOSTreeUpdateTestAll(RefkitOSTreeUpdateBase):
@@ -134,3 +146,26 @@ class RefkitOSTreeUpdateMeta(type):
 
 class RefkitOSTreeUpdateTestIndividual(RefkitOSTreeUpdateBase, metaclass=RefkitOSTreeUpdateMeta):
     pass
+
+class RefkitOSTreeUpdateTestDev(RefkitOSTreeUpdateTestAll, metaclass=RefkitOSTreeUpdateMeta):
+    """
+    This class avoids rootfs rebuilding by using two separate image
+    recipes. It's using slight tricks like overriding the OSTREE_BRANCH,
+    so the other tests are more realistic. Use this one when debugging problems.
+    """
+
+    IMAGE_PN_UPDATE = 'refkit-image-update-ostree-modified'
+    IMAGE_BBAPPEND_UPDATE = IMAGE_PN_UPDATE + '.bbappend'
+
+    def setUpLocal(self):
+        super().setUpLocal()
+        def create_image_bb(pn):
+            bb = pn + '.bb'
+            self.track_for_cleanup(bb)
+            self.append_config('BBFILES_append = " %s"' % os.path.abspath(bb))
+            with open(bb, 'w') as f:
+                f.write('require ${META_REFKIT_CORE_BASE}/recipes-images/images/refkit-image-common.bb\n')
+                f.write('OSTREE_BRANCHNAME = "${DISTRO}/${MACHINE}/%s"\n' % self.IMAGE_PN)
+                f.write('''IMAGE_FEATURES_append = "${@ bb.utils.filter('DISTRO_FEATURES', 'stateless', d)}"\n''')
+        create_image_bb(self.IMAGE_PN)
+        create_image_bb(self.IMAGE_PN_UPDATE)

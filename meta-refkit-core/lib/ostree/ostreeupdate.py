@@ -8,6 +8,20 @@ import shutil
 import string
 import subprocess
 
+VARIABLES = (
+    'IMAGE_ROOTFS',
+    'OSTREE_BRANCHNAME',
+    'OSTREE_COMMIT_SUBJECT',
+    'OSTREE_REPO',
+    'OSTREE_GPGDIR',
+    'OSTREE_GPGID',
+    'OSTREE_OS',
+    'OSTREE_REMOTE',
+    'OSTREE_BARE',
+    'OSTREE_ROOTFS',
+    'OSTREE_SYSROOT',
+)
+
 class OSTreeUpdate(string.Formatter):
     """
     Create an OSTree-enabled version of an image rootfs, using an intermediate
@@ -16,26 +30,12 @@ class OSTreeUpdate(string.Formatter):
     which clients can use to pull the image in as an OSTree upgrade.
     """
 
-    VARIABLES = (
-        'IMAGE_ROOTFS',
-        'OSTREE_BRANCHNAME',
-        'OSTREE_COMMIT_SUBJECT',
-        'OSTREE_REPO',
-        'OSTREE_GPGDIR',
-        'OSTREE_GPGID',
-        'OSTREE_OS',
-        'OSTREE_REMOTE',
-        'OSTREE_BARE',
-        'OSTREE_ROOTFS',
-        'OSTREE_SYSROOT',
-        )
-
     WHITESPACES_ALLOWED = (
         'OSTREE_COMMIT_SUBJECT',
         )
 
     def __init__(self, d):
-        for var in self.VARIABLES:
+        for var in VARIABLES:
             value = d.getVar(var)
             if var not in self.WHITESPACES_ALLOWED:
                 for c in '\n\t ':
