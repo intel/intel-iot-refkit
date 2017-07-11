@@ -86,8 +86,10 @@ try {
                         throw e
                     } finally {
                         set_gh_status_pending(is_pr, 'Store images')
-                        params = ["${script_env}", "docker/publish-project.sh"].join("\n")
                         stage('Store images') {
+                            params = ["${script_env}", "docker/publish-project.sh"].join("\n")
+                            sh "${params}"
+                            params = ["${script_env}", "docker/publish-sstate.sh"].join("\n")
                             sh "${params}"
                         }
                     }
@@ -110,6 +112,8 @@ try {
                 build_docker_image(image_name)
                 docker.image(image_name).inside(run_args) {
                     params = ["${script_env}", "docker/post-build.sh"].join("\n")
+                    sh "${params}"
+                    params = ["${script_env}", "docker/publish-sstate.sh"].join("\n")
                     sh "${params}"
                 }
             }
