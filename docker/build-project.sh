@@ -61,6 +61,7 @@ if [ ! -z ${JOB_NAME+x} ]; then
     # in CI run only:
     auto_conf_buildhistory
 fi
+auto_dump
 
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"

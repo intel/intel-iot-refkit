@@ -69,3 +69,7 @@ auto_conf_testsdk() {
 INHERIT += "testsdk"
 EOF
 }
+
+auto_dump() {
+    grep -n '.*' conf/*.conf
+}

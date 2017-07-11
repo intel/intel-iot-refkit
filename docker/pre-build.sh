@@ -33,6 +33,7 @@ set -u
 
 # create auto.conf using functions in build-common-util.sh
 auto_conf_common
+auto_dump
 
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
