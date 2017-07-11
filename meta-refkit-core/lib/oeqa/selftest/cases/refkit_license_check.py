@@ -88,15 +88,13 @@ class LicensingTest(OESelftestTestCase):
 
         return os.path.join(manifestdir, "package.manifest")
 
-    def test_check_computervision_licensing(self):
+    def test_check_computervision_licensing(self, test_image='refkit-image-computervision'):
 
         """ Check that computer vision production build image can be
             made without using GPLv3 family licenses in any component.
         """
 
-        test_image = 'refkit-image-computervision'
-
-        print("test_check_computervision_licensing")
+        print("testing: %s" % test_image)
 
         # Create the test image (rootfs is enough).
         print('Building test image (%s)...' % test_image)
@@ -136,3 +134,7 @@ class LicensingTest(OESelftestTestCase):
         prohibited=["GPLv3", "LGPLv3"]
 
         self._analyzePackages(packageNames, whitelist, prohibited)
+
+    def test_check_gateway_licensing(self):
+        test_image = 'refkit-image-gateway'
+        self.test_check_computervision_licensing(test_image) 
