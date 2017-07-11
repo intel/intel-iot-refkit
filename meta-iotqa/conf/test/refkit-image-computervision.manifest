@@ -2,4 +2,5 @@
 oeqa.runtime.multimedia.realsense.realsense_headless
 oeqa.runtime.multimedia.opencl.opencl_viennacl_1
 oeqa.runtime.multimedia.opencv.opencv_dnn_1
+oeqa.runtime.multimedia.opencv.opencv_cv2
 oeqa.runtime.multimedia.gstreamer.gstreamer_cli
