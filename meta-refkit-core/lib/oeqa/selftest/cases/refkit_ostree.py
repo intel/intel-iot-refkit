@@ -26,6 +26,13 @@ IMAGE_FEATURES_append = " ostree"
     # slirp network.
     OSTREE_SERVER = '10.0.2.100:8080'
 
+    def __init__(self, *args, **kwargs):
+        # Although we have the "stateless" distro feature, nss-altfiles and the associated
+        # patches are not active and thus creating users locally prevents further updates
+        # of /etc/passwd as part of a system update.
+        self.IMAGE_MODIFY.LOCAL_USERS = False
+        super().__init__(*args, **kwargs)
+
     def track_for_cleanup(self, name):
         """
         Run a single test with NO_CLEANUP=<anything> oe-selftest to not clean up after the test.
@@ -117,6 +124,11 @@ class RefkitOSTreeUpdateTestAll(RefkitOSTreeUpdateBase):
         Test all possible changes at once.
         """
         self.do_update('test_update_all', self.IMAGE_MODIFY.UPDATES)
+
+    # TODO: a test that "ostree admin config-diff" doesn't show any unexpected modifications
+    # directly after booting. That's necessary because each such modification will prevent
+    # updating the modified file as part of a system update. One example for such a change
+    # was adding "nobody" to /etc/group (https://bugzilla.yoctoproject.org/show_bug.cgi?id=11766).
 
 class RefkitOSTreeUpdateMeta(type):
     """

@@ -1,0 +1,55 @@
+From 10a3e186e7dd5b8e470759346947bd7d99fba0e0 Mon Sep 17 00:00:00 2001
+From: Patrick Ohly <patrick.ohly@intel.com>
+Date: Mon, 6 Mar 2017 16:24:16 +0100
+Subject: [PATCH 1/1] adduser: enable use without /etc/passwd
+
+The utility code which rewrites /etc/passwd or /etc/shadow assumes
+that the files already exist. That is not the case in a stateless
+system where nss-altfiles is used to read system users from /usr/share.
+
+Now the code falls back to creating the files instead of failing.
+
+Upstream-Status: Pending
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ libbb/update_passwd.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/libbb/update_passwd.c b/libbb/update_passwd.c
+index a2004f4..7553920 100644
+--- a/libbb/update_passwd.c
++++ b/libbb/update_passwd.c
+@@ -88,6 +88,7 @@ int FAST_FUNC update_passwd(const char *filename,
+ 	int new_fd;
+ 	int i;
+ 	int changed_lines;
++	const char *real_filename;
+ 	int ret = -1; /* failure */
+ 	/* used as a bool: "are we modifying /etc/shadow?" */
+ #if ENABLE_FEATURE_SHADOWPASSWDS
+@@ -96,7 +97,8 @@ int FAST_FUNC update_passwd(const char *filename,
+ # define shadow NULL
+ #endif
+ 
+-	filename = xmalloc_follow_symlinks(filename);
++	real_filename = xmalloc_follow_symlinks(filename);
++	filename = real_filename ? real_filename : strdup(filename);
+ 	if (filename == NULL)
+ 		return ret;
+ 
+@@ -109,9 +111,9 @@ int FAST_FUNC update_passwd(const char *filename,
+ 	name_colon = xasprintf("%s:", name ? name : "");
+ 
+ 	if (shadow)
+-		old_fp = fopen(filename, "r+");
++		old_fp = fopen(filename, "a+");
+ 	else
+-		old_fp = fopen_or_warn(filename, "r+");
++		old_fp = fopen_or_warn(filename, "a+");
+ 	if (!old_fp) {
+ 		if (shadow)
+ 			ret = 0; /* missing shadow is not an error */
+-- 
+2.11.0
+

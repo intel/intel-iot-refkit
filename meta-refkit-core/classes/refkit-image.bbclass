@@ -80,8 +80,9 @@ IMAGE_FEATURES[validitems] += " \
 # building without swupd), or by defining additional bundles via
 # SWUPD_BUNDLES.
 IMAGE_FEATURES += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'ima', 'ima', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'smack', 'smack', '', d)} \
+    ${@ bb.utils.filter('DISTRO_FEATURES', 'ima', d) } \
+    ${@ bb.utils.filter('DISTRO_FEATURES', 'smack', d) } \
+    ${@ bb.utils.filter('DISTRO_FEATURES', 'stateless', d) } \
     ${@ 'muted' if (d.getVar('IMAGE_MODE') or 'production') == 'production' else 'autologin' } \
     ${REFKIT_IMAGE_EXTRA_FEATURES} \
 "
