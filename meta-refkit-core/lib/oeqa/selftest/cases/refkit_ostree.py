@@ -60,6 +60,13 @@ IMAGE_FEATURES_append = " ostree"
                        runqemuparams='ovmf slirp nographic',
                        image_fstype='wic')
 
+    def stop_update_service(self, qemu):
+        cmd = '''systemctl stop refkit-update.service'''
+        status, output = qemu.run_serial(cmd, timeout=600)
+        self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+        self.logger.info('Successfully stopped refkit-update systemd service:\n%s' % output)
+        return True
+
     def update_image(self, qemu):
         # We need to bring up some simple HTTP server for the
         # OSTree repo. We cannot get the actual OSTREE_REPO for the
@@ -70,6 +77,12 @@ IMAGE_FEATURES_append = " ostree"
         old_cwd = os.getcwd()
         server = None
         try:
+            # We need to stop the refkit-udpate systemd service before starting
+            # the HTTP server (and thus making any update available) to prevent
+            # the service from racing with us and potentially winning, doing a
+            # full update cycle including a final reboot.
+            self.stop_update_service(qemu)
+
             os.chdir(ostree_repo)
             class OSTreeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 def log_message(s, format, *args):
