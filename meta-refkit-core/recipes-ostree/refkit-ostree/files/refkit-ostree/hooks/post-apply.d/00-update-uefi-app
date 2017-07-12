@@ -1,0 +1,169 @@
+#!/bin/sh
+
+# UUIDs used for external and internal root devices.
+INTERNAL_UUID='12345678-9abc-def0-0fed-cba987654320'
+EXTERNAL_UUID='12345678-9abc-def0-0fed-cba987654321'
+# Wheter EFI partition was already mounted.
+EFI_PREMOUNTED=""
+
+# Determine root device.
+root_device () {
+    local _var=${1:-ROOT_DEV}
+    local _dev
+
+    _dev=$(cat /proc/mounts | grep ' / ' | cut -d ' ' -f 1)
+
+    if [ -z "$_dev" ]; then
+        return 1
+    fi
+
+    _dev=$(realpath $_dev)
+
+    if [ -z "$_dev" ]; then
+        return 1
+    fi
+
+    eval "$_var=\"$_dev\""
+    return 0
+}
+
+# Determine the UUID of /.
+root_uuid () {
+    local _var=${1:-ROOT_UUID}
+    local _val
+
+    _val=$(cat /proc/cmdline | tr -s '\t' ' ' | tr ' ' '\n' | grep root=)
+
+    if [ -z "$_val" ]; then
+        return 1
+    fi
+
+    _val=${_val#root=}
+    _val=${_val#PARTUUID=}
+
+    eval "$_var=\"$_val\""
+    return 0
+}
+
+# Determine EFI device (assume 1st partition on the same block device as /).
+efi_device () {
+    local _var=${1:-EFI_DEV}
+    local _efi
+
+    if ! root_device _efi; then
+        return 1
+    fi
+
+    _efi="${_efi%[0-9]*}1"
+
+    eval "$_var=\"$_efi\""
+    return 0
+}
+
+# Mount the EFI partition.
+mount_efi_partition () {
+    local _path=${1:-/boot/efi}
+    local _dev
+
+    if [ -d $_path/EFI/BOOT ]; then
+        EFI_PREMOUNTED=yes
+        return 0
+    fi
+
+    if ! efi_device _dev; then
+        return 1
+    fi
+
+    mount -t vfat $_dev $_path
+}
+
+# Umount the EFI partition (if it was not already premounted).
+umount_efi_partition () {
+    local _path=${1:-/boot/efi}
+
+    if [ -n "$EFI_PREMOUNTED" ]; then
+        return 0
+    fi
+
+    umount $_path
+}
+
+# Get the UEFI combo app name.
+uefi_app () {
+    local _var=${1:-COMBO_APP}
+    local _arch=$(uname -m)
+    local _val
+
+    # XXX TODO: we only do x86* for now...
+    case $_arch in
+        *64) _val=bootx64.efi;;
+        *)   _val=bootia32.efi;;
+    esac
+
+    eval "$_var=\"$_val\""
+    return 0
+}
+
+# Update the UEFI combo app if it has changed.
+update_uefi_app () {
+    local _old="$1"
+    local _new="$2"
+    local _uuid _arch _app _type _active _n 
+
+    if ! root_uuid _uuid; then
+        return 1
+    fi
+
+    if ! uefi_app _app; then
+        return 1
+    fi
+
+    case $_uuid in
+        $EXTERNAL_UUID) _type=ext;;
+        $INTERNAL_UUID) _type=int;;
+        *) return 1;;
+    esac
+
+    _n=$_new/usr/lib/ostree-boot/$_app.$_type
+    _active=/boot/efi/EFI/BOOT/$_app
+
+    if cmp $_n-* $_active > /dev/null; then
+        echo "UEFI combo app already up to date."
+        return 0
+    fi
+
+    echo "Backing up previous UEFI combo app ($_active)..."
+    $xeq cp $_active $_active.old
+    echo "Copying new UEFI combo app in place..."
+    $xeq cp $_n-* $_active
+    sync
+
+    return $?
+}
+
+# main script
+while [ "${1#-}" != "$1" -a -n "$1" ]; do
+    case $1 in
+        --dry-run|-n) xeq=echo; shift;;
+          --debug|-d) set -x; shift;;
+                   *) echo "ignoring unknown option $1..."; shift;;
+    esac
+done
+
+set -e
+
+if ! mount_efi_partition; then
+    echo "Failed to mount EFI partition."
+    exit 1
+fi
+
+if ! update_uefi_app $1 $2; then
+    echo "Failed to udpate UEFI combo app."
+    exit 1
+fi
+
+if ! umount_efi_partition; then
+    echo "Failed to umount EFI partition."
+fi
+
+exit 0

@@ -9,7 +9,11 @@ SECURITY_CFLAGS_pn-efivar = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-zeromq = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-mraa = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-upm = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
-SECURITY_CFLAGS_pn-iotivity = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
+# -D_FORTIFY_SOURCE=2 causes compilation of oc_logger/examples/c_test_logging.o
+# to fail because -O is not passed to that one.
+# |  #  warning _FORTIFY_SOURCE requires compiling with optimization (-O)
+# cc1: all warnings being treated as errors
+SECURITY_CFLAGS_pn-iotivity = "${@ '${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}'.replace('-D_FORTIFY_SOURCE=2', '') }"
 SECURITY_CFLAGS_pn-krb5 = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-tbb = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"
 SECURITY_CFLAGS_pn-protobuf = "${SECURITY_NO_PIE_CFLAGS} ${SECURITY_PIC_CFLAGS}"

@@ -1,46 +1,35 @@
 import os
 import time
 import subprocess
-from oeqa.runtime.bluetooth import bluetooth
+from oeqa.runtime.connectivity.bluetooth import bluetooth
 from oeqa.oetest import oeRuntimeTest
 from oeqa.utils.helper import shell_cmd_timeout
 from oeqa.utils.helper import get_files_dir
 
+
 class CommBTTestMNode(oeRuntimeTest):
-    """
-    @class CommBTTestMNode
-    """
     @classmethod
     def setUpClass(cls):
-        '''Copy gatttool to /tmp/ folder
-        @fn setUpClass
-        @param cls
-        @return
-        '''
-        bt1=bluetooth.BTFunction(cls.tc.targets[0])
-        bt2=bluetooth.BTFunction(cls.tc.targets[1])
+        """
+        Copy gatttool to /tmp/ folder
+        """
+        bt1 = bluetooth.BTFunction(cls.tc.targets[0])
+        bt2 = bluetooth.BTFunction(cls.tc.targets[1])
         copy_to_path = os.path.join(get_files_dir(), 'gatttool')
         cls.tc.targets[0].copy_to(copy_to_path, "/tmp/")
         bt1.target.run('chmod +x /tmp/gatttool')
         bt2.target.run('chmod +x /tmp/gatttool')
 
     def setUp(self):
-        """
-        @fn setUp
-        @param self
-        @return
-        """
         self.bt1 = bluetooth.BTFunction(self.targets[0])
         self.bt2 = bluetooth.BTFunction(self.targets[1])
         self.bt1.target_hciconfig_init()
         self.bt2.target_hciconfig_init()
 
     def test_bt_gatt_read_primary(self):
-        '''Use gatttool to show remote primary attr handles
-        @fn test_bt_gatt_read_primary
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to show remote primary attr handles
+        """
         for i in range(3):
             self.bt2.target_hciconfig_init()
             self.bt2.set_leadv()
@@ -51,11 +40,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool Primary is wrong: %s" % output)
 
     def test_bt_gatt_read_characteristics(self):
-        '''Use gatttool to show target characteristics handles
-        @fn test_bt_gatt_read_characteristics
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to show target characteristics handles
+        """
         for i in range(3):
             self.bt2.target_hciconfig_init()
             self.bt2.set_leadv()
@@ -66,11 +53,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool characteristics fails: %s" % output)
 
     def test_bt_gatt_read_handle(self):
-        '''Use gatttool to read target handle value
-        @fn test_bt_gatt_read_handle
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to read target handle value
+        """
         for i in range(3):
             self.bt2.target_hciconfig_init()
             self.bt2.set_leadv()
@@ -81,11 +66,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool read handle fails: %s" % output)
 
     def test_bt_gatt_connect(self):
-        '''Use gatttool interactive mode to do connect
-        @fn test_bt_gatt_connect
-        @param self
-        @return
-        '''
+        """
+        Use gatttool interactive mode to do connect
+        """
         for i in range(3):
             self.bt2.target_hciconfig_init()
             self.bt2.set_leadv()
@@ -96,11 +79,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="gatttool connect fails: %s" % output)
 
     def test_bt_remote_gatt_read_primary(self):
-        '''Use gatttool to show host primary attr handles
-        @fn test_bt_remote_gatt_read_primary
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to show host primary attr handles
+        """
         for i in range(3):
             self.bt1.target_hciconfig_init()
             self.bt1.set_leadv()
@@ -111,11 +92,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool be read primary fails: %s" % output)
 
     def test_bt_remote_gatt_read_characteristics(self):
-        '''Use gatttool to show host characteristics handles
-        @fn test_bt_remote_gatt_read_characteristics
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to show host characteristics handles
+        """
         for i in range(3):
             self.bt1.target_hciconfig_init()
             self.bt1.set_leadv()
@@ -126,11 +105,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool be read characteristics fails: %s" % output)
 
     def test_bt_remote_gatt_read_handle(self):
-        '''Use gatttool to read host handle value
-        @fn test_bt_remote_gatt_read_handle
-        @param self
-        @return
-        '''
+        """
+        Use gatttool to read host handle value
+        """
         for i in range(3):
             self.bt1.target_hciconfig_init()
             self.bt1.set_leadv()
@@ -141,11 +118,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 0, msg="gatttool be read handle fails: %s" % output)
 
     def test_bt_remote_gatt_connect(self):
-        '''Use gatttool interactive mode to do connect to host
-        @fn test_bt_remote_gatt_connect
-        @param self
-        @return
-        '''
+        """
+        Use gatttool interactive mode to do connect to host
+        """
         for i in range(3):
             self.bt1.target_hciconfig_init()
             self.bt1.set_leadv()
@@ -156,11 +131,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="gatttool be connected fails: %s" % output)
 
     def test_bt_visible(self):
-        '''Do traditional visible and be scanned by other (not ble scan)
-        @fn test_bt_visible
-        @param self
-        @return
-        '''
+        """
+        Do traditional visible and be scanned by other (not ble scan)
+        """
         self.bt1.target.run('hciconfig hci0 noleadv')
         for i in range(3):
             # For init function already set visible status, directly be scanned.
@@ -174,11 +147,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="Scan remote device fails: %s" % output)
 
     def test_bt_scan(self):
-        '''Scan nearby bluetooth devices (not ble scan)
-        @fn test_bt_scan
-        @param self
-        @return
-        '''
+        """
+        Scan nearby bluetooth devices (not ble scan)
+        """
         self.bt2.target.run('hciconfig hci0 noleadv')
         for i in range(3):
             # For init function already set visible status, directly be scanned.
@@ -192,11 +163,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="Scan remote device fails: %s" % output)
 
     def test_bt_le_advertising(self):
-        '''Target does LE advertising, another device scans it
-        @fn test_bt_le_advertising
-        @param self
-        @return
-        '''
+        """
+        Target does LE advertising, another device scans it
+        """
         for i in range(3):
             # close legacy iscan mode
             self.bt1.target.run('hciconfig hci0 noscan')
@@ -217,11 +186,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="Be LE-scanned fails: %s" % output)
 
     def test_bt_le_scan(self):
-        '''Another device (host) does LE advertising, target scans it
-        @fn test_bt_le_scan
-        @param self
-        @return
-        '''
+        """
+        Another device (host) does LE advertising, target scans it
+        """
         for i in range(3):
             # close legacy iscan mode
             self.bt2.target.run('hciconfig hci0 noscan')
@@ -242,11 +209,9 @@ class CommBTTestMNode(oeRuntimeTest):
         self.assertEqual(status, 2, msg="LE Scan other fails: %s" % output)
 
     def test_bt_pairing(self):
-        '''Use bluetoothctl to pair IoT device with host
-        @fn test_bt_pairing
-        @param self
-        @return
-        '''
+        """
+        Use bluetoothctl to pair IoT device with host
+        """
         # On remote, start pair_slave in back-ground
         slave_exp = os.path.join(os.path.dirname(__file__), "files/bt_pair_slave_on_iot.exp")
         cmd = "%s %s %s" % (slave_exp, self.bt2.target.ip, self.bt1.get_bt_mac())

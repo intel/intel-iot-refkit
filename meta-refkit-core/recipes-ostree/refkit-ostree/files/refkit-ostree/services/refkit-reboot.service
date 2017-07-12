@@ -1,0 +1,7 @@
+[Unit]
+Description=Systemd-inhibitable reboot service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/share/refkit-ostree/scripts/systemd-inhibitable-reboot

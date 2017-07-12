@@ -68,6 +68,13 @@ class RefkitOSTreeUpdateBase(SystemUpdateBase):
                        runqemuparams='ovmf slirp nographic',
                        image_fstype='wic')
 
+    def stop_update_service(self, qemu):
+        cmd = '''systemctl stop refkit-update.service'''
+        status, output = qemu.run_serial(cmd, timeout=600)
+        self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+        self.logger.info('Successfully stopped refkit-update systemd service:\n%s' % output)
+        return True
+
     def update_image(self, qemu):
         # We need to bring up some simple HTTP server for the
         # OSTree repo. We cannot get the actual OSTREE_REPO for the
@@ -78,6 +85,12 @@ class RefkitOSTreeUpdateBase(SystemUpdateBase):
         old_cwd = os.getcwd()
         server = None
         try:
+            # We need to stop the refkit-udpate systemd service before starting
+            # the HTTP server (and thus making any update available) to prevent
+            # the service from racing with us and potentially winning, doing a
+            # full update cycle including a final reboot.
+            self.stop_update_service(qemu)
+
             os.chdir(ostree_repo)
             class OSTreeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 def log_message(s, format, *args):
@@ -112,7 +125,14 @@ class RefkitOSTreeUpdateBase(SystemUpdateBase):
 exec %s 2>>/tmp/ostree.log -D -v -d -d -d -d STDIO TCP:localhost:%d
 ''' % (socat, port))
 
-            cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree update''' % self.OSTREE_SERVER
+            # Use the updater, refkit-ostree-update, in a one-shot mode
+            # attempting just a single update cycle for the test case.
+            # Also override the post-apply hook to only run the UEFI app
+            # update hook. It is a bit of a hack but we don't want the rest
+            # of the hooks run, especially not the reboot hook, to avoid
+            # prematurely rebooting the qemu instance and this is the easiest
+            # way to achieve just that for now.
+            cmd = '''ostree config set 'remote "updates".url' http://%s && refkit-ostree-update --one-shot --post-apply-hook /usr/share/refkit-ostree/hooks/post-apply.d/00-update-uefi-app''' % self.OSTREE_SERVER
             status, output = qemu.run_serial(cmd, timeout=600)
             self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
             self.logger.info('Successful (?) update:\n%s' % output)

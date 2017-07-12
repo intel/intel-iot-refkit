@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Wait for systemd-inhibit shutdown locks, then reboot.
+while systemd-inhibit --list | grep What: | grep -q shutdown; do
+    sleep 10
+done
+
+systemctl reboot

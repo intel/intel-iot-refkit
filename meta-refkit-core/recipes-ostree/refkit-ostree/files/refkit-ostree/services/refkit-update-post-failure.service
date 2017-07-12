@@ -1,0 +1,11 @@
+[Unit]
+Description=Handle post-update check failure (potential rollback)
+DefaultDependencies=no
+Conflicts=shutdown.target
+Conflicts=rescue.service
+Conflicts=syslog.socket
+Before=shutdown.target
+
+[Service]
+ExecStart=/usr/bin/refkit-ostree-update --rollback
+Type=simple

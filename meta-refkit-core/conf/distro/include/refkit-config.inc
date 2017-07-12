@@ -61,6 +61,9 @@ REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-config"
 # Enable OSTree system update support.
 REFKIT_DEFAULT_DISTRO_FEATURES += "ostree"
 
+# This is needed for OSTree and flatpack.
+REFKIT_DEFAULT_DISTRO_FEATURES += "usrmerge"
+
 # Remove currently unsupported distro features from global defaults
 REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE += "x11 3g"
 

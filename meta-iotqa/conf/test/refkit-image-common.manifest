@@ -3,6 +3,8 @@ oeqa.runtime.core.baseos
 oeqa.runtime.connectivity.services.ssh
 oeqa.runtime.connectivity.services.managerdaemon
 oeqa.runtime.connectivity.bluetooth.btcheck
+oeqa.runtime.connectivity.bluetooth.bt_command
+oeqa.runtime.connectivity.bluetooth.bt_6lowpan
 oeqa.runtime.connectivity.wifi.wifi_connect
 oeqa.runtime.programming.python.apprt_python
 oeqa.runtime.multimedia.audio.alsa

@@ -7,6 +7,12 @@
 # local.conf (or some other global configuration file) by setting
 # REFKIT_SIGNING_KEYS to necessary key IDs.
 
+# This is the directory we look for pre-generated keys in. If we find a
+# pre-generated key pair for any key id (we assume the key files be named
+# as <key-id>.pub and <key-id>.sec) we import those instead of generating
+# them anew.
+REFKIT_SIGNING_KEYDIR ?= "${FLATPAK_LAYERDIR}/../meta-refkit-core/files/gpg-keys"
+
 # Signing keys to generate, a list of key IDs.
 REFKIT_SIGNING_KEYS    ?= ""
 
@@ -43,8 +49,8 @@ fakeroot do_generate_signing_keys () {
             while [ $slept -lt ${REFKIT_SIGNING_TIMEOUT} ]; do
                 if [ ! -e ${dir}/$id.sec ]; then
                     echo "Waiting for generation of signing key $id..."
-                    sleep 1
-                    slept=$( expr $slept + 1 )
+                    sleep 3
+                    slept=$( expr $slept + 3 )
                 else
                     echo "Got signing key $id..."
                     break
@@ -63,6 +69,18 @@ fakeroot do_generate_signing_keys () {
     for id in ${REFKIT_SIGNING_KEYS}; do
         pubkey="$dir/$id.pub"
         seckey="$dir/$id.sec"
+        pubpre="${REFKIT_SIGNING_KEYDIR}/$id.pub"
+        secpre="${REFKIT_SIGNING_KEYDIR}/$id.sec"
+
+        if [ -e $pubpre -a -e $secpre ]; then
+             echo "Re-using pre-generated key-pair $pubpre/$secpre..."
+            # gpg-keygen.sh below will import these keys. It actually
+            # races with any conflicting task waiting for the keys above,
+            # but that should be okay...ish... fast importing winning.
+            mkdir -p $dir
+            cp $pubpre $pubkey
+            cp $secpre $seckey
+        fi
 
         # Generate repository signing GPG keys, if we don't have them yet.
         echo "Generating/checking signing key $id..."

@@ -111,6 +111,12 @@ testimg() {
 
     daft ${DEVICE} ${FILENAME} --record
     TEST_EXIT_CODE=$?
+    if [ "$TEST_EXIT_CODE" = 1 ]; then
+      echo "WARNING: daft=1 would lead to UNSTABLE: wipe results, retry daft"
+      rm -f *.log *.log.raw *.xml
+      daft ${DEVICE} ${FILENAME} --record
+      TEST_EXIT_CODE=$?
+    fi
   fi
 
   # delete symlinks, these point outside of local set and are useless

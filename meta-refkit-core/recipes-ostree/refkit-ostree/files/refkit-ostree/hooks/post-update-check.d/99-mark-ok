@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Marking the latest update as successful and working..."
+mv /var/.ostree.updated /var/.ostree.update-ok
