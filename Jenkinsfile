@@ -92,9 +92,6 @@ try {
                         }
                     }
                 } // docker_image
-                archiveArtifacts allowEmptyArchive: true,
-                                 artifacts: 'build*/TestResults_*/TEST-*.xml'
-                step_xunit('build*/TestResults_*/TEST-*.xml')
                 tester_script = readFile "docker/tester-exec.sh"
                 tester_summary = readFile "docker/tester-create-summary.sh"
                 qemu_script = readFile "docker/run-qemu.exp"
@@ -111,6 +108,16 @@ try {
                 docker.image(image_name).inside(run_args) {
                     params = ["${script_env}", "docker/post-build.sh"].join("\n")
                     sh "${params}"
+                }
+                // note wildcard: handle pre-build reports in build.pre/ as well
+                lock(resource: "global_data") {
+                    summary += sh(returnStdout: true,
+                                  script: "docker/tester-create-summary.sh 'oe-selftest: post-build' '' build/TestResults_*/TEST- 0")
+                    archiveArtifacts allowEmptyArchive: true,
+                                     artifacts: 'build*/TestResults_*/TEST-*.xml'
+                }
+                lock(resource: "step-xunit") {
+                    step_xunit('build*/TestResults_*/TEST-*.xml')
                 }
             }
         }
