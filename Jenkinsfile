@@ -30,6 +30,17 @@ def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_builds_to_keep = 4
 
+def ci_pr_num = ""
+if (is_pr) {
+    if (params.containsKey("GITHUB_PR_NUMBER")) {
+        ci_pr_num = "$GITHUB_PR_NUMBER"
+    } else if (params.containsKey("ghprbPullId")) {
+        ci_pr_num = "$ghprbPullId"
+    } else {
+        error("Can not detect PR_NUMBER from parameters")
+    }
+}
+
 // Define global environment common for all docker sessions
 def script_env = """
     export WORKSPACE=\$PWD
@@ -51,7 +62,7 @@ try {
                 set_gh_status(is_pr, 'PENDING', 'Prepare for build')
                 deleteDir() // although dir should be brand new, empty just in case
                 stage('Checkout content') {
-                    checkout_content(is_pr)
+                    checkout_content(is_pr, ci_pr_num)
                 }
                 if ( !is_pr ) {
                     ci_git_commit = sh(returnStdout: true,
@@ -239,13 +250,13 @@ def build_user_args() {
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
 }
 
-def checkout_content(is_pr) {
+def checkout_content(is_pr, pr_num) {
     if (is_pr) {
         // we are building pull request
         echo "Checkout: PR case"
         checkout([$class: 'GitSCM',
             branches: [
-                [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
+                [name: "origin-pull/$pr_num/merge"]
             ],
             doGenerateSubmoduleConfigurations: false,
             extensions: [
@@ -260,7 +271,7 @@ def checkout_content(is_pr) {
             userRemoteConfigs: [
                 [credentialsId: "${GITHUB_AUTH}",
                     name: 'origin-pull',
-                    refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
+                    refspec: "+refs/pull/$pr_num/*:refs/remotes/origin-pull/$pr_num/*",
                     url: "${GITHUB_PROJECT}"]
             ]
         ])
