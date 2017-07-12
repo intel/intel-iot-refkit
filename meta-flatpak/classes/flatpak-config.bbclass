@@ -60,9 +60,11 @@ FLATPAK_BRANCH ?= "${DISTRO_VERSION}"
 FLATPAK_LATEST ?= "${DISTRO}/${FLATPAK_PN}/latest"
 FLATPAK_BUILD  ?= "${DISTRO}/${FLATPAK_PN}/build/${BUILD_ID}"
 
-# This is the GPG key id of our repository signing key. If you set this to
-# empty, signing is disabled altogether.
-FLATPAK_GPGID ?= "refkit-signing@key"
+# This is the GPG homedir and the key ID for signing repository commits. If
+# you set the key ID to empty, signing is disabled altogether.
+FLATPAK_GPGDIR ?= "${FLATPAKBASE}/../meta-refkit-core/files/gnupg"
+FLATPAK_GPGID  ?= "${@d.getVar('DISTRO').replace(' ', '_') + \
+                        '-development-signing@key'}"
 
 # We can pre-populate the image during build with a set of pre-declared
 # flatpak repositories and associated dedicated flatpak-session users.

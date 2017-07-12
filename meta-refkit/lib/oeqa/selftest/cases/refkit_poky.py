@@ -62,9 +62,7 @@ class RefkitPokyMeta(type):
                 - proper declaration of dependencies (because 'yocto-compat-layer.py --dependency' adds those)
                 - parse and dependencies ('bitbake -S none world' must work)
                 """
-                # We must use our forked yocto-compat-layer.py.
-                cmd = "%s/scripts/yocto-compat-layer.py --dependency %s -- %s" % (
-                    self.layers['meta-refkit'],
+                cmd = "yocto-compat-layer.py --dependency %s -- %s" % (
                     ' '.join(self.layers.values()),
                     self.layers[refkit_layer])
                 # "world" does not include images. We need to enable them explicitly, otherwise
@@ -144,8 +142,6 @@ include selftest.inc
         # We expect compatlayer in the lib dir of the directory holding yocto-compat-layer.py.
         yocto_compat_layer = shutil.which('yocto-compat-layer.py')
         scripts_path = os.path.dirname(os.path.realpath(yocto_compat_layer))
-        # Temporary override: use the copy from meta-refkit.
-        scripts_path = os.path.join(cls.layers['meta-refkit'], 'scripts')
         cls.yocto_compat_lib_path = scripts_path + '/lib'
 
     def setUpLocal(self):
@@ -179,10 +175,6 @@ BBFILES ?= ""
         for target in ('supportedrecipes.py', 'supportedrecipesreport'):
             os.symlink(os.path.join(self.layers['meta-refkit-core'], 'lib', target),
                        os.path.join(lib, target))
-
-        env = os.environ.copy()
-        # We must use our forked yocto-compat-layer.py.
-        env['PATH'] = '%s/scripts:%s' % (self.layers['meta-refkit'], env['PATH'])
 
         # Enter the build directory.
         self.old_env = os.environ.copy()

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Put an update marker in place which will then trigger post-update
+# checks upon the next boot.
+
+echo "$1 $2" > /var/.ostree.updated

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+if [ $# = 0 -a "${0##*/}" = "post-update-check" ]; then
+    read prev curr < /var/.ostree.updated
+    set $prev $curr
+fi
+
+HOOK_DIR=$0.d
+HOOK_TYPE=${0##*/}
+
+for h in $HOOK_DIR/[0-9]*-*; do
+    if [ -e $h -a -x $h ]; then
+        hook=${h##*/}
+        echo "Executing $HOOK_TYPE hook $hook..."
+        $h $*
+        status=$?
+        if [ $status != 0 ]; then
+            echo "hook $hook failed."
+            exit $?
+        fi
+    fi
+done
+
+exit 0

@@ -1,2 +1,4 @@
 # This file contains tests that can't be run on Minnowboard Turbot
 # /docker/tester-exec.sh will use this file to remove tests from a manifest
+oeqa.runtime.connectivity.bluetooth.bt_command
+oeqa.runtime.connectivity.bluetooth.bt_6lowpan

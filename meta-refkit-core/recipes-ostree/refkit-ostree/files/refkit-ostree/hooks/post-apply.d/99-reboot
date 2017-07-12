@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Triggering refkit-reboot service for rebooting..."
+sync
+systemctl start refkit-reboot

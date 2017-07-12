@@ -4,9 +4,6 @@ REQUIRED_DISTRO_FEATURES_append = " usrmerge systemd pam"
 
 inherit flatpak-config
 
-REFKIT_SIGNING_KEYS += "${FLATPAK_GPGID}"
-inherit refkit-signing-keys
-
 # These are lists of files we check to determine the flatpak
 # runtime type of an image if it is not directly visible from
 # the image name. This did not used to be necessary before we
@@ -64,8 +61,7 @@ fakeroot do_flatpak_populate_repository () {
    echo "${IMAGE_BASENAME} is a flatpak $RUNTIME_TYPE image"
 
    if [ -n "${FLATPAK_GPGID}" ]; then
-       GPG_SIGN="--gpg-home ${REFKIT_SIGNING_GPGDIR} \
-                 --gpg-id ${FLATPAK_GPGID}"
+       GPG_SIGN="--gpg-home ${FLATPAK_GPGDIR} --gpg-id ${FLATPAK_GPGID}"
    else
        GPG_SIGN=""
    fi
@@ -153,8 +149,7 @@ fakeroot do_flatpak_export_repository () {
    echo "${IMAGE_BASENAME} is a flatpak $RUNTIME_TYPE image"
 
    if [ -n "${FLATPAK_GPGID}" ]; then
-       GPG_SIGN="--gpg-home ${REFKIT_SIGNING_GPGDIR} \
-                 --gpg-id ${FLATPAK_GPGID}"
+       GPG_SIGN="--gpg-home ${FLATPAK_GPGDIR} --gpg-id ${FLATPAK_GPGID}"
    else
        GPG_SIGN=""
    fi

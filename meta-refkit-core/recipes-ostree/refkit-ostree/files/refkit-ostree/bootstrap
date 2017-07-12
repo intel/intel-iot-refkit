@@ -1,0 +1,31 @@
+#!/bin/bash
+
+mkdir m4
+
+aclocal -I . && \
+    autoheader && \
+        libtoolize --copy --force && \
+            autoconf && \
+                automake --add-missing --copy
+
+status=$?
+
+if [ $status != 0 ]; then
+    echo "Failed to bootstrap."
+    exit $status
+fi
+
+if [ -n "$1" ]; then
+    case $1 in
+        noconf*|NOCONF*)
+	    exit 0
+	    ;;
+        *)
+            ;;
+    esac
+fi
+
+
+if [ -z "$NOCONFIGURE" ]; then
+    ./configure $*
+fi

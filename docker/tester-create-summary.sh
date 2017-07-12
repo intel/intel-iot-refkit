@@ -1,3 +1,4 @@
+#!/bin/bash -ue
 #
 # tester-create-summary.sh: tester creates summary information
 # Copyright (c) 2016, Intel Corporation.
