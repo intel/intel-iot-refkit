@@ -114,17 +114,6 @@ if [ -f "${LOG}" ]; then
     rsync -avz ${LOG}* ${_RSYNC_DEST}/
 fi
 
-if [ -d sstate-cache ]; then
-  if [ ! -z ${BUILD_CACHE_DIR+x} ]; then
-    if [ -d ${BUILD_CACHE_DIR}/sstate ]; then
-      # populate shared sstate from local sstate:
-      _src=sstate-cache
-      _dst=${RSYNC_PUBLISH_DIR}/bb-cache/sstate
-      find ${_src} -mindepth 1 -maxdepth 1 -type d -exec rsync -a --ignore-existing {} ${_dst}/ \;
-    fi
-  fi
-fi
-
 ## for debugging signatures: publish stamps
 if [ -d ${_BRESULT}/stamps ]; then
     create_remote_dirs ${_RSYNC_DEST} .stamps/${TARGET_MACHINE}/
