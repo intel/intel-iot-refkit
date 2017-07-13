@@ -124,14 +124,11 @@ try {
                     params = ["${script_env}", "docker/publish-sstate.sh"].join("\n")
                     sh "${params}"
                 }
-                // note wildcard: handle pre-build reports in build.pre/ as well
                 lock(resource: "global_data") {
                     summary += sh(returnStdout: true,
                                   script: "docker/tester-create-summary.sh 'oe-selftest: post-build' '' build/TestResults_*/TEST- 0")
-                    archiveArtifacts allowEmptyArchive: true,
-                                     artifacts: 'build*/TestResults_*/TEST-*.xml'
-                }
-                lock(resource: "step-xunit") {
+                    // note wildcard: handle pre-build reports in build.pre/ as well
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build*/TestResults_*/TEST-*.xml'
                     step_xunit('build*/TestResults_*/TEST-*.xml')
                 }
             }
@@ -164,19 +161,14 @@ try {
                 } catch (Exception e) {
                     throw e
                 } finally {
-                    // read tests summary prepared by tester-exec.sh
-                    // Here one tester adds it's summary piece to the global buffer.
-                    // Grab lock as we deal with global data from multiple workers
+                    // One tester adds it's summary piece to the global buffer.
+                    // Without locking we may lose tester result set(s) if testers publish xunit
+                    // data at nearly same time. Cover global summary add with same lock.
                     lock(resource: "global_data") {
                         summary += readFile "results-summary-${test_device}.${img}.log"
-                        archiveArtifacts allowEmptyArchive: true,
-                                         artifacts: '*.log, *.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, *.xml'
+                        step_xunit('TEST-*.xml')
                     }
-                }
-                // without locking we may lose tester result set(s)
-                // if testers run xunit step in nearly same time
-                lock(resource: "step-xunit") {
-                    step_xunit('TEST-*.xml')
                 }
             } // node
         } // test_runs =
