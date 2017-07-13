@@ -1,5 +1,4 @@
 adm:x:990:
-appfwtest-commonapp:x:1004:
 audio:x:986:
 cdrom:x:985:
 crontab:x:970:
@@ -7,10 +6,7 @@ dbus:1501
 dbus-x11:1500
 dialout:x:984:
 disk:x:983:
-evil-bad-groups:x:1003:
-foodine-pythontest:x:1002:
 input:x:982:
-iodine-nodetest:x:1001:
 kmem:x:988:
 kvm:x:36:
 lock:x:997:
@@ -37,4 +33,3 @@ utmp:x:987:
 video:x:979:
 weston-launch:x:976:
 wheel:x:989:
-yoyodine-nativetest:x:1000:
