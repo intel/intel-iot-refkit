@@ -30,6 +30,17 @@ def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_builds_to_keep = 4
 
+def ci_pr_num = ""
+if (is_pr) {
+    if (params.containsKey("GITHUB_PR_NUMBER")) {
+        ci_pr_num = "$GITHUB_PR_NUMBER"
+    } else if (params.containsKey("ghprbPullId")) {
+        ci_pr_num = "$ghprbPullId"
+    } else {
+        error("Can not detect PR_NUMBER from parameters")
+    }
+}
+
 // Define global environment common for all docker sessions
 def script_env = """
     export WORKSPACE=\$PWD
@@ -48,10 +59,10 @@ try {
         node('rk-docker') {
             ws("workspace/${slot_name}${ci_build_id}") {
                 builder_node = "${env.NODE_NAME}"
-                set_gh_status_pending(is_pr, 'Prepare for build')
+                set_gh_status(is_pr, 'PENDING', 'Prepare for build')
                 deleteDir() // although dir should be brand new, empty just in case
                 stage('Checkout content') {
-                    checkout_content(is_pr)
+                    checkout_content(is_pr, ci_pr_num)
                 }
                 if ( !is_pr ) {
                     ci_git_commit = sh(returnStdout: true,
@@ -69,7 +80,7 @@ try {
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
                 docker.image(image_name).inside(run_args) {
-                    set_gh_status_pending(is_pr, 'Pre-build tests')
+                    set_gh_status(is_pr, 'PENDING', 'Pre-build tests')
                     params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
                         sh "${params}"
@@ -77,7 +88,7 @@ try {
                                       script: "docker/tester-create-summary.sh 'oe-selftest: pre-build' '' build.pre/TestResults_*/TEST- 0")
                     }
                     try {
-                        set_gh_status_pending(is_pr, 'Building')
+                        set_gh_status(is_pr, 'PENDING', 'Building')
                         params = ["${script_env}", "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
@@ -85,7 +96,7 @@ try {
                     } catch (Exception e) {
                         throw e
                     } finally {
-                        set_gh_status_pending(is_pr, 'Store images')
+                        set_gh_status(is_pr, 'PENDING', 'Store images')
                         stage('Store images') {
                             params = ["${script_env}", "docker/publish-project.sh"].join("\n")
                             sh "${params}"
@@ -171,7 +182,7 @@ try {
         } // test_runs =
     } // for i
     stage('Parallel test run') {
-        set_gh_status_pending(is_pr, 'Testing')
+        set_gh_status(is_pr, 'PENDING', 'Testing')
         timestamps {
             try {
                 parallel test_runs
@@ -194,13 +205,12 @@ try {
         currentBuild.result = 'SUCCESS'
     }
     echo "Finally: build result is ${currentBuild.result}\nSummary:\n${summary}"
-    if (is_pr) {
-        if (currentBuild.result == 'UNSTABLE') {
-            setGitHubPullRequestStatus state: 'FAILURE', context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
-        } else {
-            setGitHubPullRequestStatus state: "${currentBuild.result}", context: "${env.JOB_NAME}", message: "Build result: ${currentBuild.result}"
-        }
+    if (currentBuild.result == 'UNSTABLE') {
+        set_gh_status(is_pr, 'FAILURE', "Build result: ${currentBuild.result}")
     } else {
+        set_gh_status(is_pr, "${currentBuild.result}", "Build result: ${currentBuild.result}")
+    }
+    if (!is_pr) {
         // send summary email after non-PR build
         email = "Git commit hash: ${ci_git_commit}\n"
         email += "Added commits:\n\n${added_commits}\n"
@@ -240,13 +250,13 @@ def build_user_args() {
     return "--build-arg uid=${jenkins_uid} --build-arg gid=${jenkins_gid}"
 }
 
-def checkout_content(is_pr) {
+def checkout_content(is_pr, pr_num) {
     if (is_pr) {
         // we are building pull request
         echo "Checkout: PR case"
         checkout([$class: 'GitSCM',
             branches: [
-                [name: "origin-pull/$GITHUB_PR_NUMBER/$GITHUB_PR_COND_REF"]
+                [name: "origin-pull/$pr_num/merge"]
             ],
             doGenerateSubmoduleConfigurations: false,
             extensions: [
@@ -261,7 +271,7 @@ def checkout_content(is_pr) {
             userRemoteConfigs: [
                 [credentialsId: "${GITHUB_AUTH}",
                     name: 'origin-pull',
-                    refspec: "+refs/pull/$GITHUB_PR_NUMBER/*:refs/remotes/origin-pull/$GITHUB_PR_NUMBER/*",
+                    refspec: "+refs/pull/$pr_num/*:refs/remotes/origin-pull/$pr_num/*",
                     url: "${GITHUB_PROJECT}"]
             ]
         ])
@@ -279,9 +289,11 @@ def build_docker_image(image_name) {
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
 }
 
-def set_gh_status_pending(is_pr, _msg) {
+def set_gh_status(is_pr, _state, _msg) {
     if (is_pr) {
-        setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "${_msg}"
+        // NOTE: not sending status to GH via this method as it is not
+        //       present in ghprb plugin case
+        //setGitHubPullRequestStatus state: "${_state}", context: "${env.JOB_NAME}", message: "${_msg}"
     }
 }
 
