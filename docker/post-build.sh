@@ -27,8 +27,8 @@ set -u
 
 # create auto.conf using functions in build-common-util.sh
 auto_conf_common
-
 auto_conf_testsdk
+auto_dump
 
 # post-build testing builds images but only .wic is sufficient
 # (default in IMAGE_FSTYPES). We skip compression and bmap formats

@@ -4,7 +4,7 @@
 	branch = master
 [submodule "bitbake"]
 	path = bitbake
-	url = http://git.openembedded.org/bitbake
+	url = http://github.com/pohly/bitbake.git
 	branch = master
 [submodule "meta-intel"]
 	path = meta-intel
