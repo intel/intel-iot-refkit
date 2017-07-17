@@ -59,7 +59,6 @@ try {
         node('rk-docker') {
             ws("workspace/${slot_name}${ci_build_id}") {
                 builder_node = "${env.NODE_NAME}"
-                set_gh_status(is_pr, 'PENDING', 'Prepare for build')
                 deleteDir() // although dir should be brand new, empty just in case
                 stage('Checkout content') {
                     checkout_content(is_pr, ci_pr_num)
@@ -80,7 +79,6 @@ try {
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
                 docker.image(image_name).inside(run_args) {
-                    set_gh_status(is_pr, 'PENDING', 'Pre-build tests')
                     params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
                         sh "${params}"
@@ -88,7 +86,6 @@ try {
                                       script: "docker/tester-create-summary.sh 'oe-selftest: pre-build' '' build.pre/TestResults_*/TEST- 0")
                     }
                     try {
-                        set_gh_status(is_pr, 'PENDING', 'Building')
                         params = ["${script_env}", "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
@@ -96,7 +93,6 @@ try {
                     } catch (Exception e) {
                         throw e
                     } finally {
-                        set_gh_status(is_pr, 'PENDING', 'Store images')
                         stage('Store images') {
                             params = ["${script_env}", "docker/publish-project.sh"].join("\n")
                             sh "${params}"
@@ -174,7 +170,6 @@ try {
         } // test_runs =
     } // for i
     stage('Parallel test run') {
-        set_gh_status(is_pr, 'PENDING', 'Testing')
         timestamps {
             try {
                 parallel test_runs
@@ -197,11 +192,6 @@ try {
         currentBuild.result = 'SUCCESS'
     }
     echo "Finally: build result is ${currentBuild.result}\nSummary:\n${summary}"
-    if (currentBuild.result == 'UNSTABLE') {
-        set_gh_status(is_pr, 'FAILURE', "Build result: ${currentBuild.result}")
-    } else {
-        set_gh_status(is_pr, "${currentBuild.result}", "Build result: ${currentBuild.result}")
-    }
     if (!is_pr) {
         // send summary email after non-PR build
         email = "Git commit hash: ${ci_git_commit}\n"
@@ -279,14 +269,6 @@ def build_docker_image(image_name) {
     def build_args = [ build_proxy_args(), build_user_args()].join(" ")
     sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
-}
-
-def set_gh_status(is_pr, _state, _msg) {
-    if (is_pr) {
-        // NOTE: not sending status to GH via this method as it is not
-        //       present in ghprb plugin case
-        //setGitHubPullRequestStatus state: "${_state}", context: "${env.JOB_NAME}", message: "${_msg}"
-    }
 }
 
 def step_xunit(_pattern) {
