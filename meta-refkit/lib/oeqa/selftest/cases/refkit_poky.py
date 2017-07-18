@@ -67,6 +67,13 @@ class RefkitPokyMeta(type):
                         f.write('BBLAYERS += "%s"\n' %
                                 ' '.join([os.path.normpath(self.layers[layer]) for layer in layers]))
 
+                # Workaround for yocto-compat-layer.py not evaluating
+                # LAYERDEPENDS_security += "${@bb.utils.contains("DISTRO_FEATURES", "x11", "gnome-layer xfce-layer", "", d)}"
+                # in meta-security: add the layer and its dependencies ourselves.
+                # Only meta-refkit needs this because only it has a hard dependency on meta-security.
+                if refkit_layer == 'meta-refkit':
+                    add_layers(('meta-oe', 'meta-python', 'meta-gnome', 'meta-xfce'))
+
                 # This allows the meta-refkit-core testing to catch
                 # more errors: by adding all non-refkit layers to the
                 # base configuration, we find signature differences

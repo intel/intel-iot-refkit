@@ -451,10 +451,10 @@ tf@ros-layer
 thermald@intel
 thin-provisioning-tools@openembedded-layer
 tiff@core
-tpm-tools@security
+tpm-tools@tpm-layer
 trajectory-msgs@ros-layer
 tremor@core
-trousers@security
+trousers@tpm-layer
 twm@openembedded-layer
 tzdata@core
 u-boot@core
