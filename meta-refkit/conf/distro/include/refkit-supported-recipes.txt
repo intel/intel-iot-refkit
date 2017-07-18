@@ -390,6 +390,7 @@ resource-retriever@ros-layer
 resourceproto@core
 rgb@core
 rmc-db@intel
+rmc-efi@intel
 rmc@intel
 rosclean@ros-layer
 rosconsole-bridge@ros-layer
