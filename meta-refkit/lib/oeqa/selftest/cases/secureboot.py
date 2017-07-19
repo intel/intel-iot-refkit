@@ -88,13 +88,13 @@ class SecureBootTests(OESelftestTestCase):
 
         config = ''
 
+        config += 'REFKIT_IMAGE_EXTRA_INSTALL_append = " efivar"\n'
         if signing_key:
             meta_refkit_base = get_bb_var('META_REFKIT_CORE_BASE')
 
             config += 'REFKIT_DB_KEY = "%s/files/secureboot/%s.key"\n' % (meta_refkit_base, signing_key)
             config += 'REFKIT_DB_CERT = "%s/files/secureboot/%s.crt"\n' % (meta_refkit_base, signing_key)
             config += 'REFKIT_IMAGE_EXTRA_FEATURES_append = " secureboot"\n'
-            config += 'REFKIT_IMAGE_EXTRA_INSTALL_append = " efivar"\n'
 
         self.write_config(config)
         bitbake(self.test_image, output_log=self.logger)
