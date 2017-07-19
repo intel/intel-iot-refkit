@@ -97,8 +97,8 @@ class SecureBootTests(OESelftestTestCase):
         if signing_key:
             meta_refkit_base = get_bb_var('META_REFKIT_CORE_BASE')
 
-            config += 'REFKIT_DB_KEY = "%s/files/secureboot/%s.key"\n' % (meta_refkit_base, signing_key)
-            config += 'REFKIT_DB_CERT = "%s/files/secureboot/%s.crt"\n' % (meta_refkit_base, signing_key)
+            config += 'SECURE_BOOT_SIGNING_KEY = "%s/files/secureboot/%s.key"\n' % (meta_refkit_base, signing_key)
+            config += 'SECURE_BOOT_SIGNING_CERT = "%s/files/secureboot/%s.crt"\n' % (meta_refkit_base, signing_key)
             config += 'REFKIT_IMAGE_EXTRA_FEATURES_append = " secureboot"\n'
 
         self.write_config(config)
