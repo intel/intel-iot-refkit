@@ -40,7 +40,7 @@ class SecureBootTests(OESelftestTestCase):
     ovmf_keys_enrolled = False
     ovmf_qemuparams = ''
     ovmf_dir = ''
-    test_image = 'refkit-image-common'
+    test_image = 'refkit-image-secureboot-test'
 
     @classmethod
     def setUpLocal(self):
