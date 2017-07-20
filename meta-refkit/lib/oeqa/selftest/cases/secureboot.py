@@ -76,7 +76,12 @@ class SecureBootTests(OESelftestTestCase):
     def tearDownLocal(self):
         # Seems this is mandatory between the tests (a signed image is booted
         # when running test_boot_unsigned_image after test_boot_signed_image).
-        bitbake('-c clean %s' % self.test_image, output_log=self.logger)
+        # bitbake('-c clean %s' % self.test_image, output_log=self.logger)
+        #
+        # Whatever the problem was, it no longer seems to be necessary, so
+        # we can skip the time-consuming clean + full rebuild (5:04 min instead
+        # of 6:55min here).
+        pass
 
     @classmethod
     def tearDownClass(self):
