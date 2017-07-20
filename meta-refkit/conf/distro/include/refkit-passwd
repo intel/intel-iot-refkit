@@ -10,4 +10,5 @@ messagebus:x:998:998::/var/lib/dbus:/bin/false
 tss:x:1005:1005::/:/bin/nologin
 pulse:x:1122:1122::/var/run/pulse:/sbin/nologin
 polkitd:x:1200:1200::/:/bin/nologin
+groupcheck:x:1201:1201::/:/bin/nologin
 nobody:x:65534:65534:nobody:/nonexistent:/bin/sh

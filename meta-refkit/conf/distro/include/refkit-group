@@ -29,5 +29,6 @@ netdev:x:999:
 tss:x:1005:
 pulse:x:1122:
 polkitd:x:1200:
+groupcheck:x:1201:
 nogroup:x:65533:
 nobody:x:65534:
