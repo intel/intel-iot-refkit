@@ -9,6 +9,8 @@
 # "4GB" regardless whether 1000 or 1024 is used as base. 64M are reserved
 # for potential partitioning overhead.
 WKS_FILE = "refkit-directdisk.wks.in"
+# We need no boot loaders and only a few of the default native tools.
+WKS_FILE_DEPENDS = "e2fsprogs-native"
 REFKIT_VFAT_MB ??= "64"
 REFKIT_IMAGE_SIZE ??= "--fixed-size 3622M"
 REFKIT_EXTRA_PARTITION ??= ""

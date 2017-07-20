@@ -23,7 +23,7 @@ This layer depends on::
    branch: master
 
    URI: https://github.com/intel/iot-web-layers/meta-iot-web
-   layers: iotweb
+   layers: iot-web
    branch: master
 
 Patches

@@ -224,9 +224,12 @@ QB_DRIVE_TYPE = "${REFKIT_QB_DRIVE_TYPE}"
 REFKIT_VM_IMAGE_TYPES ??= ""
 IMAGE_FSTYPES_append = " ${REFKIT_VM_IMAGE_TYPES}"
 
-# unconditionally set in x86-base.inc so we just remove it to avoid
-# getting image-live.bbclass inherited.
-IMAGE_FSTYPES_remove = "live"
+# Unconditionally set in x86-base.inc (either one or the other,
+# depending on the OE-core version). We remove all types that pull in
+# image-live.bbclass, because that would add code and dependencies
+# that we don't want (like INITRD_IMAGE_LIVE=core-image-minimal-initramfs
+# and grub).
+IMAGE_FSTYPES_remove = "live hddimg iso"
 
 # Activate "dsk" image type? Otherwise emulate loading of the EFI_PROVIDER class
 # as done in live-vm-common.bbclass.
