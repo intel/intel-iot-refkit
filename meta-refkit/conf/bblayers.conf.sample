@@ -1,6 +1,6 @@
 # LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
 # changes incompatibly
-LCONF_VERSION = "9"
+LCONF_VERSION = "10"
 
 BBPATH = "${TOPDIR}"
 BBFILES ?= ""
@@ -18,6 +18,7 @@ REFKIT_LAYERS = " \
   ##OEROOT##/../iot-web-layers/meta-iot-web \
   ##OEROOT##/../meta-iotqa \
   ##OEROOT##/../meta-security \
+  ##OEROOT##/../meta-security/meta-tpm \
   ##OEROOT##/../meta-security-isafw \
   ##OEROOT##/../meta-intel-realsense \
   ##OEROOT##/../meta-clang \
@@ -38,7 +39,7 @@ REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-python"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-ruby"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-systemd"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-webserver"
-# REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-xfce"
+REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/meta-xfce"
 # REFKIT_LAYERS += "##OEROOT##/../meta-openembedded/toolchain-layer"
 
 # Added at the end so that it can adapt to other layers

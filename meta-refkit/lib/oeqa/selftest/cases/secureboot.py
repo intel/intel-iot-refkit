@@ -40,7 +40,7 @@ class SecureBootTests(OESelftestTestCase):
     ovmf_keys_enrolled = False
     ovmf_qemuparams = ''
     ovmf_dir = ''
-    test_image = 'refkit-image-common'
+    test_image = 'refkit-image-secureboot-test'
 
     @classmethod
     def setUpLocal(self):
@@ -76,7 +76,12 @@ class SecureBootTests(OESelftestTestCase):
     def tearDownLocal(self):
         # Seems this is mandatory between the tests (a signed image is booted
         # when running test_boot_unsigned_image after test_boot_signed_image).
-        bitbake('-c clean %s' % self.test_image, output_log=self.logger)
+        # bitbake('-c clean %s' % self.test_image, output_log=self.logger)
+        #
+        # Whatever the problem was, it no longer seems to be necessary, so
+        # we can skip the time-consuming clean + full rebuild (5:04 min instead
+        # of 6:55min here).
+        pass
 
     @classmethod
     def tearDownClass(self):
@@ -88,13 +93,13 @@ class SecureBootTests(OESelftestTestCase):
 
         config = ''
 
+        config += 'REFKIT_IMAGE_EXTRA_INSTALL_append = " efivar"\n'
         if signing_key:
             meta_refkit_base = get_bb_var('META_REFKIT_CORE_BASE')
 
             config += 'REFKIT_DB_KEY = "%s/files/secureboot/%s.key"\n' % (meta_refkit_base, signing_key)
             config += 'REFKIT_DB_CERT = "%s/files/secureboot/%s.crt"\n' % (meta_refkit_base, signing_key)
             config += 'REFKIT_IMAGE_EXTRA_FEATURES_append = " secureboot"\n'
-            config += 'REFKIT_IMAGE_EXTRA_INSTALL_append = " efivar"\n'
 
         self.write_config(config)
         bitbake(self.test_image, output_log=self.logger)
