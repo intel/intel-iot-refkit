@@ -1,0 +1,19 @@
+The upstream patch (https://github.com/llvm-mirror/compiler-rt/commit/8a5e425a68de4d2c80ff00a97bbcb3722a4716da)
+was incomplete, this hunk was missing.
+
+Upstream-Status: Submitted [https://github.com/google/sanitizers/issues/822]
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+
+diff --git a/compiler-rt/lib/esan/esan_sideline_linux.cpp b/compiler-rt/lib/esan/esan_sideline_linux.cpp
+index d04f5909d6a2..bc272dfe49f8 100644
+--- a/lib/esan/esan_sideline_linux.cpp
++++ b/lib/esan/esan_sideline_linux.cpp
+@@ -70,7 +70,7 @@ int SidelineThread::runSideline(void *Arg) {
+ 
+   // Set up a signal handler on an alternate stack for safety.
+   InternalScopedBuffer<char> StackMap(SigAltStackSize);
+-  struct sigaltstack SigAltStack;
++  stack_t SigAltStack;
+   SigAltStack.ss_sp = StackMap.data();
+   SigAltStack.ss_size = SigAltStackSize;
+   SigAltStack.ss_flags = 0;

@@ -10,9 +10,9 @@ SRC_URI = " \
     file://0003-lib-Allow-passing-command-line-argument-through-laun.patch \
 "
 
-SRCREV = "1a49029f9d8fbee0338665522cf7432ae7485841"
+SRCREV = "9a19ea7c1329d55129898330f5c329ece05c875e"
 
-PV = "0.9.3+git${SRCPV}"
+PV = "0.9.7+git${SRCPV}"
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig gettext requires-systemd gobject-introspection

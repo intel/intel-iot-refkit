@@ -59,7 +59,6 @@ try {
         node('rk-docker') {
             ws("workspace/${slot_name}${ci_build_id}") {
                 builder_node = "${env.NODE_NAME}"
-                set_gh_status(is_pr, 'PENDING', 'Prepare for build')
                 deleteDir() // although dir should be brand new, empty just in case
                 stage('Checkout content') {
                     checkout_content(is_pr, ci_pr_num)
@@ -80,7 +79,6 @@ try {
                 run_args = ["--device=/dev/kvm -v ${env.PUBLISH_DIR}:${env.PUBLISH_DIR}:rw",
                             run_proxy_args()].join(" ")
                 docker.image(image_name).inside(run_args) {
-                    set_gh_status(is_pr, 'PENDING', 'Pre-build tests')
                     params = ["${script_env}", "docker/pre-build.sh"].join("\n")
                     stage('Pre-build tests') {
                         sh "${params}"
@@ -88,7 +86,6 @@ try {
                                       script: "docker/tester-create-summary.sh 'oe-selftest: pre-build' '' build.pre/TestResults_*/TEST- 0")
                     }
                     try {
-                        set_gh_status(is_pr, 'PENDING', 'Building')
                         params = ["${script_env}", "docker/build-project.sh"].join("\n")
                         stage('Build') {
                             sh "${params}"
@@ -96,7 +93,6 @@ try {
                     } catch (Exception e) {
                         throw e
                     } finally {
-                        set_gh_status(is_pr, 'PENDING', 'Store images')
                         stage('Store images') {
                             params = ["${script_env}", "docker/publish-project.sh"].join("\n")
                             sh "${params}"
@@ -124,14 +120,11 @@ try {
                     params = ["${script_env}", "docker/publish-sstate.sh"].join("\n")
                     sh "${params}"
                 }
-                // note wildcard: handle pre-build reports in build.pre/ as well
                 lock(resource: "global_data") {
                     summary += sh(returnStdout: true,
                                   script: "docker/tester-create-summary.sh 'oe-selftest: post-build' '' build/TestResults_*/TEST- 0")
-                    archiveArtifacts allowEmptyArchive: true,
-                                     artifacts: 'build*/TestResults_*/TEST-*.xml'
-                }
-                lock(resource: "step-xunit") {
+                    // note wildcard: handle pre-build reports in build.pre/ as well
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build*/TestResults_*/TEST-*.xml'
                     step_xunit('build*/TestResults_*/TEST-*.xml')
                 }
             }
@@ -164,25 +157,19 @@ try {
                 } catch (Exception e) {
                     throw e
                 } finally {
-                    // read tests summary prepared by tester-exec.sh
-                    // Here one tester adds it's summary piece to the global buffer.
-                    // Grab lock as we deal with global data from multiple workers
+                    // One tester adds it's summary piece to the global buffer.
+                    // Without locking we may lose tester result set(s) if testers publish xunit
+                    // data at nearly same time. Cover global summary add with same lock.
                     lock(resource: "global_data") {
                         summary += readFile "results-summary-${test_device}.${img}.log"
-                        archiveArtifacts allowEmptyArchive: true,
-                                         artifacts: '*.log, *.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, *.xml'
+                        step_xunit('TEST-*.xml')
                     }
-                }
-                // without locking we may lose tester result set(s)
-                // if testers run xunit step in nearly same time
-                lock(resource: "step-xunit") {
-                    step_xunit('TEST-*.xml')
                 }
             } // node
         } // test_runs =
     } // for i
     stage('Parallel test run') {
-        set_gh_status(is_pr, 'PENDING', 'Testing')
         timestamps {
             try {
                 parallel test_runs
@@ -205,11 +192,6 @@ try {
         currentBuild.result = 'SUCCESS'
     }
     echo "Finally: build result is ${currentBuild.result}\nSummary:\n${summary}"
-    if (currentBuild.result == 'UNSTABLE') {
-        set_gh_status(is_pr, 'FAILURE', "Build result: ${currentBuild.result}")
-    } else {
-        set_gh_status(is_pr, "${currentBuild.result}", "Build result: ${currentBuild.result}")
-    }
     if (!is_pr) {
         // send summary email after non-PR build
         email = "Git commit hash: ${ci_git_commit}\n"
@@ -287,14 +269,6 @@ def build_docker_image(image_name) {
     def build_args = [ build_proxy_args(), build_user_args()].join(" ")
     sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
-}
-
-def set_gh_status(is_pr, _state, _msg) {
-    if (is_pr) {
-        // NOTE: not sending status to GH via this method as it is not
-        //       present in ghprb plugin case
-        //setGitHubPullRequestStatus state: "${_state}", context: "${env.JOB_NAME}", message: "${_msg}"
-    }
 }
 
 def step_xunit(_pattern) {

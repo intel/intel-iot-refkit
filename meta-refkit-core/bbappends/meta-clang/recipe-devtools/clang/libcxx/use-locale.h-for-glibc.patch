@@ -1,0 +1,36 @@
+From 49a3095ae681293f806046f2fcf4f830b0cfc025 Mon Sep 17 00:00:00 2001
+From: Patrick Ohly <patrick.ohly@intel.com>
+Date: Wed, 19 Jul 2017 12:50:25 +0200
+Subject: [PATCH 1/1] __locale: use locale.h for glibc
+
+glibc 2.26 will stopped providing xlocale.h, and the 2.25.90
+pre-release already has that change:
+https://sourceware.org/glibc/wiki/Release/2.26#Removal_of_.27xlocale.h.27
+
+On has to use locale.h instead.
+
+Upstream-Status: Submitted [https://reviews.llvm.org/D35616]
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ include/__locale | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/__locale b/include/__locale
+index f4882dee8..ef33675fa 100644
+--- a/include/__locale
++++ b/include/__locale
+@@ -34,7 +34,9 @@
+ # include <support/solaris/xlocale.h>
+ #elif defined(_NEWLIB_VERSION)
+ # include <support/newlib/xlocale.h>
+-#elif (defined(__GLIBC__) || defined(__APPLE__)      || defined(__FreeBSD__) \
++#elif defined(__GLIBC__)
++# include <locale.h>
++#elif (defined(__APPLE__)      || defined(__FreeBSD__) \
+     || defined(__EMSCRIPTEN__) || defined(__IBMCPP__))
+ # include <xlocale.h>
+ #elif defined(_LIBCPP_HAS_MUSL_LIBC)
+-- 
+2.11.0
+

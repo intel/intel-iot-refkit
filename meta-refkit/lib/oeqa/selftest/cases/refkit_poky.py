@@ -62,6 +62,28 @@ class RefkitPokyMeta(type):
                 - proper declaration of dependencies (because 'yocto-compat-layer.py --dependency' adds those)
                 - parse and dependencies ('bitbake -S none world' must work)
                 """
+                def add_layers(layers):
+                    with open('conf/bblayers.conf', 'a') as f:
+                        f.write('BBLAYERS += "%s"\n' %
+                                ' '.join([os.path.normpath(self.layers[layer]) for layer in layers]))
+
+                # Workaround for yocto-compat-layer.py not evaluating
+                # LAYERDEPENDS_security += "${@bb.utils.contains("DISTRO_FEATURES", "x11", "gnome-layer xfce-layer", "", d)}"
+                # in meta-security: add the layer and its dependencies ourselves.
+                # Only meta-refkit needs this because only it has a hard dependency on meta-security.
+                if refkit_layer == 'meta-refkit':
+                    add_layers(('meta-oe', 'meta-python', 'meta-gnome', 'meta-xfce'))
+
+                # This allows the meta-refkit-core testing to catch
+                # more errors: by adding all non-refkit layers to the
+                # base configuration, we find signature differences
+                # also in recipes provided by those layers.
+                if refkit_layer == 'meta-refkit-core':
+                    add_layers([layer for layer in self.layers.keys() if \
+                                not layer.startswith('meta-refkit') and \
+                                layer not in self.poky_layers and \
+                                layer != 'meta-iotqa'])
+
                 cmd = "yocto-compat-layer.py --dependency %s -- %s" % (
                     ' '.join(self.layers.values()),
                     self.layers[refkit_layer])
