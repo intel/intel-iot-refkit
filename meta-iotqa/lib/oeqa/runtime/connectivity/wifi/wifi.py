@@ -134,14 +134,23 @@ class WiFiFunction(object):
             time.sleep(3)
         self.target_collect_info("route")
         assert status == 0, "Error messages: %s" % self.log
-
     def execute_connection(self, ap_type, ssid, pwd):
         '''
-        Do a full round of wifi connection without disable
+        Do a full round of wifi connection without disable (try 3 times)
         '''
-        self.enable_wifi()
-        self.connect_wifi(ap_type, ssid, pwd)
-        self.wifi_ip_check()
+        for i in range(3):
+            try:
+                self.enable_wifi()
+                self.connect_wifi(ap_type, ssid, pwd)
+                self.wifi_ip_check()
+                break
+            except AssertionError:
+                if(i < 2):
+                    self.log += "\nCould not connect to wifi correctly, retrying..\n"
+                    self.disable_wifi()
+                else:
+                    self.log += "\nUnable to correctly connect to wifi.\n"
+                    raise
 
     def ipv4_ssh_to(self, ipv4):
         '''
