@@ -185,8 +185,8 @@ initramfs-framework@core
 initscripts@core
 inputproto@core
 intel-microcode@intel
-iot-rest-api-server@iotweb
-iotivity-node@iotweb
+iot-rest-api-server@iot-web
+iotivity-node@iot-web
 iotivity-simple-client@oic
 iotivity@oic
 iproute2@core
@@ -327,7 +327,7 @@ netbase@core
 nettle@core
 nftables-settings-default@refkit-core
 nftables@networking-layer
-nodejs@iotweb
+nodejs@iot-web
 npth@core
 object-recognition-msgs@ros-layer
 ocl-icd@refkit-computervision
