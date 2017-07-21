@@ -1,3 +1,8 @@
+'''
+This test case tests that OpenCV python interface
+can detect triangle shape from an image using the 
+funtions from the OpenCV CV component. 
+'''
 import os
 import cv2 as cv
 import numpy as np

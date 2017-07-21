@@ -1,3 +1,8 @@
+'''
+This test case tests that OpenCV python interface
+can capture image from the camera using the 
+funtions from the OpenCV HighGUI component. 
+'''
 import cv2 as cv
 import sys
 
