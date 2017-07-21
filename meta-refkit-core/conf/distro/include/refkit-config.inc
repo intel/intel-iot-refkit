@@ -64,6 +64,10 @@ REFKIT_DEFAULT_DISTRO_FEATURES += "ostree"
 # This is needed for OSTree and flatpack.
 REFKIT_DEFAULT_DISTRO_FEATURES += "usrmerge"
 
+# Replaces polkit with groupcheck. In contrast to polkit,
+# groupcheck has very minimal dependencies.
+REFKIT_DEFAULT_DISTRO_FEATURES += "refkit-groupcheck"
+
 # Remove currently unsupported distro features from global defaults
 REFKIT_DEFAULT_DISTRO_FEATURES_REMOVE += "x11 3g"
 
@@ -76,6 +80,7 @@ DISTRO_FEATURES_OVERRIDES += " \
     refkit-computervision \
     refkit-gateway \
     refkit-industrial \
+    refkit-groupcheck \
 "
 
 #########################################################################
