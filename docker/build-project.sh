@@ -100,12 +100,45 @@ fi
 # to run. This makes it possible to investigate signature changes in post-build.sh.
 bitbake -S none ${_bitbake_targets}
 
-if [ ! -z ${JOB_NAME+x} ]; then
-  # CI run: save output to log file
-  bitbake ${_bitbake_targets} 2>&1 | tee -a $WORKSPACE/$CI_LOG
-else
-  bitbake ${_bitbake_targets}
-fi
+bitbake_build () {
+  local targets="$@"
+  if [ ! -z ${JOB_NAME+x} ]; then
+    # CI run: save output to log file
+    bitbake $targets 2>&1 | tee -a $WORKSPACE/$CI_LOG
+  else
+    bitbake $targets
+  fi
+}
+
+# Main build.
+bitbake_build ${_bitbake_targets}
+
+# Now that the main build phase is done, also build some variants.
+# We can do that in parallel, but we have to use different TMPDIRs,
+# because otherwise files that need to be different because of
+# the different distro features would overwrite each other.
+multiconfig_features="x11 wayland"
+for feature in $multiconfig_features; do
+    mkdir -p conf/multiconfig
+    cat >conf/multiconfig/$feature.conf <<EOF
+require conf/distro/include/refkit-core-$feature.inc
+TMPDIR .= "-$feature"
+# We cannot un-inherit buildhistory at this point?
+# Use a different directory because of https://bugzilla.yoctoproject.org/show_bug.cgi?id=11839
+BUILDHISTORY_DIR_append = "-$feature"
+BUILDHISTORY_COMMIT = "0"
+EOF
+done
+echo "BBMULTICONFIG = '$multiconfig_features'" >>conf/auto.conf
+
+# For each of these images there has to be a recipe in
+# meta-refkit-core/recipes-selftest/images. We could also
+# export tests for DAFT here.
+multiconfig_targets="multiconfig:x11:refkit-image-common-x11 multiconfig:wayland:refkit-image-common-wayland"
+bitbake_build $multiconfig_targets
+
+# TODO: publish-project.sh needs to be adapted. For example, it only
+# rsyncs detailed logs from tmp-glibc, but not tmp-glibc-11 or tmp-glibc-wayland.
 
 if [ ! -z ${JOB_NAME+x} ]; then
   # in CI run only:
