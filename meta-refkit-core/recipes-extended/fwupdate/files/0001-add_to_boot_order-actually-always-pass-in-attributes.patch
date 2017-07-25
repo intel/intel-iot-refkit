@@ -1,0 +1,36 @@
+From 5cdb01e0e2f70b4306e687e2c5b8f47136c0bffd Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 28 Mar 2017 13:24:44 -0400
+Subject: [PATCH 1/2] add_to_boot_order(): actually always pass in attributes
+ for BootOrder.
+
+Normally BootOrder is set, and we don't hit the uninitialized path,
+but... yeah.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+
+Upstream-Status: Backport [59e5faa7f29cb4296308720fab36f4f9d1f45ab7]
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ linux/libfwup.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/linux/libfwup.c b/linux/libfwup.c
+index fe4ece4..2785e6a 100644
+--- a/linux/libfwup.c
++++ b/linux/libfwup.c
+@@ -775,7 +775,9 @@ add_to_boot_order(uint16_t boot_entry)
+ {
+ 	uint16_t *boot_order = NULL, *new_boot_order = NULL;
+ 	size_t boot_order_size = 0;
+-	uint32_t attr;
++	uint32_t attr = EFI_VARIABLE_NON_VOLATILE |
++			EFI_VARIABLE_BOOTSERVICE_ACCESS |
++			EFI_VARIABLE_RUNTIME_ACCESS;
+ 	int rc;
+ 	unsigned int i;
+ 
+-- 
+2.11.0
+
