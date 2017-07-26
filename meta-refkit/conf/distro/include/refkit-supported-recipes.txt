@@ -495,7 +495,7 @@ xf86-input-libinput@core
 xf86-video-ast@intel
 xf86-video-fbdev@core
 xf86-video-intel@core
-xf86-video-mga@intel
+xf86-video-mga@openembedded-layer
 xf86-video-vesa@core
 xf86dgaproto@core
 xf86driproto@core
