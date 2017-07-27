@@ -38,22 +38,6 @@ echo "REFKIT_VM_IMAGE_TYPES = \"\"" >> conf/auto.conf
 export BUILD_ID=${CI_BUILD_ID}
 export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BUILD_ID"
 
-# Our post-build configuration should not require rebuilding.
-_images=""
-for img in `grep REFKIT_CI_BUILD_TARGETS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ a-zA-Z0-9_-]//g'`; do
-  _images="$_images ${img}"
-done
-bitbake -S none ${_images}
-
-# Check linux-intel specifically in addition to images, because it did
-# rebuild at some point and even though bitbake-diffsigs should
-# recurse to it, that's not guaranteed to work.
-for target in intel-linux ${_images}; do
-  if ! bitbake-diffsigs -t $target do_build; then
-    echo "$target: nothing changed or bitbake-diffsigs failed"
-  fi
-done
-
 _esdks=""
 for esdk in `grep REFKIT_CI_ESDK_TEST_TARGETS ${WORKSPACE}/refkit_ci_vars | perl -pe 's/.+="(.*)"/\1/g; s/[^ a-zA-Z0-9_-]//g'`; do
   _esdks="$_esdks ${esdk}:do_testsdkext"
@@ -64,11 +48,3 @@ _tests=`grep REFKIT_CI_POSTBUILD_SELFTESTS ${WORKSPACE}/refkit_ci_vars | perl -p
 if [ -n "$_tests" ]; then
   oe-selftest --run-tests ${_tests}
 fi
-
-# If something changed during the oe-selftest setup, we should (finally)
-# have two signatures to compare here.
-for target in linux-intel ${_images}; do
-  if ! bitbake-diffsigs -t $target do_build; then
-    echo "$target: nothing changed or bitbake-diffsigs failed"
-  fi
-done
