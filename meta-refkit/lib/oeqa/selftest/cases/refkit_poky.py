@@ -211,6 +211,10 @@ BBFILES ?= ""
 
     def tearDownLocal(self):
         """Remove temporary build directory."""
+        # Kill potentially running bitbake server. It might have terminated already,
+        # so ignore errors.
+        runCmd('bitbake --kill-server', ignore_status=True)
+
         # We intentionally do not remove "refkit-poky" here.
         # One can enter it after running a test to examine its state
         # or rerun commands.

@@ -48,7 +48,7 @@ bitbake -S none ${_images}
 # Check linux-intel specifically in addition to images, because it did
 # rebuild at some point and even though bitbake-diffsigs should
 # recurse to it, that's not guaranteed to work.
-for target in linux-intel ${_images}; do
+for target in intel-linux ${_images}; do
   if ! bitbake-diffsigs -t $target do_build; then
     echo "$target: nothing changed or bitbake-diffsigs failed"
   fi

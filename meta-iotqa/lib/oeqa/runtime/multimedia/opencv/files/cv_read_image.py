@@ -1,3 +1,8 @@
+'''
+This test case tests that OpenCV python interface
+can read image from file system using the 
+funtions from the OpenCV HighGUI component. 
+'''
 import os
 import cv2 as cv
 

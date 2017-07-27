@@ -1,3 +1,8 @@
+'''
+This test case tests that OpenCV python interface
+can perform image processing on an image using the 
+funtions from the OpenCV CV component. 
+'''
 import os
 import cv2 as cv
 
