@@ -29,8 +29,8 @@ REFKIT_DMVERITY_PRIVATE_KEY ??= "${@ '${META_REFKIT_CORE_BASE}/files/dm-verity/p
 REFKIT_DMVERITY_PASSWORD ??= "${@ 'pass:refkit' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
 
 # Pre-generated test/development keys for UEFI combo application signing
-REFKIT_DB_KEY ??= "${@ '${META_REFKIT_CORE_BASE}/files/secureboot/refkit-db.key' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
-REFKIT_DB_CERT ??= "${@ '${META_REFKIT_CORE_BASE}/files/secureboot/refkit-db.crt' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
+SECURE_BOOT_SIGNING_KEY ??= "${@ '${META_REFKIT_CORE_BASE}/files/secureboot/refkit-db.key' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
+SECURE_BOOT_SIGNING_CERT ??= "${@ '${META_REFKIT_CORE_BASE}/files/secureboot/refkit-db.crt' if (d.getVar('IMAGE_MODE') or 'production') != 'production' else '' }"
 
 # Index of the TPM NVRAM area used for random the per-machine disk encryption key.
 # The area contains a short ID + version, followed by the key.

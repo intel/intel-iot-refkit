@@ -272,3 +272,7 @@ REFKIT_IMAGE_EXTRA_FEATURES += "${REFKIT_INSTALLER_IMAGE_EXTRA_FEATURES}"
 REFKIT_IMAGE_EXTRA_INSTALL += "${REFKIT_INSTALLER_IMAGE_EXTRA_INSTALL}"
 
 inherit refkit-image
+
+# We don't want a second copy of the UEFI app because this image
+# is never going to boot from internal media.
+INT_STORAGE_ROOTFS_PARTUUID_VALUE = ""

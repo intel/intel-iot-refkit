@@ -232,11 +232,11 @@ To enable UEFI Secure Boot signing globally for all profiles, set:
 
 in ``conf/local.conf``. To use a custom DB key, additionally set:
 
-``REFKIT_DB_KEY``
-``REFKIT_DB_CERT``
+``SECURE_BOOT_SIGNING_KEY``
+``SECURE_BOOT_SIGNING_CERT``
 
-The signing tool uses a 2048bit RSA private key (``REFKIT_DB_KEY``) and a
-PEM formatted X.509 signature (``REFKIT_DB_CERT``). When deploying the DB
+The signing tool uses a 2048bit RSA private key (``SECURE_BOOT_SIGNING_KEY``) and a
+PEM formatted X.509 signature (``SECURE_BOOT_SIGNING_CERT``). When deploying the DB
 keys on the device, use the DER formatted X.509. See ``meta-refkit/files/secureboot/gen-keys-helper.sh`` for more details on how the test keys can be created.
 
 Firewall support
