@@ -45,16 +45,12 @@ create_swupd_links () {
   rm -fr $tmp_dir
 }
 
-# Catch errors in pipelines
-set -o pipefail
-
-_RSYNC_DEST=${RSYNC_PUBLISH_DIR}/builds/${JOB_NAME}/${CI_BUILD_ID}
-_RSYNC_DEST_UPD=${RSYNC_PUBLISH_DIR}/updates
-
-cd $WORKSPACE/build
-
-_BRESULT=tmp-glibc
+publish () {
+  # publish results of one build config
+  _BRESULT=$1
 _DEPL=${_BRESULT}/deploy
+_bresult_suffix=`echo ${_BRESULT} | sed 's/\.\/tmp-//'`
+_RSYNC_DEST=${_RSYNC_DEST_BASE}/${_bresult_suffix}
 
 # create publishing destination structure and copy
 create_remote_dirs ${RSYNC_PUBLISH_DIR}/builds ${JOB_NAME}/${CI_BUILD_ID}
@@ -108,12 +104,6 @@ if [ -n "$(find ${_BRESULT}/log -maxdepth 1 -name 'isafw*' -print -quit)" ]; the
     fi
 fi
 
-LOG=$WORKSPACE/$CI_LOG
-if [ -f "${LOG}" ]; then
-    xz -v -k ${LOG}
-    rsync -avz ${LOG}* ${_RSYNC_DEST}/
-fi
-
 ## for debugging signatures: publish stamps
 if [ -d ${_BRESULT}/stamps ]; then
     create_remote_dirs ${_RSYNC_DEST} .stamps/${TARGET_MACHINE}/
@@ -130,10 +120,28 @@ if [ -d ${_BRESULT}/work ]; then
     create_remote_dirs ${_RSYNC_DEST} detailed-logs/${TARGET_MACHINE}/
     rsync -qzrl --prune-empty-dirs --include "log.do_*" --include "*/" --exclude "*" ${_BRESULT}/work*/* ${_RSYNC_DEST}/detailed-logs/${TARGET_MACHINE}/
 fi
+}
+
+# Catch errors in pipelines
+set -o pipefail
+
+_RSYNC_DEST_BASE=${RSYNC_PUBLISH_DIR}/builds/${JOB_NAME}/${CI_BUILD_ID}
+_RSYNC_DEST_UPD=${RSYNC_PUBLISH_DIR}/updates
+
+cd $WORKSPACE/build
+for _bresult in `find . -maxdepth 1 -type d -name 'tmp-*glibc'`; do
+    publish ${_bresult}
+done
+
+LOG=$WORKSPACE/$CI_LOG
+if [ -f "${LOG}" ]; then
+    xz -v -k ${LOG}
+    rsync -avz ${LOG}* ${_RSYNC_DEST_BASE}/
+fi
 
 # Create latest symlink locally and rsync it to parent dir of publish dir
 ln -vsf ${CI_BUILD_ID} latest
-rsync -lv latest ${_RSYNC_DEST}/../
+rsync -lv latest ${_RSYNC_DEST_BASE}/../
 
 # create clean tarball of source, leaving out .git* and parts created by build and test stages
 cd $WORKSPACE
@@ -143,5 +151,5 @@ tar czf ${_tar_file} . \
         --exclude 'bitbake*.log*' --exclude 'build' --exclude 'build.pre' \
         --exclude 'buildhistory*' --exclude 'refkit_ci*' \
         --exclude '.git*' --exclude '*.testinfo.csv'
-rsync -av --chmod=F644 ${_tar_file} ${_RSYNC_DEST}/${JOB_NAME}-${CI_BUILD_ID}.tar.gz
+rsync -av --chmod=F644 ${_tar_file} ${_RSYNC_DEST_BASE}/${JOB_NAME}-${CI_BUILD_ID}.tar.gz
 rm -f ${_tar_file}
