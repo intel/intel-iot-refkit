@@ -17,7 +17,7 @@
 
 # function to test an image with QEMU, call point in testimg() function
 test_qemu() {
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/ovmf.qcow2
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/glibc/images/${MACHINE}/ovmf.qcow2
 
   # Make port numbers and mac address that won't collide with anything
   PID=$$
@@ -62,9 +62,10 @@ test_qemu() {
 # function to test one image, see call point below.
 testimg() {
   declare -i num_masked=0
-  _IMG_NAME=$1
-  TEST_SUITE_FILE=$2
-  TEST_CASES_FILE=$3
+  _DEPL_PATH=$1
+  _IMG_NAME=$2
+  TEST_SUITE_FILE=$3
+  TEST_CASES_FILE=$4
 
   # Get test suite
   wget ${_WGET_OPTS} ${TEST_SUITE_FOLDER_URL}/${_IMG_NAME}/${TEST_SUITE_FILE}
@@ -74,8 +75,8 @@ testimg() {
 
   FILENAME=${_IMG_NAME}-${MACHINE}-${CI_BUILD_ID}.wic
   set +e
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.bmap
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/images/${MACHINE}/${FILENAME}.xz -O - | unxz - > ${FILENAME}
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/${_DEPL_PATH}/images/${MACHINE}/${FILENAME}.bmap
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/${_DEPL_PATH}/images/${MACHINE}/${FILENAME}.xz -O - | unxz - > ${FILENAME}
   if [ ! -s ${FILENAME} ]; then
       echo "ERROR: No file ${FILENAME}.xz, can not continue."
       exit 1
@@ -138,11 +139,11 @@ env |sort
 
 _WGET_OPTS="--no-verbose --no-proxy"
 CI_BUILD_URL=${COORD_BASE_URL}/builds/${JOB_NAME}/${CI_BUILD_ID}
-TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/testsuite/${MACHINE}
+TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/glibc/testsuite/${MACHINE}
 
 # get necessary params from testinfo.csv file written to tester workspace
 # by code in Jenkinsfile. We have just one line for this tester session.
-while IFS=, read _img _tsuite _tdata _mach _dev
+while IFS=, read _depl _img _tsuite _tdata _mach _dev
 do
-  [ "${_mach}" = "${MACHINE}" ] && testimg ${_img} ${_tsuite} ${_tdata}
+  [ "${_mach}" = "${MACHINE}" ] && testimg ${_depl} ${_img} ${_tsuite} ${_tdata}
 done < testinfo.csv
