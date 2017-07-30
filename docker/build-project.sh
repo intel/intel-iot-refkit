@@ -130,7 +130,7 @@ echo "BBMULTICONFIG = '$multiconfig_features'" >>conf/auto.conf
 # For each of these images there has to be a recipe in
 # meta-refkit-core/recipes-selftest/images. We could also
 # export tests for DAFT here.
-multiconfig_targets="multiconfig:x11:refkit-image-common-x11 multiconfig:wayland:refkit-image-common-wayland"
+multiconfig_targets="multiconfig:x11:refkit-image-common-x11 multiconfig:wayland:refkit-image-common-wayland multiconfig:x11:refkit-image-computervision-x11 multiconfig:wayland:refkit-image-computervision-wayland"
 bitbake_build $multiconfig_targets
 
 # TODO: publish-project.sh needs to be adapted. For example, it only

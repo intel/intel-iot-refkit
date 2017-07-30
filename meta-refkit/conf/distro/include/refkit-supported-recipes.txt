@@ -32,6 +32,7 @@
 acl@core
 actionlib-msgs@ros-layer
 actionlib@ros-layer
+adwaita-icon-theme@core
 alsa-lib@core
 alsa-plugins@core
 alsa-state@core
@@ -41,6 +42,9 @@ appfw-test-app@iotqa
 apr-util@core
 apr@core
 assimp@ros-layer
+at-spi2-atk@core
+at-spi2-core@core
+atk@core	   
 atop@openembedded-layer
 attr@core
 autoconf@core
@@ -78,6 +82,7 @@ compositeproto@core
 connman-conf@core
 connman@core
 console-bridge@ros-layer
+consolekit@core
 control-msgs@ros-layer
 coreutils@core
 cpp-common@ros-layer
@@ -111,10 +116,10 @@ file@core
 findutils@core
 fixesproto@core
 flac@core
-flatpak@flatpak-layer
 flatpak-image-runtime@flatpak-layer
 flatpak-predefined-repos@flatpak-layer
 flatpak-utils@flatpak-layer
+flatpak@flatpak-layer
 flex@core
 font-util@core
 fontconfig@core
@@ -137,6 +142,7 @@ geometry-msgs@ros-layer
 gettext@core
 gflags@openembedded-layer
 git@core
+glfw@librealsense
 glib-2.0@core
 glib-networking@core
 glibc-locale@core
@@ -160,11 +166,13 @@ gstreamer1.0-plugins-base@core
 gstreamer1.0-plugins-good@core
 gstreamer1.0-vaapi@core
 gstreamer1.0@core
+gtk\+3@core
 gzip@core
 harfbuzz@core
 hello-bundle-a@iotqa
 hello-bundle-b@iotqa
 hello-bundle-s@iotqa
+hicolor-icon-theme@core
 htop@openembedded-layer
 i2c-minnowmax-board@quark-bsp
 i2c-quark-board@quark-bsp
@@ -226,6 +234,7 @@ libffi@core
 libfontenc@core
 libgcc@core
 libgcrypt@core
+libglu@core
 libgpg-error@core
 libgphoto2@openembedded-layer
 libgudev@core
@@ -269,11 +278,13 @@ libxau@core
 libxaw@openembedded-layer
 libxcb@core
 libxcomposite@core
+libxcursor@core
 libxdamage@core
 libxdmcp@core
 libxext@core
 libxfixes@core
 libxfont2@core
+libxft@core
 libxi@core
 libxinerama@core
 libxkbcommon@core
@@ -382,9 +393,9 @@ randrproto@core
 read-map@iotqa
 readline@core
 recordproto@core
+refkit-ostree@refkit-core
 refkit-ros-tests@iotqa
 refkit.*image.*@refkit.*
-refkit-ostree@refkit-core
 renderproto@core
 resource-retriever@ros-layer
 resourceproto@core
