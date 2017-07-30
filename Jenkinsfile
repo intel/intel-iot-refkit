@@ -134,9 +134,9 @@ try {
     test_targets = testinfo_data.split("\n")
     for(int i = 0; i < test_targets.size() && test_targets[i] != ""; i++) {
         def one_target_testinfo = test_targets[i]
-        def test_device = one_target_testinfo.split(',')[4]
-        def test_machine = one_target_testinfo.split(',')[3]
-        def img = one_target_testinfo.split(",")[0]
+        def test_device = one_target_testinfo.split(',')[5]
+        def test_machine = one_target_testinfo.split(',')[4]
+        def img = one_target_testinfo.split(",")[1]
         test_runs["test_${i}_${test_device}"] = {
             node('refkit-tester') {
                 deleteDir() // clean workspace
