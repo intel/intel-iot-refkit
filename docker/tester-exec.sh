@@ -17,7 +17,7 @@
 
 # function to test an image with QEMU, call point in testimg() function
 test_qemu() {
-  wget ${_WGET_OPTS} ${CI_BUILD_URL}/glibc/images/${MACHINE}/ovmf.qcow2
+  wget ${_WGET_OPTS} ${CI_BUILD_URL}/headless-glibc/images/${MACHINE}/ovmf.qcow2
 
   # Make port numbers and mac address that won't collide with anything
   PID=$$
@@ -139,7 +139,8 @@ env |sort
 
 _WGET_OPTS="--no-verbose --no-proxy"
 CI_BUILD_URL=${COORD_BASE_URL}/builds/${JOB_NAME}/${CI_BUILD_ID}
-TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/glibc/testsuite/${MACHINE}
+# TODO (?): per-config test suites - not sure yet whether that is needed.
+TEST_SUITE_FOLDER_URL=${CI_BUILD_URL}/headless-glibc/testsuite/${MACHINE}
 
 # get necessary params from testinfo.csv file written to tester workspace
 # by code in Jenkinsfile. We have just one line for this tester session.
