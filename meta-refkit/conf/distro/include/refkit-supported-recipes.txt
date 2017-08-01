@@ -194,6 +194,7 @@ iptables-settings-default@refkit-core
 iptables@core
 iputils@core
 iso-codes@core
+iwlwifi@intel
 json-c@core
 json-glib@core
 kbd@core
