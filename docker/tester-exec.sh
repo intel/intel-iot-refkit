@@ -128,6 +128,13 @@ testimg() {
   # rename files to contain device and img_name
   rename TEST- TEST-${DEVICE}.${_IMG_NAME}. TEST-*.xml
   rename .log .${DEVICE}.${_IMG_NAME}.log *.log
+
+  # check for failure pattern and show containing file, to bring errors out
+  # in main job log instead of buried in one of many artifacts from DAFT.
+  if [ -f test_aft.${DEVICE}.${_IMG_NAME}.log -a -n "$(egrep -l 'FAIL|Traceback' test_aft.${DEVICE}.${_IMG_NAME}.log)" ]; then
+    echo "===== ERROR: failure reported in test_aft.${DEVICE}.${_IMG_NAME}.log ====="
+    cat test_aft.${DEVICE}.${_IMG_NAME}.log
+  fi
   ./tester-create-summary.sh "Image: ${FILENAME}" ${DEVICE} TEST-${DEVICE}.${_IMG_NAME} $num_masked > results-summary-${DEVICE}.${_IMG_NAME}.log
   set -e
 
