@@ -162,7 +162,7 @@ try {
                     // data at nearly same time. Cover global summary add with same lock.
                     lock(resource: "global_data") {
                         summary += readFile "results-summary-${test_device}.${img}.log"
-                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, *.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, TEST-*.xml'
                         step_xunit('TEST-*.xml')
                     }
                 }
