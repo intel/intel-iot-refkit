@@ -469,6 +469,8 @@ thermald@intel
 thin-provisioning-tools@openembedded-layer
 tiff@core
 tpm-tools@tpm-layer
+tpm2-tools@measured
+tpm2-tss@measured
 trajectory-msgs@ros-layer
 tremor@core
 trousers@tpm-layer
