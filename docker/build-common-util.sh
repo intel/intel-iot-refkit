@@ -26,6 +26,15 @@ DL_DIR = "${BUILD_CACHE_DIR}/sources"
 EOF
     fi
 
+# We need different tmp dirs for multiconfig builds.
+# Having the main one called just "tmp-glibc" looks odd
+# compared to "tmp-x11-glibc", so we inject an additional
+# word also for the main configuration.
+cat >>conf/auto.conf <<EOF
+REFKIT_BUILD_CONFIG ??= "headless"
+TMPDIR .= "-\${REFKIT_BUILD_CONFIG}"
+EOF
+
     if [ ! -z ${JOB_NAME+x} ]; then
         # in CI run only:
         if [ ! -z ${COORD_BASE_URL+x} ]; then

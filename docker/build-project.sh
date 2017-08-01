@@ -118,7 +118,7 @@ for feature in $multiconfig_features; do
     mkdir -p conf/multiconfig
     cat >conf/multiconfig/$feature.conf <<EOF
 require conf/distro/include/refkit-core-$feature.inc
-TMPDIR .= "-$feature"
+REFKIT_BUILD_CONFIG = "$feature"
 # We cannot un-inherit buildhistory at this point?
 # Use a different directory because of https://bugzilla.yoctoproject.org/show_bug.cgi?id=11839
 BUILDHISTORY_DIR_append = "-$feature"

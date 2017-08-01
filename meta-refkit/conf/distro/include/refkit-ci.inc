@@ -92,17 +92,17 @@ REFKIT_CI_TEST_EXPORT_TARGETS="refkit-image-common refkit-image-computervision r
 # Execute automatic tests for following images with corresponding
 # test suite, test files and devices.
 # Space separated list of tuples, each should in format:
-# <image_name>,<testsuite_name>,<testfiles_name>,$MACHINE,<test_device_name>
+# <deploy_path>,<image_name>,<testsuite_name>,<testfiles_name>,$MACHINE,<test_device_name>
 REFKIT_CI_TEST_RUNS=" \
-  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
-  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
-  refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},qemu \
-  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
-  refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
-  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
-  refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
-  refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
-  refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  headless-glibc,refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  headless-glibc,refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  headless-glibc,refkit-image-common,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},qemu \
+  headless-glibc,refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  headless-glibc,refkit-image-computervision,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  headless-glibc,refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  headless-glibc,refkit-image-gateway,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
+  headless-glibc,refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},570x \
+  headless-glibc,refkit-image-industrial,iot-testsuite.tar.gz,iot-testfiles.${MACHINE}.tar.gz,${MACHINE},minnowboardturbot \
 "
 
 # Dont use disk space monitor in CI builds, to avoid frequent

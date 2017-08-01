@@ -43,13 +43,23 @@ class ImageInstaller(OESelftestTestCase):
     image_is_ready = False
     wicenv_cache = {}
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.installer_test_vars = get_bb_vars([
+            'DEPLOY_DIR_IMAGE',
+            'DISTRO_FEATURES',
+            'MACHINE_ARCH',
+            'TMPDIR',
+        ])
+
     def setUpLocal(self):
         """This code is executed before each test method."""
-        self.distro_features = get_bb_var('DISTRO_FEATURES').split()
-        self.machine_arch = get_bb_var('MACHINE_ARCH')
+        self.distro_features = self.installer_test_vars['DISTRO_FEATURES'].split()
+        self.machine_arch = self.installer_test_vars['MACHINE_ARCH']
         self.image_arch = self.machine_arch.replace('_', '-')
-        self.image_dir = get_bb_var('DEPLOY_DIR_IMAGE')
-        self.resultdir = os.path.join(get_bb_var('TMPDIR'), 'oeselftest', 'image-installer')
+        self.image_dir = self.installer_test_vars['DEPLOY_DIR_IMAGE']
+        self.resultdir = os.path.join(self.installer_test_vars['TMPDIR'], 'oeselftest', 'image-installer')
 
         # Do this here instead of in setUpClass as the base setUp does some
         # clean up which can result in the native tools built earlier in
@@ -81,7 +91,7 @@ class ImageInstaller(OESelftestTestCase):
         self.create_internal_disk()
 
         if tpm:
-            swtpm = glob('tmp-glibc/work/*/swtpm-wrappers-native/1.0-r0/swtpm_setup_oe.sh')
+            swtpm = glob('%s/work/*/swtpm-wrappers-native/1.0-r0/swtpm_setup_oe.sh' % self.installer_test_vars['TMPDIR'])
             self.assertEqual(len(swtpm), 1, msg='Expected exactly one swtpm_setup_oe.sh: %s' % swtpm)
             cmd = '%s --tpm-state %s --createek' % (swtpm[0], self.resultdir)
             self.assertEqual(0, runCmd(cmd).status)
