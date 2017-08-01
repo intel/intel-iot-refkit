@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fa3c971..f1ec7e2 100644
+index 08a65c4..9af14d5 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -797,4 +797,10 @@ endif (EXISTS "${HDF5_SOURCE_DIR}/c++" AND IS_DIRECTORY "${HDF5_SOURCE_DIR}/c++"
+@@ -817,4 +817,10 @@ endif ()
  #-----------------------------------------------------------------------------
  configure_file (${HDF_RESOURCES_DIR}/H5pubconf.h.in ${HDF5_BINARY_DIR}/H5pubconf.h @ONLY)
  
