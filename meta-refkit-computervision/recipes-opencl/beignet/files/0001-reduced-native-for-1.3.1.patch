@@ -1,4 +1,4 @@
-From 7955c15d6f22297ae6d845eba6e89b384d0c0a7f Mon Sep 17 00:00:00 2001
+From f489c897a5ef80deb231296cd7e639763fee6ae4 Mon Sep 17 00:00:00 2001
 From: Tuomas Katila <tuomas.katila@intel.com>
 Date: Wed, 9 Nov 2016 11:16:40 +0200
 Subject: [PATCH] reduced native for 1.3.1
@@ -6,11 +6,11 @@ Subject: [PATCH] reduced native for 1.3.1
 Signed-off-by: Tuomas Katila <tuomas.katila@intel.com>
 Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
 ---
- CMakeLists.txt | 116 ---------------------------------------------------------
- 1 file changed, 116 deletions(-)
+ CMakeLists.txt | 119 ---------------------------------------------------------
+ 1 file changed, 119 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7e01688..20c26b2 100644
+index 71e3ef7d..20c26b22 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -28,7 +28,6 @@ set (NOT_BUILD_STAND_ALONE_UTEST 1)
@@ -21,7 +21,7 @@ index 7e01688..20c26b2 100644
  INCLUDE (FindPkgConfig)
  
  SET(CMAKE_VERBOSE_MAKEFILE "false")
-@@ -112,119 +111,11 @@ ELSE(X11_FOUND)
+@@ -112,122 +111,11 @@ ELSE(X11_FOUND)
    MESSAGE(STATUS "Looking for XLib - not found")
  ENDIF(X11_FOUND)
  
@@ -124,24 +124,27 @@ index 7e01688..20c26b2 100644
 -
 -OPTION(OCLICD_COMPAT "OCL ICD compatibility mode" ON)
 -IF(OCLICD_COMPAT)
--Find_Package(OCLIcd)
--IF(OCLIcd_FOUND)
--  MESSAGE(STATUS "Looking for OCL ICD header file - found")
--  configure_file (
--    "intel-beignet.icd.in"
--    "${ICD_FILE_NAME}"
--  )
--  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME} DESTINATION /etc/OpenCL/vendors)
--ELSE(OCLIcd_FOUND)
--  MESSAGE(STATUS "Looking for OCL ICD header file - not found")
--  MESSAGE(FATAL_ERROR "OCL ICD loader miss. If you really want to disable OCL ICD support, please run cmake with option -DOCLICD_COMPAT=0.")
--ENDIF(OCLIcd_FOUND)
+-  Find_Package(OCLIcd)
+-  IF(OCLIcd_FOUND)
+-    MESSAGE(STATUS "Looking for OCL ICD header file - found")
+-    configure_file (
+-      "intel-beignet.icd.in"
+-      "${ICD_FILE_NAME}"
+-      )
+-    IF(NOT OCL_ICD_INSTALL_PREFIX)
+-      set(OCL_ICD_INSTALL_PREFIX "/etc/OpenCL/vendors")
+-    ENDIF(NOT OCL_ICD_INSTALL_PREFIX)
+-    install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME} DESTINATION ${OCL_ICD_INSTALL_PREFIX})
+-  ELSE(OCLIcd_FOUND)
+-    MESSAGE(STATUS "Looking for OCL ICD header file - not found")
+-    MESSAGE(FATAL_ERROR "OCL ICD loader miss. If you really want to disable OCL ICD support, please run cmake with option -DOCLICD_COMPAT=0.")
+-  ENDIF(OCLIcd_FOUND)
 -ENDIF(OCLICD_COMPAT)
 -
  Find_Package(PythonInterp)
  
  OPTION(EXPERIMENTAL_DOUBLE "Enable experimental double support" OFF)
-@@ -328,13 +219,6 @@ ENDIF(BUILD_EXAMPLES)
+@@ -331,13 +219,6 @@ ENDIF(BUILD_EXAMPLES)
  
  ADD_SUBDIRECTORY(include)
  ADD_SUBDIRECTORY(backend)
@@ -156,5 +159,5 @@ index 7e01688..20c26b2 100644
  IF(BUILD_EXAMPLES)
  ADD_SUBDIRECTORY(examples)
 -- 
-2.9.3
+2.13.3
 

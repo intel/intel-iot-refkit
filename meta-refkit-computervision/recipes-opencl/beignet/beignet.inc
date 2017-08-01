@@ -10,7 +10,7 @@ SRC_URI_append_class-target = " file://0001-Run-native-gbe_bin_generater-to-comp
 
 # CMake cannot digest "+" in pathes -> replace it with dots.
 PV = "1.3.1.${@ 'git${SRCPV}'.replace('+', '.')}"
-SRCREV = "6804cca263edd11fd03b2d7f5b7ba034d9a013c3"
+SRCREV = "757ccf02d6eac0f0281f2feb08a8bf1be6c27dfe"
 S = "${WORKDIR}/git"
 
 # we need to depend on ocl-icd, so that the exported symbols go right

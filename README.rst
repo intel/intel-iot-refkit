@@ -89,8 +89,6 @@ Specify one or more target image(s)::
 
 $ docker/local-build.sh refkit-image-common
 
-.. building witout docker:
-
 Building without Docker
 =======================
 

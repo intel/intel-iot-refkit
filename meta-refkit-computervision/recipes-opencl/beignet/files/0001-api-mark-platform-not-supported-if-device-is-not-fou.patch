@@ -1,4 +1,4 @@
-From e7b7f468df7c73187dcf30e02137a70ed3fe44f2 Mon Sep 17 00:00:00 2001
+From 8a0f84a7f725b0f8161661dcf1c69f047b224b74 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Mon, 20 Feb 2017 23:21:48 +0200
 Subject: [PATCH] api: mark platform not supported if device is not found.
@@ -20,7 +20,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  2 files changed, 78 insertions(+)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 77a1c87..0a67acd 100644
+index ecb98b96..2b38df68 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -7,6 +7,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
@@ -36,7 +36,7 @@ index 77a1c87..0a67acd 100644
  foreach (KF ${KERNEL_FILES})
    set (input_file ${KERNEL_SOURCE}/${KF}.cl)
 diff --git a/src/cl_api_platform_id.c b/src/cl_api_platform_id.c
-index 10d8894..1045e93 100644
+index 10d88947..1045e934 100644
 --- a/src/cl_api_platform_id.c
 +++ b/src/cl_api_platform_id.c
 @@ -19,6 +19,13 @@
@@ -127,5 +127,5 @@ index 10d8894..1045e93 100644
    if (platform != cl_get_platform_default()) {
      return CL_INVALID_PLATFORM;
 -- 
-2.9.3
+2.13.3
 
