@@ -16,21 +16,16 @@
 
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
 def target_machine = "intel-corei7-64"
-
 // JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def test_runs = [:]
-def testinfo_data = ""
-def ci_git_commit = ""
 def summary = ""
-def added_commits = ""
 def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_builds_to_keep = 4
 
-def ci_pr_num = ""
 if (is_pr) {
     if (params.containsKey("GITHUB_PR_NUMBER")) {
         ci_pr_num = "$GITHUB_PR_NUMBER"
