@@ -56,14 +56,13 @@ _RSYNC_DEST=${_RSYNC_DEST_BASE}/${_bresult_suffix}
 create_remote_dirs ${RSYNC_PUBLISH_DIR}/builds ${JOB_NAME}/${CI_BUILD_ID}
 # no uses for stored plain .wic files, skip storing on server, saving big part of space and transfer time
 [ -d ${_DEPL}/images ] && create_remote_dirs ${_RSYNC_DEST} images && rsync -avS --exclude '*.wic' ${_DEPL}/images/${TARGET_MACHINE} ${_RSYNC_DEST}/images/
-[ -d ${_DEPL}/licenses ] && create_remote_dirs ${_RSYNC_DEST} licenses && rsync -az --ignore-existing ${_DEPL}/licenses ${_RSYNC_DEST}/
+[ -d ${_DEPL}/licenses -a "$_jobtype" = "master" ] && create_remote_dirs ${_RSYNC_DEST} licenses && rsync -az --ignore-existing ${_DEPL}/licenses ${_RSYNC_DEST}/
 [ -d ${_DEPL}/sources ] && create_remote_dirs ${_RSYNC_DEST} sources && rsync -av --ignore-existing ${_DEPL}/sources ${_RSYNC_DEST}/
 [ -d ${_DEPL}/tools ] && create_remote_dirs ${_RSYNC_DEST} tools && rsync -av --ignore-existing ${_DEPL}/tools ${_RSYNC_DEST}/
 
 # If produced, publish swupd repo to build directory.
 # It will be published to real update location during build finalize steps
 if [ -d ${_DEPL}/swupd/${TARGET_MACHINE} ]; then
-    _jobtype=`echo ${JOB_NAME} | awk -F'_' '{print $NF}'`
     for s_dir in `find ${_DEPL}/swupd/${TARGET_MACHINE} -maxdepth 2 -name www -type d`; do
         i_dir=`dirname $s_dir`
         i_name=`basename $i_dir`
@@ -122,11 +121,13 @@ if [ -d ${_BRESULT}/work ]; then
 fi
 }
 
+# Start of script
 # Catch errors in pipelines
 set -o pipefail
 
 _RSYNC_DEST_BASE=${RSYNC_PUBLISH_DIR}/builds/${JOB_NAME}/${CI_BUILD_ID}
 _RSYNC_DEST_UPD=${RSYNC_PUBLISH_DIR}/updates
+_jobtype=`echo ${JOB_NAME} | awk -F'_' '{print $NF}'`
 
 cd $WORKSPACE/build
 for _bresult in `find . -maxdepth 1 -type d -name 'tmp-*glibc'`; do
