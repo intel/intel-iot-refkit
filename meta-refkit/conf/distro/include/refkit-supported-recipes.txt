@@ -53,6 +53,7 @@ bash@core
 bc@core
 beignet-550x@refkit-computervision
 beignet-570x@refkit-computervision
+beignet-hd500@refkit-computervision
 beignet-minnowmax@refkit-computervision
 bigreqsproto@core
 binutils@core
