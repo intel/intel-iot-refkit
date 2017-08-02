@@ -151,5 +151,4 @@ tar czf ${_tar_file} . \
         --exclude 'bitbake*.log*' --exclude 'build' --exclude 'build.pre' \
         --exclude 'buildhistory*' --exclude 'refkit_ci*' \
         --exclude '.git*' --exclude '*.testinfo.csv'
-rsync -av --chmod=F644 ${_tar_file} ${_RSYNC_DEST_BASE}/${JOB_NAME}-${CI_BUILD_ID}.tar.gz
-rm -f ${_tar_file}
+rsync -av --remove-source-files --chmod=F644 ${_tar_file} ${_RSYNC_DEST_BASE}/${JOB_NAME}-${CI_BUILD_ID}.tar.gz
