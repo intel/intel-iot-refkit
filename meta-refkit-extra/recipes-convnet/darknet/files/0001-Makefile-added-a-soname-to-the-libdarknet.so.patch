@@ -1,0 +1,33 @@
+From 109692bce53087e15259f7302b398f7a6cf2e57a Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Thu, 3 Aug 2017 13:20:27 +0300
+Subject: [PATCH] Makefile: added a soname to the libdarknet.so.
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index b0a9f1c..116428b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -79,7 +79,7 @@ $(ALIB): $(OBJS)
+ 	$(AR) $(ARFLAGS) $@ $^
+ 
+ $(SLIB): $(OBJS)
+-	$(CC) $(CFLAGS) -shared $^ -o $@ $(LDFLAGS)
++	$(CC) $(CFLAGS) -shared -Wl,-soname,$(SLIB).0 $^ -o $@.0.0.1 $(LDFLAGS)
+ 
+ $(OBJDIR)%.o: %.c $(DEPS)
+ 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+@@ -97,5 +97,5 @@ results:
+ .PHONY: clean
+ 
+ clean:
+-	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ)
++	rm -rf $(OBJS) $(SLIB).0.0.1 $(ALIB) $(EXEC) $(EXECOBJ)
+ 
+-- 
+2.13.4
+

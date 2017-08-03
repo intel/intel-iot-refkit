@@ -2,6 +2,7 @@ acpica@core
 acpitables@refkit-extra
 btspeaker@refkit-extra
 caffe@refkit-extra
+darknet@refkit-extra
 household-objects-database-msgs@ros-layer
 hdf5@refkit-extra
 leveldb@openembedded-layer
