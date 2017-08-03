@@ -29,6 +29,7 @@
 # command like this:
 # $ LC_ALL=C ex +'32,$ !sort -g' -scxa refkit-supported-recipes.txt
 
+
 acl@core
 actionlib-msgs@ros-layer
 actionlib@ros-layer
@@ -373,6 +374,8 @@ procps@core
 protobuf@openembedded-layer
 ptest-runner@core
 pulseaudio@core
+python-numeric@meta-python
+python-pyopengl@refkit-computervision
 python3-catkin-pkg@ros-layer
 python3-dbus@core
 python3-lxml@meta-python

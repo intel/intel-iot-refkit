@@ -9,4 +9,5 @@ RDEPENDS_${PN} = " \
     librealsense-examples \
     viennacl-examples \
     caffe-bvlc-reference \
+    python-pyopengl \
 "
