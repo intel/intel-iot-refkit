@@ -112,10 +112,10 @@ file@core
 findutils@core
 fixesproto@core
 flac@core
-flatpak@flatpak-layer
 flatpak-image-runtime@flatpak-layer
 flatpak-predefined-repos@flatpak-layer
 flatpak-utils@flatpak-layer
+flatpak@flatpak-layer
 flex@core
 font-util@core
 fontconfig@core
@@ -315,6 +315,7 @@ mkfontdir@core
 mkfontscale@core
 mkl-dnn@refkit-computervision
 mmap-smack-test@security-smack
+motion@refkit-computervision
 moveit-core@ros-layer
 moveit-msgs@ros-layer
 moveit-ros-perception@ros-layer
@@ -384,9 +385,9 @@ randrproto@core
 read-map@iotqa
 readline@core
 recordproto@core
+refkit-ostree@refkit-core
 refkit-ros-tests@iotqa
 refkit.*image.*@refkit.*
-refkit-ostree@refkit-core
 renderproto@core
 resource-retriever@ros-layer
 resourceproto@core
