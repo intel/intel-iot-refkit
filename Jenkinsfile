@@ -14,9 +14,10 @@
 // more details.
 //
 
+// JOB_NAME expected to be in form <repo-name>_<variant>_<type> (master jobs)
+// or: in form <repo-name>_pull-requests (PR jobs)
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
 def target_machine = "intel-corei7-64"
-// JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
@@ -194,9 +195,12 @@ try {
         email += "Test results:\n\n${summary}"
         def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
         echo "${email}"
+        job_variant = "${env.JOB_NAME}".tokenize("_")[1]
+        mail_recipients_var = "RK_NOTIFICATION_MAIL_RECIPIENTS_${job_variant}"
+        mail_cmd = "cat msg.txt |mailx -s '${subject}' \$${mail_recipients_var}"
         node('rk-mailer') {
             writeFile file: 'msg.txt', text: email
-            sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
+            sh "${mail_cmd}"
         }
     }
 }
