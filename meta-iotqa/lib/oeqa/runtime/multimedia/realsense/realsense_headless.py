@@ -1,5 +1,6 @@
 from oeqa.oetest import oeRuntimeTest
 
+
 class RealsenseHeadlessTest(oeRuntimeTest):
     def test_realsense_headless(self):
         # First make sure that uvcvideo module is loaded.
