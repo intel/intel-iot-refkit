@@ -155,3 +155,6 @@ PACKAGECONFIG_append_pn-opencv_df-refkit-config = " opencl dnn"
 # Use nftables instead of iptables.
 PACKAGECONFIG_remove_pn-connman_df-refkit-config = "iptables"
 PACKAGECONFIG_append_pn-connman_df-refkit-config = " nftables"
+
+#remove gtk dependency from opencv
+PACKAGECONFIG_remove_pn-opencv_df-refkit-config = "gtk"
