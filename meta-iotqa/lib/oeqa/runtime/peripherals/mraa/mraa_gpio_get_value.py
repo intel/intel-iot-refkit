@@ -54,7 +54,7 @@ class MraaGpioGetTest(oeRuntimeTest):
         subprocess.check_output("echo 1 > /sys/class/gpio/gpio20/value", shell=True)
         sleep(1)
         output = self.mraa_gpio_get_value()
-        self.assertEqual(output, 0, msg="GPIO value is not 1 ")
+        self.assertEqual(output, 1, msg="GPIO value is not 1 ")
 
         subprocess.check_output("echo 0 > /sys/class/gpio/gpio20/value", shell=True)
         sleep(1)
