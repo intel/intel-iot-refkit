@@ -3,6 +3,7 @@ oeqa.runtime.core.iotivity.client
 oeqa.runtime.multimedia.audio.pulseaudio
 oeqa.runtime.peripherals.mraa.mraa_gpio
 oeqa.runtime.peripherals.mraa.mraa_hello
+oeqa.runtime.peripherals.mraa.mraa_gpio_get_value
 oeqa.runtime.peripherals.upm.upm
 oeqa.runtime.programming.nodejs.apprt_nodejs
 oeqa.runtime.sanity.flatpak
