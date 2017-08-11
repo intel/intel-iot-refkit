@@ -8,4 +8,5 @@ oeqa.runtime.connectivity.bluetooth.bt_6lowpan
 oeqa.runtime.connectivity.wifi.wifi_connect
 oeqa.runtime.programming.python.apprt_python
 oeqa.runtime.multimedia.audio.alsa
+oeqa.runtime.multimedia.audio.audio_rec_play
 oeqa.runtime.sanity.nftables
