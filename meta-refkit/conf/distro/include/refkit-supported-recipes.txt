@@ -137,6 +137,7 @@ geometry-msgs@ros-layer
 gettext@core
 gflags@openembedded-layer
 git@core
+glfw@librealsense
 glib-2.0@core
 glib-networking@core
 glibc-locale@core
@@ -227,6 +228,7 @@ libffi@core
 libfontenc@core
 libgcc@core
 libgcrypt@core
+libglu@core
 libgpg-error@core
 libgphoto2@openembedded-layer
 libgudev@core
@@ -270,6 +272,7 @@ libxau@core
 libxaw@openembedded-layer
 libxcb@core
 libxcomposite@core
+libxcursor@core
 libxdamage@core
 libxdmcp@core
 libxext@core
