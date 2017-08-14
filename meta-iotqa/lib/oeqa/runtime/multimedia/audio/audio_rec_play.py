@@ -6,7 +6,7 @@ class AlsaTest(oeRuntimeTest):
     def test_rec_play(self):
         # Recording audio
         (status, output) = self.target.run("arecord -d 5 -f cd -D plughw:1,0 /home/rec.wav")
-	 time.sleep(6)
+	 time.sleep(3)
         self.assertEqual(status, 0, msg="Error Not recorded: %s" % output)
         (status, output) = self.target.run("ls /home/ |grep 'rec.wav'")
         self.assertEqual(status, 0, msg="Error File not present: %s" % output)
