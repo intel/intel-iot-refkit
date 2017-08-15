@@ -1,5 +1,4 @@
-import time
-import subprocess
+import os
 from oeqa.oetest import oeRuntimeTest
 
 
@@ -8,7 +7,25 @@ class SanityTestFlatpakCommandline(oeRuntimeTest):
     @class SanityTestFlatpak
     """
 
-    def test_version(self):
+    flatpak_cmd_runapp = 'flatpak_cmd_runapp.py'
+
+    flatpak_cmd_runapp_target = '/tmp/%s' % flatpak_cmd_runapp
+
+    def setUp(self):
+        '''
+        Copy all necessary files for test to the target device.
+        @fn setUp
+        @param self
+        @return
+        '''
+        self.target.copy_to(
+            os.path.join(
+                os.path.dirname(__file__),
+                'files',
+                SanityTestFlatpakCommandline.flatpak_cmd_runapp),
+            SanityTestFlatpakCommandline.flatpak_cmd_runapp_target)
+
+    def test_flatpak_cmd_version(self):
         '''
         Test the version of flatpak.
         @fn test_version
@@ -17,8 +34,7 @@ class SanityTestFlatpakCommandline(oeRuntimeTest):
         (status, output) = self.target.run("flatpak --version")
         self.assertEqual(status, 0, msg="flatpak version command failed: %s " % output)
 
-
-    def test_list(self):
+    def test_flatpak_cmd_list(self):
         '''
         Test to list down all flatpak app.
         @fn test_list
@@ -27,8 +43,7 @@ class SanityTestFlatpakCommandline(oeRuntimeTest):
         (status, output) = self.target.run("flatpak list")
         self.assertEqual(status, 0, msg="flatpak list command failed: %s " % output)
 
-
-    def test_run(self):
+    def test_flatpak_cmd_run(self):
         '''
         Test to run an application using flatpak.
         @fn test_run
@@ -36,6 +51,16 @@ class SanityTestFlatpakCommandline(oeRuntimeTest):
         @return
         '''
         # ************Flatpak Run************
-        p = subprocess.Popen('flatpak run org.example.BasePlatform/x86_64/refkit.0', shell=True, stdout=subprocess.PIPE)
-        time.sleep(2)
-        p.terminate()
+        (status, output) = self.target.run('python %s' % SanityTestFlatpakCommandline.flatpak_cmd_runapp_target)
+        self.assertEqual(status, 0, msg="flatpak run command failed: %s " % output)
+
+    def tearDown(self):
+        '''
+        Clean work: remove all the files copied to the target device.
+        @fn tearDown
+        @param self
+        @return
+        '''
+        self.target.run(
+            'rm -f %s' %
+            (SanityTestFlatpakCommandline.flatpak_cmd_runapp_target))
