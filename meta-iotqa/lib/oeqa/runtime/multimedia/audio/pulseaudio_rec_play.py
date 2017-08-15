@@ -17,6 +17,7 @@ class PulseaudioTest(oeRuntimeTest):
         # start pulseaudio daemon
         (status, output) = self.target.run("pulseaudio -D")
         self.assertEqual(status, 0, msg="Error pulseaudio not started: %s" % output)
+        # Checking recorded file present
         (status, output) = self.target.run("ls /tmp/ |grep 'rec.wav'")
         self.assertEqual(status, 0, msg="Error file not found: %s" % output)
         # Playing audio
