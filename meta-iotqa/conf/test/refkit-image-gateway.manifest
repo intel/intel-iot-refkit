@@ -1,6 +1,7 @@
 # Tests for gateway profile
 oeqa.runtime.core.iotivity.client
 oeqa.runtime.multimedia.audio.pulseaudio
+oeqa.runtime.multimedia.audio.pulseaudio_rec_play
 oeqa.runtime.peripherals.mraa.mraa_gpio
 oeqa.runtime.peripherals.mraa.mraa_hello
 oeqa.runtime.peripherals.upm.upm
