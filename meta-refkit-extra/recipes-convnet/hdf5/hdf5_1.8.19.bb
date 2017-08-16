@@ -20,8 +20,8 @@ SRC_URI = " \
     file://copy_generated.patch \
 "
 
-SRC_URI[md5sum] = "29117bf488887f89888f9304c8ebea0b"
-SRC_URI[sha256sum] = "01c6deadf4211f86922400da82c7a8b5b50dc8fc1ce0b5912de3066af316a48c"
+SRC_URI[md5sum] = "6f0353ee33e99089c110a1c8d2dd1b22"
+SRC_URI[sha256sum] = "59c03816105d57990329537ad1049ba22c2b8afe1890085f0c022b75f1727238"
 
 PACKAGES += "${PN}-extra"
 FILES_${PN} += "/usr/lib/libhdf5.settings"

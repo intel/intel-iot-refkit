@@ -1,7 +1,7 @@
-From b5a475cbabd67a7c31c01698f55814895f194730 Mon Sep 17 00:00:00 2001
+From 8e942864a426b49b1cda1693ea40ea8766c4e3e6 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Fri, 24 Feb 2017 16:07:09 +0200
-Subject: [PATCH 5/6] io: change to imageio.
+Subject: [PATCH 5/7] io: change to imageio.
 
 This gets rid of the whole sciki-image dependency (and as a consequence,
 drops the matplotlib dependency). Note that some operations meant for
@@ -17,7 +17,7 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/python/caffe/io.py b/python/caffe/io.py
-index e1759be..ebccca2 100644
+index 966c164c..83b87837 100644
 --- a/python/caffe/io.py
 +++ b/python/caffe/io.py
 @@ -1,7 +1,5 @@
@@ -70,5 +70,5 @@ index e1759be..ebccca2 100644
          scale = tuple(np.array(new_dims, dtype=float) / np.array(im.shape[:2]))
          resized_im = zoom(im, scale + (1,), order=interp_order)
 -- 
-2.9.3
+2.13.3
 

@@ -1,14 +1,14 @@
-From 3a0407e127559d2349f0217c6c5cf7751dd1aeba Mon Sep 17 00:00:00 2001
+From 80643c4aa7951e8b99a77f17fbebf346060dbad1 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Tue, 25 Oct 2016 12:09:19 +0300
-Subject: [PATCH 1/6] Allow setting numpy include dir from outside.
+Subject: [PATCH 1/7] Allow setting numpy include dir from outside.
 
 ---
  cmake/Modules/FindNumPy.cmake | 16 ++++++++++------
  1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/cmake/Modules/FindNumPy.cmake b/cmake/Modules/FindNumPy.cmake
-index a671494..38ebb32 100644
+index a671494c..38ebb328 100644
 --- a/cmake/Modules/FindNumPy.cmake
 +++ b/cmake/Modules/FindNumPy.cmake
 @@ -16,11 +16,16 @@ unset(NUMPY_VERSION)
@@ -39,5 +39,5 @@ index a671494..38ebb32 100644
  caffe_clear_vars(__result __output __error_value __values __ver_check __error_value)
 -
 -- 
-2.9.3
+2.13.3
 

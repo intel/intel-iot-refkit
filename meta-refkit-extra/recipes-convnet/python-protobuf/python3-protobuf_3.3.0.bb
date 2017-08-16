@@ -6,8 +6,8 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/git/LICENSE;md5=35953c752efc9299b184f91bef
 
 inherit setuptools3
 
-SRCREV = "a428e42072765993ff674fda72863c9f1aa2d268"
-PV = "3.1.0+git${SRCPV}"
+SRCREV = "a6189acd18b00611c1dc7042299ad75486f08a1a"
+PV = "3.3.0+git${SRCPV}"
 SRC_URI = "git://github.com/google/protobuf.git"
 
 S = "${WORKDIR}/git/python"

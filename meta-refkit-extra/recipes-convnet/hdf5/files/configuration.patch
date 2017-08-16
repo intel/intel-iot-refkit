@@ -1,9 +1,9 @@
 diff --git a/H5Tinit.c b/H5Tinit.c
 new file mode 100644
-index 0000000..ef1afc4
+index 0000000..3464959
 --- /dev/null
 +++ b/H5Tinit.c
-@@ -0,0 +1,977 @@
+@@ -0,0 +1,991 @@
 +/* Generated automatically by H5detect -- do not edit */
 +
 +
@@ -15,16 +15,14 @@ index 0000000..ef1afc4
 + *                                                                           *
 + * This file is part of HDF5.  The full HDF5 copyright notice, including     *
 + * terms governing use, modification, and redistribution, is contained in    *
-+ * the files COPYING and Copyright.html.  COPYING can be found at the root   *
-+ * of the source code distribution tree; Copyright.html can be found at the  *
-+ * root level of an installed copy of the electronic HDF5 document set and   *
-+ * is linked from the top-level documents page.  It can also be found at     *
-+ * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
-+ * access to either file, you may request a copy from help@hdfgroup.org.     *
++ * the COPYING file, which can be found at the root of the source code       *
++ * distribution tree, or in https://support.hdfgroup.org/ftp/HDF5/releases.  *
++ * If you do not have access to either file, you may request a copy from     *
++ * help@hdfgroup.org.                                                        *
 + * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 + *
-+ * Created:		Nov 30, 2015
-+ *			root <root@cyclone5>
++ * Created:		Jul 31, 2017
++ *			root <root@intel-corei7-64>
 + *
 + * Purpose:		This machine-generated source code contains
 + *			information about the various integer and
@@ -276,6 +274,8 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_UINT_ALIGN_g = 1;
 +
 +   /*
++    *    7        6        5        4
++    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    *    3        2        1        0
 +    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    * Alignment: none
@@ -284,19 +284,21 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_2;
 +    if((H5T_NATIVE_LONG_g = H5I_register(H5I_DATATYPE, dt, FALSE)) < 0)
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_CANTINIT, FAIL, "can't register ID for built-in datatype")
 +    H5T_NATIVE_LONG_ALIGN_g = 1;
-+    H5T_NATIVE_LONG_COMP_ALIGN_g = 4;
++    H5T_NATIVE_LONG_COMP_ALIGN_g = 8;
 +
 +   /*
++    *    7        6        5        4
++    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    *    3        2        1        0
 +    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    * Alignment: none
@@ -305,10 +307,10 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_NONE;
@@ -517,6 +519,8 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_UINT_LEAST16_ALIGN_g = 1;
 +
 +   /*
++    *    7        6        5        4
++    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    *    3        2        1        0
 +    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    * Alignment: none
@@ -525,10 +529,10 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_2;
@@ -537,6 +541,8 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_INT_FAST16_ALIGN_g = 1;
 +
 +   /*
++    *    7        6        5        4
++    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    *    3        2        1        0
 +    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    * Alignment: none
@@ -545,10 +551,10 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_NONE;
@@ -637,6 +643,8 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_UINT_LEAST32_ALIGN_g = 1;
 +
 +   /*
++    *    7        6        5        4
++    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    *    3        2        1        0
 +    * IIIIIIII IIIIIIII IIIIIIII IIIIIIII
 +    * Alignment: none
@@ -645,10 +653,10 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_2;
@@ -657,6 +665,8 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_INT_FAST32_ALIGN_g = 1;
 +
 +   /*
++    *    7        6        5        4
++    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    *    3        2        1        0
 +    * UUUUUUUU UUUUUUUU UUUUUUUU UUUUUUUU
 +    * Alignment: none
@@ -665,10 +675,10 @@ index 0000000..ef1afc4
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_INTEGER;
-+    dt->shared->size = 4;
++    dt->shared->size = 8;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 32;
++    dt->shared->u.atomic.prec = 64;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.u.i.sign = H5T_SGN_NONE;
@@ -914,42 +924,46 @@ index 0000000..ef1afc4
 +    H5T_NATIVE_DOUBLE_COMP_ALIGN_g = 8;
 +
 +   /*
++    *   15       14       13       12
++    * ???????? ???????? ???????? ????????
++    *   11       10        9        8
++    * ???????? ???????? SEEEEEEE EEEEEEEE
 +    *    7        6        5        4
-+    * SEEEEEEE EEEEMMMM MMMMMMMM MMMMMMMM
++    * MMMMMMMM MMMMMMMM MMMMMMMM MMMMMMMM
 +    *    3        2        1        0
 +    * MMMMMMMM MMMMMMMM MMMMMMMM MMMMMMMM
-+    * Implicit bit? yes
++    * Implicit bit? no
 +    * Alignment: none
 +    */
 +    if(NULL == (dt = H5T__alloc()))
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
 +    dt->shared->state = H5T_STATE_IMMUTABLE;
 +    dt->shared->type = H5T_FLOAT;
-+    dt->shared->size = 8;
++    dt->shared->size = 16;
 +    dt->shared->u.atomic.order = H5T_ORDER_LE;
 +    dt->shared->u.atomic.offset = 0;
-+    dt->shared->u.atomic.prec = 64;
++    dt->shared->u.atomic.prec = 80;
 +    dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
 +    dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
-+    dt->shared->u.atomic.u.f.sign = 63;
-+    dt->shared->u.atomic.u.f.epos = 52;
-+    dt->shared->u.atomic.u.f.esize = 11;
-+    dt->shared->u.atomic.u.f.ebias = 0x000003ff;
++    dt->shared->u.atomic.u.f.sign = 79;
++    dt->shared->u.atomic.u.f.epos = 64;
++    dt->shared->u.atomic.u.f.esize = 15;
++    dt->shared->u.atomic.u.f.ebias = 0x00003fff;
 +    dt->shared->u.atomic.u.f.mpos = 0;
-+    dt->shared->u.atomic.u.f.msize = 52;
-+    dt->shared->u.atomic.u.f.norm = H5T_NORM_IMPLIED;
++    dt->shared->u.atomic.u.f.msize = 64;
++    dt->shared->u.atomic.u.f.norm = H5T_NORM_NONE;
 +    dt->shared->u.atomic.u.f.pad = H5T_PAD_ZERO;
 +    if((H5T_NATIVE_LDOUBLE_g = H5I_register(H5I_DATATYPE, dt, FALSE)) < 0)
 +        HGOTO_ERROR(H5E_DATATYPE, H5E_CANTINIT, FAIL, "can't register ID for built-in datatype")
 +    H5T_NATIVE_LDOUBLE_ALIGN_g = 1;
-+    H5T_NATIVE_LDOUBLE_COMP_ALIGN_g = 8;
++    H5T_NATIVE_LDOUBLE_COMP_ALIGN_g = 16;
 +
 +    /* Set the native order for this machine */
 +    H5T_native_order_g = H5T_ORDER_LE;
 +
 +    /* Structure alignment for pointers, hvl_t, hobj_ref_t, hdset_reg_ref_t */
-+    H5T_POINTER_COMP_ALIGN_g = 4;
-+    H5T_HVL_COMP_ALIGN_g = 4;
++    H5T_POINTER_COMP_ALIGN_g = 8;
++    H5T_HVL_COMP_ALIGN_g = 8;
 +    H5T_HOBJREF_COMP_ALIGN_g = 8;
 +    H5T_HDSETREGREF_COMP_ALIGN_g = 1;
 +
@@ -983,10 +997,10 @@ index 0000000..ef1afc4
 +/* sigill_handler called: 5 times */
 diff --git a/H5lib_settings.c b/H5lib_settings.c
 new file mode 100644
-index 0000000..0af36e0
+index 0000000..c362605
 --- /dev/null
 +++ b/H5lib_settings.c
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,105 @@
 +/* Generated automatically by H5make_libsettings -- do not edit */
 +
 +
@@ -998,16 +1012,14 @@ index 0000000..0af36e0
 + *                                                                           *
 + * This file is part of HDF5.  The full HDF5 copyright notice, including     *
 + * terms governing use, modification, and redistribution, is contained in    *
-+ * the files COPYING and Copyright.html.  COPYING can be found at the root   *
-+ * of the source code distribution tree; Copyright.html can be found at the  *
-+ * root level of an installed copy of the electronic HDF5 document set and   *
-+ * is linked from the top-level documents page.  It can also be found at     *
-+ * http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have          *
-+ * access to either file, you may request a copy from help@hdfgroup.org.     *
++ * the COPYING file, which can be found at the root of the source code       *
++ * distribution tree, or in https://support.hdfgroup.org/ftp/HDF5/releases.  *
++ * If you do not have access to either file, you may request a copy from     *
++ * help@hdfgroup.org.                                                        *
 + * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 + *
-+ * Created:		Nov 30, 2015
-+ *			root <root@cyclone5>
++ * Created:		Jul 31, 2017
++ *			root <root@intel-corei7-64>
 + *
 + * Purpose:		This machine-generated source code contains
 + *			information about the library build configuration
@@ -1021,70 +1033,76 @@ index 0000000..0af36e0
 + */
 +
 +char H5libhdf5_settings[]=
-+	"	    SUMMARY OF THE HDF5 CONFIGURATION\n"
-+	"	    =================================\n"
++	"      SUMMARY OF THE HDF5 CONFIGURATION                        \n"
++	"      =================================                        \n"
 +	"\n"
-+	"General Information:\n"
-+	"-------------------\n"
-+	"		   HDF5 Version: 1.8.16\n"
-+	"		  Configured on: Mon Nov 30 02:44:24 UTC 2015\n"
-+	"		  Configured by: norxander@debian\n"
-+	"		 Configure mode: production\n"
-+	"		    Host system: arm-poky-linux-gnueabi\n"
-+	"	      Uname information: Linux debian 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt11-1+deb8u6 (2015-11-09) x86_64 GNU/Linux\n"
-+	"		       Byte sex: little-endian\n"
-+	"		      Libraries: static, shared\n"
-+	"	     Installation point: /media/dataLinux/Work/Git/build/tmp/work/cortexa9hf-vfp-neon-poky-linux-gnueabi/hdf5/1.8.16-r0/image/usr\n"
++	"General Information:           \n"
++	"-------------------            \n"
++	"                   HDF5 Version: 1.8.19                        \n"
++	"                  Configured on: 2017-08-01                    \n"
++	"                  Configured by: Unix Makefiles                \n"
++	"                 Configure mode: CMAKE 3.8.2                   \n"
++	"                    Host system: Linux-4.11.11-300.fc26.x86_64 \n"
++	"              Uname information: Linux                         \n"
++	"                       Byte sex: little-endian                 \n"
++	"                      Libraries:                               \n"
++	"             Installation point: /u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/image/usr \n"
 +	"\n"
-+	"Compiling Options:\n"
-+	"------------------\n"
-+	"               Compilation Mode: production\n"
-+	"                     C Compiler: /media/dataLinux/Work/Git/build/tmp/sysroots/x86_64-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-gcc  -march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a9 --sysroot=/media/dataLinux/Work/Git/build/tmp/sysroots/cyclone5\n"
-+	"                         CFLAGS:  -O2 -pipe -g -feliminate-unused-debug-types\n"
-+	"                      H5_CFLAGS:  \n"
-+	"                      AM_CFLAGS: \n"
-+	"                       CPPFLAGS: \n"
-+	"                    H5_CPPFLAGS: -D_GNU_SOURCE -D_POSIX_C_SOURCE=200112L   -DNDEBUG -UH5_DEBUG_API\n"
-+	"                    AM_CPPFLAGS: -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64  -I/media/dataLinux/Work/Git/build/tmp/sysroots/cyclone5/usr/include\n"
-+	"               Shared C Library: yes\n"
-+	"               Static C Library: yes\n"
-+	"  Statically Linked Executables: no\n"
-+	"                        LDFLAGS: -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed\n"
-+	"                     H5_LDFLAGS: \n"
-+	"                     AM_LDFLAGS:  -L/media/dataLinux/Work/Git/build/tmp/sysroots/cyclone5/usr/lib\n"
-+	" 	 	Extra libraries: -lz -ldl -lm \n"
-+	" 		       Archiver: arm-poky-linux-gnueabi-ar\n"
-+	" 		 	 Ranlib: arm-poky-linux-gnueabi-ranlib\n"
-+	" 	      Debugged Packages: \n"
-+	"		    API Tracing: no\n"
++	"Compiling Options:             \n"
++	"------------------             \n"
++	"               Compilation Mode:                               \n"
++	"                     C Compiler: /u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot-native/usr/bin/x86_64-refkit-linux/x86_64-refkit-linux-gcc\n"
++	"                         CFLAGS:   -m64 -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2 -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security  --sysroot=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot  -O2 -pipe -g -feliminate-unused-debug-types -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0=/usr/src/debug/hdf5/1.8.19-r0 -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot-native= -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot=   -m64 -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2 -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security  --sysroot=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot -std=c99 -fstdarg-opt -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Wno-unused-parameter -Wno-inline -Wno-aggregate-return -fmessage-length=0\n"
++	"                      H5_CFLAGS:                               \n"
++	"                      AM_CFLAGS:                               \n"
++	"                       CPPFLAGS:                               \n"
++	"                    H5_CPPFLAGS:                               \n"
++	"                    AM_CPPFLAGS:                               \n"
++	"               Shared C Library: YES                           \n"
++	"               Static C Library: YES                           \n"
++	"  Statically Linked Executables: OFF                           \n"
++	"                        LDFLAGS: -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -fstack-protector-strong -Wl,-z,relro,-z,now    \n"
++	"                     AM_LDFLAGS:                               \n"
++	"                Extra libraries: m;dl                          \n"
++	"                       Archiver: x86_64-refkit-linux-ar        \n"
++	"                         Ranlib: /u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot-native/usr/bin/x86_64-refkit-linux/x86_64-refkit-linux-ranlib\n"
++	"              Debugged Packages:                               \n"
++	"                    API Tracing: OFF                           \n"
 +	"\n"
-+	"Languages:\n"
-+	"----------\n"
-+	"                        Fortran: no\n"
++	"Languages:                     \n"
++	"----------                     \n"
++	"                        Fortran: OFF                           \n"
++	"               Fortran Compiler:                               \n"
++	"          Fortran 2003 Compiler:                               \n"
++	"                  Fortran Flags:                               \n"
++	"               H5 Fortran Flags:                               \n"
++	"               AM Fortran Flags:                               \n"
++	"         Shared Fortran Library: YES                           \n"
++	"         Static Fortran Library: YES                           \n"
 +	"\n"
-+	"                            C++: yes\n"
-+	"                   C++ Compiler: /media/dataLinux/Work/Git/build/tmp/sysroots/x86_64-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-g++  -march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a9 --sysroot=/media/dataLinux/Work/Git/build/tmp/sysroots/cyclone5\n"
-+	"                      C++ Flags:  -O2 -pipe -g -feliminate-unused-debug-types -fvisibility-inlines-hidden\n"
-+	"                   H5 C++ Flags:  \n"
-+	"                   AM C++ Flags: \n"
-+	"             Shared C++ Library: yes\n"
-+	"             Static C++ Library: yes\n"
++	"                            C++: ON                            \n"
++	"                   C++ Compiler: /u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot-native/usr/bin/x86_64-refkit-linux/x86_64-refkit-linux-g++\n"
++	"                      C++ Flags:   -m64 -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2 -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security  --sysroot=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot  -O2 -pipe -g -feliminate-unused-debug-types -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0=/usr/src/debug/hdf5/1.8.19-r0 -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot-native= -fdebug-prefix-map=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot=  -fvisibility-inlines-hidden  -m64 -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2 -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security  --sysroot=/u/ssd/intel-iot-refkit/build/tmp-glibc/work/corei7-64-refkit-linux/hdf5/1.8.19-r0/recipe-sysroot -fstdarg-opt -fmessage-length=0\n"
++	"                   H5 C++ Flags:                               \n"
++	"                   AM C++ Flags:                               \n"
++	"             Shared C++ Library: YES                           \n"
++	"             Static C++ Library: YES                           \n"
 +	"\n"
-+	"Features:\n"
-+	"---------\n"
-+	"                  Parallel HDF5: no\n"
-+	"             High Level library: yes\n"
-+	"                   Threadsafety: no\n"
-+	"            Default API Mapping: v18\n"
-+	" With Deprecated Public Symbols: yes\n"
-+	"         I/O filters (external): deflate(zlib)\n"
-+	"                            MPE: no\n"
-+	"                     Direct VFD: no\n"
-+	"                        dmalloc: no\n"
-+	"Clear file buffers before write: yes\n"
-+	"           Using memory checker: no\n"
-+	"         Function Stack Tracing: no\n"
-+	"      Strict File Format Checks: no\n"
-+	"   Optimization Instrumentation: no\n"
++	"Features:                      \n"
++	"---------                      \n"
++	"                  Parallel HDF5: OFF                           \n"
++	"             High Level library: ON                            \n"
++	"                   Threadsafety: OFF                           \n"
++	"            Default API Mapping: v18                           \n"
++	" With Deprecated Public Symbols: ON                            \n"
++	"         I/O filters (external):                               \n"
++	"                            MPE:                               \n"
++	"                     Direct VFD:                               \n"
++	"                        dmalloc:                               \n"
++	"Clear file buffers before write: ON                            \n"
++	"           Using memory checker: OFF                           \n"
++	"         Function Stack Tracing: OFF                           \n"
++	"      Strict File Format Checks: OFF                           \n"
++	"   Optimization Instrumentation:   \n"
 +;
 +

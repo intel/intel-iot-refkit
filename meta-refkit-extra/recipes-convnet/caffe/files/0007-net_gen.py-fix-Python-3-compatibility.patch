@@ -1,0 +1,39 @@
+From 97a7af88c2f9653a74b6ad489f566c9db460178f Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Wed, 14 Jun 2017 15:14:24 +0300
+Subject: [PATCH 7/7] net_gen.py: fix Python 3 compatibility.
+
+Upstream-status: Inappropriate
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+---
+ python/caffe/net_gen.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/python/caffe/net_gen.py b/python/caffe/net_gen.py
+index 287ae97f..9d8f5158 100755
+--- a/python/caffe/net_gen.py
++++ b/python/caffe/net_gen.py
+@@ -9,7 +9,7 @@ from collections import OrderedDict, Counter, Iterable
+ from caffe import layers as L, params as P, to_proto
+ from caffe.proto import caffe_pb2
+ import six
+-from compiler.ast import nodes
++# from compiler.ast import nodes
+ 
+ 
+ class MetaLayers(object):
+@@ -501,8 +501,8 @@ def fix_input_dims(net, source_layers, max_shapes=[], min_shapes=[], shape_coupl
+ 
+                 # Test the shape
+                 if (verbose or not error):
+-                    print test_current_shapes
+-                    print "Valid shape: " + str(not error)
++                    print(test_current_shapes)
++                    print("Valid shape: " + str(not error))
+                 
+                 if (error and ((len(test_current_shapes[curr_src_idx]) - 2 <= dim_idx) or (test_current_shapes[curr_src_idx][2 + dim_idx] == test_min_shapes[curr_src_idx][2 + dim_idx]))):
+                     # Reached minimum shape, reset source and go to previous source
+-- 
+2.13.3
+

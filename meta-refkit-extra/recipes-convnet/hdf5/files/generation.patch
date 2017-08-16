@@ -1,8 +1,8 @@
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 9fcb28d..b58bf18 100644
+index d343208..6b7ef1b 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -606,39 +606,6 @@ set (H5_PRIVATE_HEADERS
+@@ -607,39 +607,6 @@ set (H5_PRIVATE_HEADERS
      ${HDF5_SRC_DIR}/H5win32defs.h
  )
  
@@ -14,7 +14,7 @@ index 9fcb28d..b58bf18 100644
 -TARGET_C_PROPERTIES (H5detect STATIC " " " ")
 -if (MSVC OR MINGW)
 -  target_link_libraries (H5detect "ws2_32.lib")
--endif (MSVC OR MINGW)
+-endif ()
 -
 -set (CMD $<TARGET_FILE:H5detect>)
 -add_custom_command (
@@ -28,7 +28,7 @@ index 9fcb28d..b58bf18 100644
 -TARGET_C_PROPERTIES (H5make_libsettings STATIC " " " ")
 -if (MSVC OR MINGW)
 -  target_link_libraries (H5make_libsettings "ws2_32.lib")
--endif (MSVC OR MINGW)
+-endif ()
 -
 -set (CMD $<TARGET_FILE:H5make_libsettings>)
 -add_custom_command (
