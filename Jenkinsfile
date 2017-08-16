@@ -27,6 +27,7 @@ def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_builds_to_keep = 4
 
+def ci_pr_num = ""
 if (is_pr) {
     if (params.containsKey("GITHUB_PR_NUMBER")) {
         ci_pr_num = "$GITHUB_PR_NUMBER"
