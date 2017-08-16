@@ -14,23 +14,19 @@
 // more details.
 //
 
+// JOB_NAME expected to be in form <repo-name>_<variant>_<type> (master jobs)
+// or: in form <repo-name>_pull-requests (PR jobs)
 def is_pr = env.JOB_NAME.endsWith("_pull-requests")
 def target_machine = "intel-corei7-64"
-
-// JOB_NAME expected to be in form <layer>_<branch>
 def current_project = "${env.JOB_NAME}".tokenize("_")[0]
 def image_name = "${current_project}_build:${env.BUILD_TAG}"
 def ci_build_id = "${env.BUILD_TIMESTAMP}-build-${env.BUILD_NUMBER}"
 def test_runs = [:]
-def testinfo_data = ""
-def ci_git_commit = ""
 def summary = ""
-def added_commits = ""
 def slot_name = "ci-"
 // reasonable value: keep few recent, dont take risk to fill disk
 int num_builds_to_keep = 4
 
-def ci_pr_num = ""
 if (is_pr) {
     if (params.containsKey("GITHUB_PR_NUMBER")) {
         ci_pr_num = "$GITHUB_PR_NUMBER"
@@ -162,7 +158,7 @@ try {
                     // data at nearly same time. Cover global summary add with same lock.
                     lock(resource: "global_data") {
                         summary += readFile "results-summary-${test_device}.${img}.log"
-                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, *.xml'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '*.log, TEST-*.xml'
                         step_xunit('TEST-*.xml')
                     }
                 }
@@ -199,9 +195,12 @@ try {
         email += "Test results:\n\n${summary}"
         def subject = "${currentBuild.result}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
         echo "${email}"
+        job_variant = "${env.JOB_NAME}".tokenize("_")[1]
+        mail_recipients_var = "RK_NOTIFICATION_MAIL_RECIPIENTS_${job_variant}"
+        mail_cmd = "cat msg.txt |mailx -s '${subject}' \$${mail_recipients_var}"
         node('rk-mailer') {
             writeFile file: 'msg.txt', text: email
-            sh "cat msg.txt |mailx -s '${subject}' ${env.RK_NOTIFICATION_MAIL_RECIPIENTS}"
+            sh "${mail_cmd}"
         }
     }
 }

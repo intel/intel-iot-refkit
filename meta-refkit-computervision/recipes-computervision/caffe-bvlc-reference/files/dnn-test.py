@@ -25,10 +25,10 @@ data = np.reshape(converted.astype(np.float32), (-1, 3, 224, 224))
 
 # initialize network
 net = cv2.dnn.readNetFromCaffe(sys.argv[1], sys.argv[2])
-net.setBlob(".data", data)
+net.setInput(data, "data")
 
 # run the network
-net.forward()
+result = net.forward("prob")
 
 # print the class
-print(str(net.getBlob("prob").argmax()))
+print(str(result.argmax()))

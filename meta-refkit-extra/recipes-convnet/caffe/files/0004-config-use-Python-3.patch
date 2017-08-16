@@ -1,7 +1,7 @@
-From a2e6ed1a11500896453c346c82713dd1869368b2 Mon Sep 17 00:00:00 2001
+From c623a37e4d0e52392dbdba371dc5de3f5ee915e6 Mon Sep 17 00:00:00 2001
 From: Ismo Puustinen <ismo.puustinen@intel.com>
 Date: Thu, 23 Feb 2017 18:01:09 +0200
-Subject: [PATCH 4/6] config: use Python 3.
+Subject: [PATCH 4/7] config: use Python 3.
 
 Upstream-status: Inappropriate
 
@@ -11,10 +11,10 @@ Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index c6f9ca6..aceb1e8 100755
+index 7f272bc7..4585727f 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -68,7 +68,7 @@ else()
+@@ -70,7 +70,7 @@ else()
    caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
  endif()
  caffe_option(BUILD_python "Build Python wrapper" ON)
@@ -24,5 +24,5 @@ index c6f9ca6..aceb1e8 100755
  caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
  caffe_option(BUILD_python_layer "Build the Caffe Python layer" ON)
 -- 
-2.9.3
+2.13.3
 

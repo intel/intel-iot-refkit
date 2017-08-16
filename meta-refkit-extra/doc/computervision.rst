@@ -68,3 +68,13 @@ have a web camera connected. Point the web camera at things and in the
 console you will see what the image classifier considers them to be. The
 deep neural network which the example uses is Caffenet, which is trained
 using the 1.3 million image ImageNet training set.
+
+Note that Caffe Python bindings are currently incompatible with OpenCV
+Python bindings, meaning that you can't use both ``cv2`` and ``caffe``
+at the same time in a Python application. The reason is a Protobuf
+conflict due to OpenCV DNN module. A workaround to the problem is to
+disable OpenCV DNN support by adding this to the ``local.conf`` file:
+
+.. code::
+
+    PACKAGECONFIG_remove_pn-opencv = "dnn"
