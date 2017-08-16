@@ -342,6 +342,7 @@ opencl-headers@refkit-computervision
 opencv@openembedded-layer
 openjdk-8@meta-java
 openssh@core
+openssl10@core
 openssl@core
 opkg-utils@core
 orc@core
