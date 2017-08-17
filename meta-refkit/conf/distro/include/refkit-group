@@ -12,6 +12,7 @@ foodine-pythontest:x:1002:
 input:x:982:
 iodine-nodetest:x:1001:
 kmem:x:988:
+kvm:x:36:
 lock:x:997:
 lp:x:981:
 messagebus:x:998:
@@ -19,6 +20,7 @@ netdev:x:999:
 nobody:x:65534:
 nogroup:x:65533:
 pulse:x:1122:
+polkitd:x:1200:
 restful:x:991:
 root:x:0:
 sshd:x:992:

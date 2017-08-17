@@ -438,6 +438,7 @@ REFKIT_LOCAL_GETTY ?= " \
 local_autologin () {
     for service in ${REFKIT_LOCAL_GETTY}; do
         if [ -f $service ]; then
+            sed -i -e "s/ -o '[^']*'//" $service
             sed -i -e 's/^\(ExecStart *=.*getty \)/\1--autologin root /' $service
         else
             bbfatal "systemd service file $service (from REFKIT_LOCAL_GETTY) not found"

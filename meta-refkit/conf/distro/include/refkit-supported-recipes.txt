@@ -264,6 +264,7 @@ libunwind@core
 liburcu@core
 libusb1@core
 libva-intel-driver@intel
+libva-utils@core
 libva@core
 libvorbis@core
 libwebp@core
