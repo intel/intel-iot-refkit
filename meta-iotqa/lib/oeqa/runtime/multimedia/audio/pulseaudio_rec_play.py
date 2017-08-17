@@ -17,12 +17,10 @@ class PulseaudioTest(oeRuntimeTest):
         # Playing audio
         (status, output) = self.target.run("paplay /tmp/rec.wav &")
         self.assertEqual(status, 0, msg="Error not played: %s" % output)
-        time.sleep(2)
+        time.sleep(3)
         # state file copying
         (status, output) = self.target.run("pactl list sinks > /tmp/pula.txt")
         self.assertEqual(status, 0, msg="Error not copied: %s" % output)
         # Audio running states checking
-        (status, output) = self.target.run("grep 'State:' /tmp/pula.txt")
+        (status, output) = self.target.run("grep 'State: RUNNING' /tmp/pula.txt")
         self.assertEqual(status, 0, msg="Error not found State: %s" % output)
-        (status, output) = self.target.run("grep 'RUNNING' /tmp/pula.txt")
-        self.assertEqual(status, 0, msg="Error not running: %s" % output)
