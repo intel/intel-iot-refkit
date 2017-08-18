@@ -15,7 +15,7 @@ class PulseaudioTest(oeRuntimeTest):
         (status, output) = self.target.run("killall -9 parecord")
         self.assertEqual(status, 0, msg="Error pulseaudio not stop: %s" % output)
         # Playing audio
-        (status, output) = self.target.run("paplay /tmp/rec.wav &")
+        (status, output) = self.target.run("paplay /tmp/rec.wav & disown")
         self.assertEqual(status, 0, msg="Error not played: %s" % output)
         # RUNNING state checking
         time.sleep(3)
