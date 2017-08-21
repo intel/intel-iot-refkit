@@ -315,7 +315,7 @@ static int parse_signal(const char *argv0, const char *sigstr)
         }
     }
 
-    if (signo < 0 || signo > (int)NSIGNAL)
+    if (signo < 0 || signo >= (int)NSIGNAL)
         goto invalid_signal;
 
     s = signals + signo;

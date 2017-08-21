@@ -280,7 +280,7 @@ int fs_scan_proc(const char *exe, uid_t uid,
     DIR           *dp;
     struct dirent *de;
     struct stat    st;
-    char           file[PATH_MAX], *bin;
+    char           file[PATH_MAX + 1], *bin;
     int            n, status;
 
     if ((dp = opendir("/proc")) == NULL)
@@ -298,7 +298,7 @@ int fs_scan_proc(const char *exe, uid_t uid,
         if (uid != (uid_t)-1 && st.st_uid != uid)
             continue;
 
-        if ((n = readlink(file, file, sizeof(file))) < 0)
+        if ((n = readlink(file, file, sizeof(file) - 1)) < 0)
             continue;
 
         file[n] = '\0';

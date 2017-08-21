@@ -119,6 +119,9 @@ static ssize_t read_url_and_key(int urlfd, char *url, size_t urlsize,
     int         len, n;
     struct stat st;
 
+    if (urlfd < 0 || keyfd < 0)
+        return -1;
+
     if (fstat(urlfd, &st) < 0)
         return -1;
 
