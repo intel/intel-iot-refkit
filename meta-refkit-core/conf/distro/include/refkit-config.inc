@@ -156,5 +156,9 @@ PACKAGECONFIG_append_pn-opencv_df-refkit-config = " opencl dnn"
 PACKAGECONFIG_remove_pn-connman_df-refkit-config = "iptables"
 PACKAGECONFIG_append_pn-connman_df-refkit-config = " nftables"
 
+# Use ssl instead of gnutls
+PACKAGECONFIG_remove_pn-curl_df-refkit-config = "gnutls"
+PACKAGECONFIG_append_pn-curl_df-refkit-config = " ssl"
+
 #remove gtk dependency from opencv
 PACKAGECONFIG_remove_pn-opencv_df-refkit-config = "gtk"
