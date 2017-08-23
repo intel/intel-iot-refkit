@@ -63,39 +63,89 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             # Encryption with key stored in a TPM is optional, both at the distro
             # level (support not compiled in at all) and at the hardware level (not
             # all target machines have support). The use of a TPM can be configured
-            # explicitly by setting the TPM12 env variable to "yes" or "no".
-            # The default is "true" if there is a /dev/tpm* device.
-            TPM12=${TPM12:-$(ls /dev/tpm* >/dev/null 2>&1 && echo yes || echo no)}
+            # explicitly by setting the TPM env variable to "1.2", "2.0", or "no".
+            # The default is "no".
+            TPM=${TPM:-no}
+            case "$TPM" in
+                2.0)
+                    if ! ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm2', 'true', 'false', d) }; then
+                        fatal "support for TPM 2.0 is not enabled"
+                    fi
 
-            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) } &&
-               istrue TPM12; then
-                # This uses the well-known (all zero) owner and SRK secrets,
-                # thus granting any process running on the device access to the
-                # TPM.
-                # TODO: lock down access to system processes?
-                if ! execute tpm_takeownership -y -z; then
-                    fatal "taking ownership of TPM failed - needs to be reset?"
-                fi
-                # We store a random key in the TPM NVRAM where it is accessible
-                # to the initramfs. The initramfs will turn off read-access
-                # after it has retrieved the key, so nothing else that gets started
-                # later will have access to the key.
-                if ! execute tpm_nvdefine -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -s "$( expr "${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}" + "${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" )" -p 'AUTHREAD|AUTHWRITE|READ_STCLEAR' -y -z; then
-                    fatal "creating NVRAM area failed"
-                fi
-                if ! (printf "%s" "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" &&
-                      dd if=/dev/urandom bs="${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" count=1) >"$keyfile"; then
-                    fatal "key creation failed"
-                fi
-                keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
-                if ! execute tpm_nvwrite -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -f "$keyfile"; then
-                    fatal "storing key in NVRAM failed"
-                fi
-                # Lock access until reboot.
-                if ! execute tpm_nvread -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -s 0; then
-                    fatal "locking key in NVRAM failed"
-                fi
-            fi
+                    # This tells tpm2.0-tools that we want to access the /dev/tpm0 device.
+                    # Setting these environment variables works with tpm2.0-tools 2.x and 3.x,
+                    # whereas command line parameters changed between that.
+                    TPM2TOOLS_TCTI_NAME=device
+                    TPM2TOOLS_DEVICE_FILE=/dev/tpm0
+                    export TPM2TOOLS_TCTI_NAME TPM2TOOLS_DEVICE_FILE
+
+                    # NVRAM can be used with TPM 2.0 without taking ownership, so we skip that step.
+                    #
+                    # We store a random key in the TPM NVRAM where it is accessible
+                    # to the initramfs. The initramfs will turn off read-access
+                    # after it has retrieved the key, so nothing else that gets started
+                    # later will have access to the key.
+                    #
+                    # -t 0x80020002 = TPMA_NV_OWNERWRITE|TPMA_NV_OWNERREAD|TPMA_NV_READ_STCLEAR
+                    # (https://trustedcomputinggroup.org/wp-content/uploads/TPM-Rev-2.0-Part-2-Structures-01.38.pdf)
+                    #
+                    # tpm2.0-tools master supports --attibutes=ownerwrite|ownerread|read_stdclear, but
+                    # 2.1.0 only supports the hex value.
+                    if ! execute tpm2_nvdefine -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -s "$( expr "${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}" + "${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" )" -a 0x40000001 -t 0x80020002; then
+                        fatal "creating NVRAM area failed"
+                    fi
+                    if ! (printf "%s" "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" &&
+                         dd if=/dev/urandom bs="${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" count=1) >"$keyfile"; then
+                        fatal "key creation failed"
+                    fi
+                    keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
+                    if ! execute tpm2_nvwrite -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -a 0x40000001 -f "$keyfile"; then
+                        fatal "storing key in NVRAM failed"
+                    fi
+                    # Lock access until reboot.
+                    # Empty password has to be specified here (https://github.com/01org/tpm2-tools/issues/607).
+                    if ! execute tpm2_nvreadlock -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -a 0x40000001 -P ""; then
+                        fatal "locking key in NVRAM failed"
+                    fi
+                    ;;
+                1.2)
+                    if ! ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) }; then
+                        fatal "support for TPM 1.2 is not enabled"
+                    fi
+                    # This uses the well-known (all zero) owner and SRK secrets,
+                    # thus granting any process running on the device access to the
+                    # TPM.
+                    # TODO: lock down access to system processes?
+                    if ! execute tpm_takeownership -y -z; then
+                        fatal "taking ownership of TPM failed - needs to be reset?"
+                    fi
+                    # We store a random key in the TPM NVRAM where it is accessible
+                    # to the initramfs. The initramfs will turn off read-access
+                    # after it has retrieved the key, so nothing else that gets started
+                    # later will have access to the key.
+                    if ! execute tpm_nvdefine -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -s "$( expr "${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}" + "${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" )" -p 'AUTHREAD|AUTHWRITE|READ_STCLEAR' -y -z; then
+                        fatal "creating NVRAM area failed"
+                    fi
+                    if ! (printf "%s" "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" &&
+                          dd if=/dev/urandom bs="${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" count=1) >"$keyfile"; then
+                        fatal "key creation failed"
+                    fi
+                    keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
+                    if ! execute tpm_nvwrite -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -f "$keyfile"; then
+                        fatal "storing key in NVRAM failed"
+                    fi
+                    # Lock access until reboot.
+                    if ! execute tpm_nvread -i "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}" -z -s 0; then
+                        fatal "locking key in NVRAM failed"
+                    fi
+                    ;;
+                no)
+                    :
+                    ;;
+                *)
+                    fatal "invalid value for TPM: $TPM"
+                    ;;
+            esac
 
             # Unsafe fallback without TPM: well-known password. Not used unless explicitly set.
             FIXED_PASSWORD=${FIXED_PASSWORD:-}
@@ -253,6 +303,7 @@ INSTALLER_RDEPENDS_append = " \
     rsync \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'cryptsetup', '', d) } \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'trousers tpm-tools', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm2', 'tpm2-tools', '', d) } \
 "
 
 

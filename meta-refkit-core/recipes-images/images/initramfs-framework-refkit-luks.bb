@@ -65,18 +65,56 @@ refkit_luks () {
                     keyfile=$(mktemp)
                     keyfile_offset=
                     tcsd_pid=
+                    IFDOWN=true
                     luks_cleanup () {
                         dd if=/dev/zero of="$keyfile" count="$(stat -c '%s' "$keyfile")" bs=1 >/dev/null
                         rm "$keyfile"
                         if [ "$tcsd_pid" ]; then
                             kill "$tcsd_pid"
                         fi
-                        ifdown lo
+                        $IFDOWN lo
                     }
-                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) } &&
+                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm2', 'true', 'false', d) } &&
+                       [ -e /dev/tpm0 ] &&
+                       TPM2TOOLS_TCTI_NAME=device tpm2_dump_capability -c commands >/dev/null 2>/dev/null; then
+                       TPM2TOOLS_TCTI_NAME=device
+                       TPM2TOOLS_DEVICE_FILE=/dev/tpm0
+                       export TPM2TOOLS_TCTI_NAME TPM2TOOLS_DEVICE_FILE
+
+                       size="$( expr "${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}" + "${REFKIT_DISK_ENCRYPTION_KEY_SIZE}" )"
+                       if tpm2_nvread -v | grep -q "version 2.1"; then
+                           # Reading the data is weird. We have to parse stdout to extract the actual bytes:
+                           # $ tpm2_nvread -x 0x1500001 -a 0x40000001 -o 0 -s 8
+                           #
+                           # The size of data:8
+                           #  68  65  6c  6c  6f  0a  ff  ff
+                           if ! out="$(tpm2_nvread -x '${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}' -a 0x40000001 -s $size -o 0)"; then
+                                luks_cleanup
+                                fatal "Error reading NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}"
+                           fi
+                           for c in $(echo "$out" | grep -v 'The size of data'); do printf "\\x$c"; done >"$keyfile"
+                        else
+                           # tpm2.0-tools 3.x can write into a file.
+                           if ! tpm2_nvread -x '${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}' -a 0x40000001 -s $size -o 0 "$keyfile"; then
+                                luks_cleanup
+                                fatal "Error reading NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}"
+                           fi
+                        fi
+                        keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
+                        if [ "$(head -c "$keyfile_offset" "$keyfile")" != "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" ]; then
+                            luks_cleanup
+                            fatal "Unexpected content in NVRAM area"
+                        fi
+                        # Lock access until next reboot.
+                        if ! tpm2_nvreadlock -x '${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}' -a 0x40000001 -P ""; then
+                            luks_cleanup
+                            fatal "Error locking NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}"
+                        fi
+                    elif ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) } &&
                        ls /dev/tpm* >/dev/null 2>&1; then
                         # Bring up IPv4 (needed by tcsd and tpm-tools) and tcsd itself.
                         ifup lo
+                        IFDOWN=ifdown
                         tcsd -f &
                         tcsd_pid=$!
                         while true; do
@@ -164,4 +202,5 @@ FILES_${PN} = "/init.d"
 RDEPENDS_${PN} = " \
     cryptsetup \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'trousers tpm-tools libgcc strace netbase init-ifupdown', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm2', 'tpm2-tools', '', d) } \
 "

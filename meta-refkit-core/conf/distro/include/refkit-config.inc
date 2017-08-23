@@ -28,6 +28,7 @@ REFKIT_DEFAULT_DISTRO_FEATURES = " \
     pulseaudio \
     systemd \
     tpm \
+    tpm2 \
 "
 
 # ptests are useful for QA. Enabling them in the distro creates
