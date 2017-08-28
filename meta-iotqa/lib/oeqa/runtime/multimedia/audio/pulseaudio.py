@@ -36,7 +36,7 @@ class PulseaudioTest(oeRuntimeTest):
 
     def test_rec_play(self):
         # Start pulseaudio daemon
-        (status, output) = self.target.run("pulseaudio -D")
+        (status, output) = self.target.run("pulseaudio --start")
         self.assertEqual(status, 0, msg="Error pulseaudio not started: %s" % output)
         # Recording audio
         (status, output) = self.target.run("parecord -r /tmp/rec.wav &")
@@ -44,10 +44,14 @@ class PulseaudioTest(oeRuntimeTest):
         self.assertEqual(status, 0, msg="Error not recorded: %s" % output)
         # Stop pulseaudio daemon
         (status, output) = self.target.run("killall -9 parecord")
-        self.assertEqual(status, 0, msg="Error pulseaudio not stop: %s" % output)
+        self.assertEqual(status, 0, msg="Error pulse record not stop: %s" % output)
         # Playing audio
         (status, output) = self.target.run("paplay /tmp/rec.wav &")
-        self.assertEqual(status, 0, msg="Error not played: %s" % output)
+        if status == 1:
+            # There is audio not played.
+            self.assertEqual(output, "Not playing recorded audio", msg="Error messages: %s" % output)
+        else:
+            self.assertEqual(status, 0, msg="Playing recorded audio: %s" % output)
         # RUNNING state checking
         time.sleep(3)
         (status, output) = self.target.run("pactl list | grep RUNNING")
