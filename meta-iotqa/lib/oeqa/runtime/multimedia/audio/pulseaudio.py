@@ -48,3 +48,7 @@ class PulseaudioTest(oeRuntimeTest):
         # Playing audio
         (status, output) = self.target.run("paplay /tmp/rec.wav &")
         self.assertEqual(status, 0, msg="Error in playing: %s" % output)
+        time.sleep(3)
+        # RUNNING state checking
+        (status, output) = self.target.run("pactl list sinks | grep RUNNING")
+        self.assertEqual(status, 0, msg="Error in state: %s" % output)
