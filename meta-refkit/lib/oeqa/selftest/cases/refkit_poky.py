@@ -147,6 +147,7 @@ include selftest.inc
         'PRSERV_HOST',
         'SUPPORTED_RECIPES',
         'QEMU_USE_KVM',
+        'BBMASK',
         )
 
     @classmethod

@@ -4,6 +4,7 @@ LICENSE = "MIT"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
+    libva-utils \
     opencv-samples \
     python3-opencv \
     librealsense-examples \
