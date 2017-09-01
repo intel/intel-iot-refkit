@@ -142,19 +142,19 @@ def load_supported_recipes(d):
     return (supported_recipes, files)
 
 def strip_multiconfig_prefix(name):
-    parts = name.split(':', 2)
+    parts = name.split(':')
     # There's an open bug about
     # shortening "multiconfig" to "mc", so support both here
     # (https://bugzilla.yoctoproject.org/show_bug.cgi?id=11168).
-    if len(parts) >= 2 and parts[0] in ('multiconfig', 'mc'):
-        if len(parts) == 3:
-            name = parts[2]
-        elif len(parts) == 2:
+    if len(parts) >= 2 and parts[0] in ('multiconfig', 'mc', 'virtual'):
+        if len(parts) == 2:
             # There was a bug in bitbake were it produced multiconfig:qemuarm.ggc
             # in the depgraph. Support that also.
             parts = parts[1].split('.', 1)
             if len(parts) == 2:
                 name = parts[1]
+        else:
+            name = parts[-1]
     return name
 
 SOURCE_FIELDS = 'component,collection,version,homepage,source,summary,license'.split(',')
