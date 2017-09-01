@@ -78,9 +78,9 @@ if [ -d ${_DEPL}/swupd/${TARGET_MACHINE} ]; then
 fi
 
 if [ -d ${_DEPL}/sdk ]; then
-    # publish installer .sh file to sdk/
+    # publish installer .sh file(s), if any exist, to sdk/
     create_remote_dirs ${_RSYNC_DEST} sdk/${TARGET_MACHINE}
-    rsync -av ${_DEPL}/sdk/*.sh ${_RSYNC_DEST}/sdk/${TARGET_MACHINE}/
+    rsync -av --ignore-missing-args ${_DEPL}/sdk/*.sh ${_RSYNC_DEST}/sdk/${TARGET_MACHINE}/
 fi
 if [ -d ${_DEPL}/sdk-data/${TARGET_MACHINE} ]; then
     # publish sdk-data/ without -v option, avoiding logging massive list
