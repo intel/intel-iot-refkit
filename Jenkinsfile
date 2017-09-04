@@ -265,7 +265,7 @@ def checkout_content(is_pr, pr_num) {
 
 def build_docker_image(image_name) {
     // Base container OS to use, see docker configs in docker/
-    def build_os = "opensuse-42.2"
+    def build_os = "opensuse-42.3"
     def build_args = [ build_proxy_args(), build_user_args()].join(" ")
     sh "docker build -t ${image_name} ${build_args} docker/${build_os}"
     dockerFingerprintFrom dockerfile: "docker/${build_os}/Dockerfile", image: "${image_name}"
