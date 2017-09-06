@@ -109,6 +109,9 @@ REFKIT_CI_TEST_RUNS=" \
 # space checks on (possibly remote, like NFS) volumes.
 BB_DISKMON_DIRS = ""
 
+# Bitbake server timeout, for series of invocations to use same server
+BB_SERVER_TIMEOUT = "5"
+
 #
 # Dymamic section.
 # Values are applied dynamically based on runtime config or builder host
