@@ -7,7 +7,7 @@ This is a minimal patch which disables building the service and
 backend. This makes it possible to use the normal libpolkit-gobject
 together with a service replacement like groupcheck.
 
-Upstream-Status: Inappropriate [Embedded]
+Upstream-Status: Inappropriate [Solved independently by upstream in a later commit]
 
 Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
 ---

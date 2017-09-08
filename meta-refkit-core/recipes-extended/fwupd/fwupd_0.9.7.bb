@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://${S}/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 DEPENDS = "libgudev glib-2.0 polkit appstream-glib libgusb gpgme gcab-native intltool-native gettext-native"
 
 SRC_URI = "git://github.com/hughsie/fwupd;method=https \
-           file://meson-introspection-optional.patch \
+           file://meson-skip-test-directories-when-disabled.patch \
            "
-SRCREV = "d832b1edca83da62dad6f23134c463f210e5b1e8"
+SRCREV = "de3507d9c09f287570ff2de6c6c00b8c181a9f2f"
 S = "${WORKDIR}/git"
 
 # Introspection not working the way how meson does it (ends up calling the host ld).
@@ -26,6 +26,8 @@ PACKAGECONFIG[systemd] = "-Denable-systemd=true,-Denable-systemd=false,systemd"
 PACKAGECONFIG[thunderbolt] = "-Denable-thunderbolt=true,-Denable-thunderbolt=false,libtbtfwu"
 PACKAGECONFIG[uefi-labels] = "-Denable-uefi-labels=true,-Denable-uefi-labels=false,cairo fontconfig"
 PACKAGECONFIG[uefi] = "-Denable-uefi=true,-Denable-uefi=false,fwupdate,fwupdate"
+# synaptics depends on dell
+PACKAGECONFIG[synaptics] = "-Denable-synaptics=true,-Denable-synaptics=false"
 PACKAGECONFIG[tests] = "-Denable-tests=true,-Denable-tests=false"
 
 inherit check-available

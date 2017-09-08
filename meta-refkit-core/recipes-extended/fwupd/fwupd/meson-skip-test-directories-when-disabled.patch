@@ -1,0 +1,31 @@
+From f1fefc887213b27ddb0317308cd25b3e7e7307c4 Mon Sep 17 00:00:00 2001
+From: Patrick Ohly <patrick.ohly@intel.com>
+Date: Fri, 8 Sep 2017 10:51:21 +0200
+Subject: [PATCH 1/1] meson: skip test directories when disabled
+
+This keeps build dependencies smaller: the certtool is only needed
+when tests are enabled.
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ data/meson.build | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/data/meson.build b/data/meson.build
+index 40375d0..bda09fc 100644
+--- a/data/meson.build
++++ b/data/meson.build
+@@ -1,6 +1,8 @@
+ subdir('builder')
+-subdir('tests')
+-subdir('installed-tests')
++if get_option('enable-tests')
++  subdir('tests')
++  subdir('installed-tests')
++endif
+ subdir('pki')
+ subdir('remotes.d')
+ 
+-- 
+2.11.0
+
