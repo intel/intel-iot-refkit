@@ -8,7 +8,6 @@ do_deploy[sstate-outputdirs] = "${DEPLOY_DIR_TOOLS}"
 do_deploy[stamp-extra-info] = ""
 do_deploy[dirs] = "${S}"
 do_deploy_class-native() {
-    cp bmaptool __main__.py
     python -m zipfile -c bmaptool.zip bmaptools __main__.py
     echo '#!/usr/bin/env python' | cat - bmaptool.zip > bmaptool-standalone
     install -d ${DEPLOYDIR}

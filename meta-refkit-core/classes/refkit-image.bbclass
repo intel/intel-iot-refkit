@@ -243,7 +243,7 @@ IMAGE_CLASSES += "${@ 'image-dsk' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_I
 # the classes. In particular IMAGE_FSTYPES is relevant because it causes
 # other classes to be imported.
 
-inherit core-image extrausers image-buildinfo image-mode
+inherit core-image extrausers image-buildinfo image-mode python3native
 
 # Refkit images use the image modes defined by REFKIT_IMAGE_MODE_VALID.
 # We cannot set IMAGE_MODE_VALID and IMAGE_MODE globally, because that would
