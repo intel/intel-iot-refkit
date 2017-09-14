@@ -37,6 +37,23 @@ do_install_append () {
     rm -rf ${D}/${datadir}/installed-tests
 }
 
+# Support groupcheck instead of polkit?
+do_install_append_df-refkit-groupcheck () {
+    # Instead of hard-coding actions, we take them from the polkit configuration.
+    install -d ${D}${datadir}/groupcheck.d
+    for action in `grep action.id ${D}${datadir}/polkit-1/*/*.policy | sed -e 's/.*"\(.*\)".*/\1/' | sort -u`; do
+        # Just a sanity check that we really picked something that looks like an action.
+        case $action in org.freedesktop.fwupd.*)
+            # "adm" gets added as auxiliary group for root in base-passwd_%.bbappend.
+            # We rely on that here to grant also root processes access to fwupd.
+            echo $action='"adm"' >>${D}${datadir}/groupcheck.d/org.freedesktop.fwupd.policy;;
+        esac
+    done
+    chmod 0666 ${D}${datadir}/groupcheck.d/org.freedesktop.fwupd.policy
+
+    rm -rf ${D}${datadir}/polkit-1/
+}
+
 FILES_${PN} += " \
     ${systemd_system_unitdir} \
     ${datadir}/metainfo \
@@ -44,6 +61,7 @@ FILES_${PN} += " \
     ${datadir}/dbus-1 \
     ${datadir}/polkit-1 \
     ${libdir}/fwupd-plugins-2 \
+    ${datadir}/groupcheck.d \
 "
 
 # We link against libgpgme, but that alone does not guarantee that
