@@ -2,7 +2,7 @@ SUMMARY = "Updating Firmware in Linux"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://${S}/COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-DEPENDS = "libgudev glib-2.0 polkit appstream-glib libgusb gpgme gcab-native intltool-native gettext-native"
+DEPENDS = "libgudev glib-2.0 polkit appstream-glib libgusb gcab-native intltool-native gettext-native"
 
 SRC_URI = "git://github.com/hughsie/fwupd;method=https \
            file://meson-skip-test-directories-when-disabled.patch \
@@ -15,7 +15,10 @@ EXTRA_OEMESON += "-Denable-introspection=false"
 
 # Beware, some of the disabled features have dependencies for which
 # there are no recipes.
-PACKAGECONFIG ?= "${@ bb.utils.filter('DISTRO_FEATURES', 'systemd', d) } uefi libelf"
+#
+# gpg is needed to verify content downloaded from the LVFS. It can be
+# disabled safely when firmware only gets delivered via the local filesystem.
+PACKAGECONFIG ?= "${@ bb.utils.filter('DISTRO_FEATURES', 'systemd', d) } uefi libelf gpg"
 PACKAGECONFIG[colorhug] = "-Denable-colorhug=true,-Denable-colorhug=false,colorhug"
 PACKAGECONFIG[consolekit] = "-Denable-consolekit=true,-Denable-consolekit=false,consolekit"
 PACKAGECONFIG[doc] = "-Denable-doc=true,-Denable-doc=false,gtkdoc-native"
@@ -29,6 +32,8 @@ PACKAGECONFIG[uefi] = "-Denable-uefi=true,-Denable-uefi=false,fwupdate,fwupdate"
 # synaptics depends on dell
 PACKAGECONFIG[synaptics] = "-Denable-synaptics=true,-Denable-synaptics=false"
 PACKAGECONFIG[tests] = "-Denable-tests=true,-Denable-tests=false"
+PACKAGECONFIG[gpg] = "-Denable-gpg=true,-Denable-gpg=false,gpgme"
+PACKAGECONFIG[pkcs7] = "-Denable-pkcs7=true,-Denable-pkcs7=false,gnutls"
 
 inherit check-available
 inherit ${@ check_available_class(d, 'meson', ${HAVE_MESON}) }
