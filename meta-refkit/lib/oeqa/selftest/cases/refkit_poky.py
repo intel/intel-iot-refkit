@@ -72,7 +72,7 @@ class RefkitPokyMeta(type):
                 # in meta-security: add the layer and its dependencies ourselves.
                 # Only meta-refkit needs this because only it has a hard dependency on meta-security.
                 if refkit_layer == 'meta-refkit':
-                    add_layers(('meta-oe', 'meta-python', 'meta-gnome', 'meta-xfce'))
+                    add_layers(('meta-oe', 'meta-python', 'meta-gnome', 'meta-xfce', 'meta-networking', 'meta-multimedia'))
 
                 # This allows the meta-refkit-core testing to catch
                 # more errors: by adding all non-refkit layers to the
