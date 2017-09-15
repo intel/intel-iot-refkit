@@ -64,6 +64,44 @@ FILES_${PN} += " \
     ${datadir}/groupcheck.d \
 "
 
-# We link against libgpgme, but that alone does not guarantee that
-# there actually is a real GnuPG installed.
-RDEPENDS_${PN} += "gnupg"
+# We are explicit about packaging config files because we want
+# full control over which data sources are trusted.
+FILES_${PN}_remove = "${sysconfdir}"
+FILES_${PN} += " \
+    ${sysconfdir}/fwupd/ \
+    ${sysconfdir}/fwupd.conf \
+    ${sysconfdir}/dbus-1/system.d/org.freedesktop.fwupd.conf \
+"
+
+# The /etc/pki/fwupd directory is used to verify whether firmware
+# files are trusted. The /etc/pki/fwupd-metadata does the same for
+# metadata .xml files. Upstream fwupd already provides public
+# keys that are needed for LVFS.
+PACKAGES =+ "${PN}-pki"
+FILES_${PN}-pki = " \
+    ${sysconfdir}/pki/ \
+"
+RDEPENDS_${PN}-pki = "gnupg"
+
+# Configuration for the Linux Vendor Firmware Service.
+# Currently that is the only piece which has a hard dependency
+# on GnuPG because the GnuPG signature is checked before trusting
+# downloaded files, therefore we package it separately and set
+# the dependeny.
+#
+# Without it, fwupd can still be used with firmware files provided
+# differently, for example by using the "vendor" provider and
+# add the firmware directly to the rootfs.
+PACKAGES =+ "${PN}-lvfs"
+FILES_${PN}-lvfs = " \
+    ${sysconfdir}/fwupd/remotes.d/lvfs.conf \
+    ${sysconfdir}/fwupd/remotes.d/lvfs-testing.conf \
+"
+RDEPENDS_${PN}-lvfs += "${PN}-pki"
+
+# An example remote which is not needed for production.
+PACKAGES =+ "${PN}-demo-vendor"
+FILES_${PN}-demo-vendor = " \
+    ${sysconfdir}/fwupd/remotes.d/vendor.conf \
+    ${datadir}/fwupd/remotes.d/vendor/ \
+"
