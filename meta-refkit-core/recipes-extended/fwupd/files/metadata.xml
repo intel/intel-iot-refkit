@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<components version="0.9" origin="lvfs">
+  <component type="firmware">
+    <id>com.logitech.Unifying.RQR12.firmware</id>
+    <name>Logitech Unifying Receiver</name>
+    <summary>Firmware for the Logitech Unifying receiver</summary>
+    <developer_name>Logitech</developer_name>
+    <project_license>Proprietary</project_license>
+    <description><p>A Unifying receiver allows you to connect multiple compatible keyboards and mice to a laptop or desktop computer with a single USB receiver. Updating the
+ firmware on your Unifying receiver improves performance, adds new features and fixes security issues.</p></description>
+    <url type="homepage">http://support.logitech.com/en-us/software/unifying</url>
+    <releases>
+      <release version="RQR12.05_B0028" timestamp="1493697600" urgency="high">
+        <size type="installed">69585</size>
+        <size type="download">71519</size>
+        <location></location>
+        <checksum filename="6e5ab5961ec4c577bff198ebb465106e979cf686-Logitech-Unifying-RQR12.05_B0028.cab" target="container" type="sha1">c0243a8553f19d3c405004d3642d1485a723c948</checksum>
+        <checksum filename="RQR12.05_B0028.hex" target="content" type="sha1">d49393de9fb84e22b7e9af7e8b5baf7ab12e79ea</checksum>
+        <description><p>This release addresses an force pairing issue, an unencrypted keystroke injection issue and fake mouse issue known as Bastille security issues #1, #2 and #3. The vulnerabilities are complex to replicate and would require a hacker to be physically close to a target.</p></description>
+      </release>
+    </releases>
+    <provides>
+      <firmware type="flashed">9d131a0c-a606-580f-8eda-80587250b8d6</firmware>
+    </provides>
+    <requires>
+      <firmware compare="eq" version="USB:0x046D">vendor-id</firmware>
+    </requires>
+  </component>
+
+  <component type="firmware">
+    <id>com.logitech.Unifying.RQR12.firmware</id>
+    <name>Logitech Unifying Receiver</name>
+    <summary>Firmware for the Logitech Unifying receiver</summary>
+    <developer_name>Logitech</developer_name>
+    <project_license>Proprietary</project_license>
+    <description><p>A Unifying receiver allows you to connect multiple compatible keyboards and mice to a laptop or desktop computer with a single USB receiver. Updating the firmware on your Unifying receiver improves performance, adds new features and fixes security issues.</p></description>
+    <url type="homepage">http://support.logitech.com/en-us/software/unifying</url>
+    <releases>
+      <release version="RQR12.07_B0029" timestamp="1493784000" urgency="high">
+        <size type="installed">69601</size>
+        <size type="download">71466</size>
+        <location>firmware/938fec082652c603a1cdafde7cd25d76baadc70d-Logitech-Unifying-RQR12.07_B0029.cab</location>
+        <checksum filename="938fec082652c603a1cdafde7cd25d76baadc70d-Logitech-Unifying-RQR12.07_B0029.cab" target="container" type="sha1">d0d33e760ab6eeed6f11b9f9bd7e83820b29e970</checksum>
+        <checksum filename="RQR12.07_B0029.hex" target="content" type="sha1">6e6fa0803a970c15d70e3182bc5f841fe3364513</checksum>
+        <description><p>This release addresses an unencrypted keystroke injection issue known as Bastille security issue #11. The vulnerability is complex to replicate and would require a hacker to be physically close to a target.</p></description>
+      </release>
+    </releases>
+    <provides>
+      <firmware type="flashed">9d131a0c-a606-580f-8eda-80587250b8d6</firmware>
+    </provides>
+    <requires>
+      <firmware compare="eq" version="USB:0x046D">vendor-id</firmware>
+    </requires>
+  </component>
+
+  <component type="firmware">
+    <id>com.logitech.Unifying.RQR24.firmware</id>
+    <name>Logitech Unifying Receiver</name>
+    <summary>Firmware for the Logitech Unifying receiver</summary>
+    <developer_name>Logitech</developer_name>
+    <project_license>Proprietary</project_license>
+    <description><p>A Unifying receiver allows you to connect multiple compatible keyboards and mice to a laptop or desktop computer with a single USB receiver. Updating the firmware on your Unifying receiver improves performance, adds new features and fixes security issues.</p></description>
+    <url type="homepage">http://support.logitech.com/en-us/software/unifying</url>
+    <releases>
+      <release version="RQR24.03_B0027" timestamp="1493697600" urgency="high">
+        <size type="installed">86406</size>
+        <size type="download">88302</size>
+        <location>firmware/82b90b2614a9a4d0aced1ab8a4a99e228c95585c-Logitech-Unifying-RQ024.03_B0027.cab</location>
+        <checksum filename="82b90b2614a9a4d0aced1ab8a4a99e228c95585c-Logitech-Unifying-RQ024.03_B0027.cab" target="container" type="sha1">56e32b5e88c4f364d5b74bc0cfef0401b6e5e4f4</checksum>
+        <checksum filename="RQR24.03_B0027.hex" target="content" type="sha1">0223d9845829108080f6620888eb4a72aea702c8</checksum>
+        <description><p>This release addresses an unencrypted keystroke injection issue and fake mouse issue known as Bastille security issues #2 and #3. The vulnerabilities are complex to replicate and would require a hacker to be physically close to a target.</p></description>
+      </release>
+    </releases>
+    <provides>
+      <firmware type="flashed">cc4cbfa9-bf9d-540b-b92b-172ce31013c1</firmware>
+    </provides>
+    <requires>
+      <firmware compare="eq" version="USB:0x046D">vendor-id</firmware>
+    </requires>
+  </component>
+
+  <component type="firmware">
+    <id>com.logitech.Unifying.RQR24.firmware</id>
+    <name>Logitech Unifying Receiver</name>
+    <summary>Firmware for the Logitech Unifying receiver</summary>
+    <developer_name>Logitech</developer_name>
+    <project_license>Proprietary</project_license>
+    <description><p>A Unifying receiver allows you to connect multiple compatible keyboards and mice to a laptop or desktop computer with a single USB receiver. Updating the firmware on your Unifying receiver improves performance, adds new features and fixes security issues.</p></description>
+    <url type="homepage">http://support.logitech.com/en-us/software/unifying</url>
+    <releases>
+      <release version="RQR24.05_B0029" timestamp="1493784000" urgency="high">
+        <size type="installed">86406</size>
+        <size type="download">88271</size>
+        <location>firmware/4511b9b0d123bdbe8a2007233318ab215a59dfe6-Logitech-Unifying-RQR24.05_B0029.cab</location>
+        <checksum filename="4511b9b0d123bdbe8a2007233318ab215a59dfe6-Logitech-Unifying-RQR24.05_B0029.cab" target="container" type="sha1">0e7e9dafeb4dcc144d1434759ebf7bd71ea2a4d7</checksum>
+        <checksum filename="RQR24.05_B0029.hex" target="content" type="sha1">96a92915c9ebaf3dd232cfc7dcc41c1c6f942877</checksum>
+        <description><p>This release addresses an unencrypted keystroke injection issue known as Bastille security issue #11. The vulnerability is complex to replicate and would require a hacker to be physically close to a target.</p></description>
+      </release>
+    </releases>
+    <provides>
+      <firmware type="flashed">cc4cbfa9-bf9d-540b-b92b-172ce31013c1</firmware>
+    </provides>
+    <requires>
+      <firmware compare="eq" version="USB:0x046D">vendor-id</firmware>
+    </requires>
+  </component>
+</components>
