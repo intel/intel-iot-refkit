@@ -88,21 +88,9 @@ IMAGE_FEATURES += " \
 REFKIT_IMAGE_EXTRA_FEATURES ?= ""
 
 # Inheriting swupd-image.bbclass only works when meta-swupd is in
-# bblayers.conf, which may or may not be the case. If not available,
-# any image recipe using swupd gets skipped. This has to be done in
-# two different functions, raising bb.parse.SkipPackage already while
-# parsing fails (bitbake datastore not ready yet).
-python () {
-    if 'swupd' in d.getVar('IMAGE_FEATURES').split() and not d.getVar('LAYERVERSION_meta-swupd'):
-        raise bb.parse.SkipPackage('meta-swupd is not available, must be added to bblayers.conf')
-}
-def refkit_swupd_image_class(d):
-    if 'swupd' in d.getVar('IMAGE_FEATURES').split() and d.getVar('LAYERVERSION_meta-swupd'):
-        return 'refkit-swupd-image'
-    else:
-        return ''
-# Here we optionally inherit refkit-swupd-image.bbclass, which configures and activates swupd.
-inherit ${@refkit_swupd_image_class(d)}
+# bblayers.conf, which may or may not be the case.
+inherit check-available
+inherit ${@ check_available_class(d, 'swupd-image', ${HAVE_META_SWUPD}) if 'swupd' in d.getVar('IMAGE_FEATURES').split() else '' }
 
 # Optionally inherit OSTree system update support.
 inherit ${@oe.utils.all_distro_features(d, 'ostree', 'ostree-image')}

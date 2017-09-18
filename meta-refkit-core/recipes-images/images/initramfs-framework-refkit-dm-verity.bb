@@ -19,10 +19,8 @@ inherit image-mode-variants
 
 require refkit-boot-settings.inc
 
-python () {
-    if not oe.types.boolean(d.getVar('HAVE_CRYPTSETUP') or '0'):
-        raise bb.parse.SkipRecipe('cryptsetup dependency not available')
-}
+inherit check-available
+CHECK_AVAILABLE[cryptsetup] = "${HAVE_CRYPTSETUP}"
 
 refkit_dmverity[shellcheck] = "sh"
 refkit_dmverity () {
