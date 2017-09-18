@@ -176,16 +176,3 @@ class RefkitOSTreeUpdateTestDev(RefkitOSTreeUpdateTestAll, metaclass=RefkitOSTre
 
     IMAGE_PN_UPDATE = 'refkit-image-update-ostree-modified'
     IMAGE_BBAPPEND_UPDATE = IMAGE_PN_UPDATE + '.bbappend'
-
-    def setUpLocal(self):
-        super().setUpLocal()
-        def create_image_bb(pn):
-            bb = pn + '.bb'
-            self.track_for_cleanup(bb)
-            self.append_config('BBFILES_append = " %s"' % os.path.abspath(bb))
-            with open(bb, 'w') as f:
-                f.write('require ${META_REFKIT_CORE_BASE}/recipes-images/images/refkit-image-common.bb\n')
-                f.write('OSTREE_BRANCHNAME = "${DISTRO}/${MACHINE}/%s"\n' % self.IMAGE_PN)
-                f.write('''IMAGE_FEATURES_append = "${@ bb.utils.filter('DISTRO_FEATURES', 'stateless', d)}"\n''')
-        create_image_bb(self.IMAGE_PN)
-        create_image_bb(self.IMAGE_PN_UPDATE)
