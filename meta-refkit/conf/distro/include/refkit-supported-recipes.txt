@@ -239,7 +239,7 @@ libinput@core
 libjpeg-turbo@core
 libksba@core
 libmicrohttpd@soletta
-libmnl@networking-layer
+libmnl@core
 libmpc@core
 libnftnl@networking-layer
 libnl@core
