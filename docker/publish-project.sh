@@ -147,9 +147,9 @@ rsync -lv latest ${_RSYNC_DEST_BASE}/../
 # create clean tarball of source, leaving out .git* and parts created by build and test stages
 cd $WORKSPACE
 _tar_file=`mktemp --suffix=.tar.gz`
-tar czf ${_tar_file} . \
-        --transform "s,^\.,${JOB_NAME}-${CI_BUILD_ID},S" \
-        --exclude 'bitbake*.log*' --exclude 'build' --exclude 'build.pre' \
-        --exclude 'buildhistory*' --exclude 'refkit_ci*' \
-        --exclude '.git*' --exclude '*.testinfo.csv'
+tar --transform "s,^\.,${JOB_NAME}-${CI_BUILD_ID},S" \
+    --exclude=bitbake*.log* --exclude=build* \
+    --exclude=buildhistory* --exclude=refkit_ci* \
+    --exclude=.git* --exclude=*.testinfo.csv \
+    -czf ${_tar_file} .
 rsync -av --remove-source-files --chmod=F644 ${_tar_file} ${_RSYNC_DEST_BASE}/${JOB_NAME}-${CI_BUILD_ID}.tar.gz
