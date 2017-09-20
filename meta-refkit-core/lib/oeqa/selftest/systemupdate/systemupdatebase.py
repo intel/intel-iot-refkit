@@ -43,16 +43,6 @@ class SystemUpdateModify(object):
         ( 'ssh/sshd_config', None ),
     ]
 
-    def modify_image_build(self, testname, updates, is_update):
-        """
-        Returns additional settings that get stored in a .bbappend
-        of the test image.
-        """
-        bbappend = []
-        if 'kernel' in updates:
-            bbappend.append('APPEND_append = " modify_kernel_test=%s"' % ('updated' if is_update else 'original'))
-        return '\n'.join(bbappend)
-
     def modify_kernel(self, testname, is_update, rootfs):
         """
         Patch the kernel in an existing rootfs. Called during rootfs construction,
@@ -215,6 +205,16 @@ class SystemUpdateBase(OESelftestTestCase):
         for update in updates:
             getattr(self.IMAGE_MODIFY, 'verify_' + update)(testname, is_update, qemu, self)
 
+    def modify_image_build(self, testname, updates, is_update):
+        """
+        Returns additional settings that get stored in a .bbappend
+        of the test image.
+        """
+        bbappend = []
+        if 'kernel' in updates:
+            bbappend.append('APPEND_append = " modify_kernel_test=%s"' % ('updated' if is_update else 'original'))
+        return '\n'.join(bbappend)
+
     def do_update(self, testname, updates):
         """
         Builds the image, makes a copy of the result, rebuilds to produce
@@ -255,7 +255,7 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
        updates,
        is_update,
        self.IMAGE_CONFIG,
-       self.IMAGE_MODIFY.modify_image_build(testname, updates, is_update)))
+       self.modify_image_build(testname, updates, is_update)))
 
         # Creating a .bbappend for the image will trigger a rebuild.
         # To avoid this, use separate image recipes.
