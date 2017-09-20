@@ -190,6 +190,11 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
+# If we use the UEFI combo app and do swupd-based image updates, then
+# we also need to hook into the post-update systemd hook to update
+# the combo app in the EFI partition.
+FEATURE_PACKAGES_swupd = "${@ 'efi-combo-trigger' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else '' }"
+
 LICENSE = "MIT"
 
 # See local.conf.sample for explanations.
