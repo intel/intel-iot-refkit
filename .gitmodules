@@ -42,4 +42,4 @@
 	url = https://github.com/intel/iot-web-layers.git
 [submodule "meta-swupd"]
 	path = meta-swupd
-	url = https://git.yoctoproject.org/git/meta-swupd
+	url = https://github.com/pohly/meta-swupd.git
