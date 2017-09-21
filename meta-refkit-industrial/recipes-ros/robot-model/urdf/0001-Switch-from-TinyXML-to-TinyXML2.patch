@@ -29,15 +29,15 @@ index f19fb04..b0c76e5 100644
  
  find_package(PkgConfig)
  pkg_check_modules(libpcrecpp libpcrecpp)
-@@ -26,7 +26,7 @@ configure_file(urdfdom_compatibility.h.in "${generated_compat_header}" @ONLY)
- 
- catkin_package(
+@@ -28,7 +28,7 @@ catkin_package(
    LIBRARIES ${PROJECT_NAME}
--  INCLUDE_DIRS include ${TinyXML_INLCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/include
-+  INCLUDE_DIRS include ${TinyXML2_INLCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/include
+   INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/include
    CATKIN_DEPENDS rosconsole_bridge roscpp
-   DEPENDS urdfdom_headers urdfdom Boost pcrecpp
+-  DEPENDS urdfdom_headers urdfdom Boost pcrecpp TinyXML
++  DEPENDS urdfdom_headers urdfdom Boost pcrecpp TinyXML2
  )
+ install(FILES ${generated_compat_header} DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+ 
 @@ -39,13 +39,13 @@ include_directories(
    ${catkin_INCLUDE_DIRS}
    ${urdfdom_INCLUDE_DIRS}
