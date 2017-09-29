@@ -198,8 +198,6 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
-IMAGE_LINGUAS = " "
-
 LICENSE = "MIT"
 
 # See local.conf.sample for explanations.
@@ -209,6 +207,28 @@ refkit_root_authorized_keys () {
     mkdir ${IMAGE_ROOTFS}${ROOT_HOME}/.ssh
     echo "${REFKIT_ROOT_AUTHORIZED_KEYS}" >>${IMAGE_ROOTFS}${ROOT_HOME}/.ssh/authorized_keys
     chmod -R go-rwx ${IMAGE_ROOTFS}${ROOT_HOME}/.ssh
+}
+
+# Some commands (for example, bsdtar when dealing with archives that contain
+# UTF-8 encoded file names) report errors when invoked in a locale which
+# doesn't support UTF-8. It would be nice to use C.UTF-8, but that is not
+# currently available. Therefore we take the first language specified in
+# IMAGE_LINGUAS (typically en-us, from meta/conf/distro/include/default-distrovars.inc),
+# and turn that into a value accepted for LANG (like en_US).
+def refkit_lingua_to_lang(d):
+   linguas = d.getVar('IMAGE_LINGUAS').split()
+   if not linguas:
+       return ''
+   lang = linguas[0].split('-')
+   if len(lang) != 2:
+       return ''
+   return lang[0] + '_' + lang[1].upper()
+REFKIT_IMAGE_LANG ?= "${@ refkit_lingua_to_lang(d) }"
+ROOTFS_POSTPROCESS_COMMAND += "refkit_configure_locale_conf; "
+refkit_configure_locale_conf () {
+    if [ "${REFKIT_IMAGE_LANG}" ]; then
+        echo 'LANG=${REFKIT_IMAGE_LANG}' >${IMAGE_ROOTFS}${sysconfdir}/locale.conf
+    fi
 }
 
 # Do not create ISO images by default, only HDDIMG will be created (if it gets created at all).
