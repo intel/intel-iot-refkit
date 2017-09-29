@@ -1,6 +1,12 @@
-To test fwupd with qemu, one can build refkit-image-common with this in local.conf:
+To test fwupd with qemu and a Logitech Unifying Receiver, one can
+build refkit-image-common with this in local.conf:
 
 REFKIT_IMAGE_COMMON_EXTRA_INSTALL_append = " fwupd fwupd-demo-firmware usbutils"
+SRC_URI_append-pn-linux-intel = "file://${META_REFKIT_CORE_BASE}/recipes-extended/fwupd/files/hidraw-class.cfg"
+
+hidraw-class.cfg is only needed when using fwupd with USB devices. By
+default, linux-intel and linux-yocto kernels do not support the
+necessary /dev/hidraw* device.
 
 Buy a Logitech Unifying Receiver that is supported:
 https://github.com/hughsie/fwupd/tree/master/plugins/unifying
