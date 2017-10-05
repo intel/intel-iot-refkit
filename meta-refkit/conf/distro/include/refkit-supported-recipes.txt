@@ -38,6 +38,7 @@ alsa-state@core
 alsa-utils@core
 angles@ros-layer
 appfw-test-app@iotqa
+appstream-glib@refkit-core
 apr-util@core
 apr@core
 assimp@ros-layer
@@ -100,6 +101,7 @@ dri3proto@core
 dynamic-reconfigure@ros-layer
 e2fsprogs@core
 efi-combo-trigger@refkit-core
+efibootmgr@openembedded-layer
 efivar@openembedded-layer
 eigen-conversions@ros-layer
 eigen-stl-containers@ros-layer
@@ -122,7 +124,10 @@ fontsproto@core
 formfactor@core
 freetype@core
 fuse@filesystems-layer
+fwupd@refkit-core
+fwupdate@refkit-core
 gawk@core
+gcab@refkit-core
 gcc-runtime@core
 gcc@core
 gdb@core
@@ -156,6 +161,8 @@ gobject-introspection@core
 gpgme@core
 gptfdisk@core
 grep@core
+groupcheck-settings-default@refkit-core
+groupcheck@refkit-core
 gstreamer1.0-plugins-bad@core
 gstreamer1.0-plugins-base@core
 gstreamer1.0-plugins-good@core
@@ -232,6 +239,7 @@ libglu@core
 libgpg-error@core
 libgphoto2@openembedded-layer
 libgudev@core
+libgusb@refkit-core
 libical@core
 libice@core
 libidn@core
@@ -262,6 +270,7 @@ libtool@core
 libunistring@core
 libunwind@core
 liburcu@core
+libusb-compat@core
 libusb1@core
 libva-intel-driver@intel
 libva-utils@core
@@ -361,6 +370,7 @@ pkgconfig@core
 pluginlib@ros-layer
 poco@openembedded-layer
 pointercal-xinput@core
+polkit@openembedded-layer
 popt@core
 ppp@core
 presentproto@core

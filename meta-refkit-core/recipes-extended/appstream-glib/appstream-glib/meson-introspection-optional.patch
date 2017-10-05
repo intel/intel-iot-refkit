@@ -1,0 +1,126 @@
+From 56bec57145645f480baa38f1afca92307063a1cf Mon Sep 17 00:00:00 2001
+From: Patrick Ohly <patrick.ohly@intel.com>
+Date: Thu, 13 Jul 2017 17:35:41 +0200
+Subject: [PATCH 2/2] meson: introspection optional
+
+Calling g-ir-scanner when cross-compiling with bitbake/OpenEmbedded
+fails because it calls the wrong ld (the one from the host). More work
+will be needed in meson.bbclass and/or gobject-introspection.bbclass
+to make it work.
+
+In the meantime, having an option to turn of introspection is useful
+perhaps also in other cases where the extra work is not needed. For
+example, fwupd works fine also when it is off.
+
+The name of the new meson option matches the --disable-introspection
+that is used by some autotools-based projects.
+
+Upstream-Status: Backport [https://github.com/hughsie/appstream-glib/pull/182]
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+---
+ libappstream-builder/meson.build | 38 ++++++++++++++++++++------------------
+ libappstream-glib/meson.build    | 34 ++++++++++++++++++----------------
+ meson_options.txt                |  1 +
+ 3 files changed, 39 insertions(+), 34 deletions(-)
+
+diff --git a/libappstream-builder/meson.build b/libappstream-builder/meson.build
+index ce257a4..55f0868 100644
+--- a/libappstream-builder/meson.build
++++ b/libappstream-builder/meson.build
+@@ -128,21 +128,23 @@ asbuilder_introspection_srcs = [
+   'asb-task.h',
+ ]
+ 
+-asglib_gir_dep = declare_dependency(sources: asglib_gir)
+-
+-gnome.generate_gir(asbuilder,
+-  sources : asbuilder_introspection_srcs,
+-  nsversion : '1.0',
+-  namespace : 'AppStreamBuilder',
+-  symbol_prefix : 'asb_',
+-  identifier_prefix : 'Asb',
+-  export_packages : 'appstream-builder',
+-  dependencies: asglib_gir_dep,
+-  includes : [
+-    'AppStreamGlib-1.0',
+-    'GdkPixbuf-2.0',
+-    'Gio-2.0',
+-    'GObject-2.0',
+-  ],
+-  install : true
+-)
++if get_option('enable-introspection')
++  asglib_gir_dep = declare_dependency(sources: asglib_gir)
++
++  gnome.generate_gir(asbuilder,
++    sources : asbuilder_introspection_srcs,
++    nsversion : '1.0',
++    namespace : 'AppStreamBuilder',
++    symbol_prefix : 'asb_',
++    identifier_prefix : 'Asb',
++    export_packages : 'appstream-builder',
++    dependencies: asglib_gir_dep,
++    includes : [
++      'AppStreamGlib-1.0',
++      'GdkPixbuf-2.0',
++      'Gio-2.0',
++      'GObject-2.0',
++    ],
++    install : true
++  )
++endif
+diff --git a/libappstream-glib/meson.build b/libappstream-glib/meson.build
+index 1753431..3607dfe 100644
+--- a/libappstream-glib/meson.build
++++ b/libappstream-glib/meson.build
+@@ -212,19 +212,21 @@ introspection_sources = [
+   'as-utils.h',
+ ]
+ 
+-asglib_gir = gnome.generate_gir(asglib,
+-  sources : introspection_sources,
+-  nsversion : '1.0',
+-  namespace : 'AppStreamGlib',
+-  symbol_prefix : 'as_',
+-  identifier_prefix : 'As',
+-  export_packages : 'appstream-glib',
+-  dependencies : deps,
+-  includes : [
+-    'GObject-2.0',
+-    'Gio-2.0',
+-    'GdkPixbuf-2.0'
+-  ],
+-  link_with : asglib,
+-  install : true,
+-)
++if get_option('enable-introspection')
++  asglib_gir = gnome.generate_gir(asglib,
++    sources : introspection_sources,
++    nsversion : '1.0',
++    namespace : 'AppStreamGlib',
++    symbol_prefix : 'as_',
++    identifier_prefix : 'As',
++    export_packages : 'appstream-glib',
++    dependencies : deps,
++    includes : [
++      'GObject-2.0',
++      'Gio-2.0',
++      'GdkPixbuf-2.0'
++    ],
++    link_with : asglib,
++    install : true,
++  )
++endif
+diff --git a/meson_options.txt b/meson_options.txt
+index e8c7f55..b2d971a 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -6,3 +6,4 @@ option('enable-fonts', type : 'boolean', value : true, description : 'enable fon
+ option('enable-stemmer', type : 'boolean', value : true, description : 'enable stemmer support')
+ option('enable-man', type : 'boolean', value : true, description : 'generate man pages')
+ option('enable-gtk-doc', type : 'boolean', value : false, description : 'generate API reference')
++option('enable-introspection', type : 'boolean', value : true, description : 'generate GObject Introspection data')
+-- 
+2.11.0
+

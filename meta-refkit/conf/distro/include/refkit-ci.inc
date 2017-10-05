@@ -69,6 +69,7 @@ REFKIT_CI_BUILD_TARGETS=" \
   refkit-installer-image \
   swtpm-wrappers-native \
   ovmf \
+  fwupd \
 "
 
 # Following targets would be executed with do_populate_sdk task

@@ -1,0 +1,130 @@
+To test fwupd with qemu and a Logitech Unifying Receiver, one can
+build refkit-image-common with this in local.conf:
+
+REFKIT_IMAGE_COMMON_EXTRA_INSTALL_append = " fwupd fwupd-demo-firmware usbutils"
+SRC_URI_append-pn-linux-intel = "file://${META_REFKIT_CORE_BASE}/recipes-extended/fwupd/files/hidraw-class.cfg"
+
+hidraw-class.cfg is only needed when using fwupd with USB devices. By
+default, linux-intel and linux-yocto kernels do not support the
+necessary /dev/hidraw* device.
+
+Buy a Logitech Unifying Receiver that is supported:
+https://github.com/hughsie/fwupd/tree/master/plugins/unifying
+
+Ensure that the host has it:
+$ lsusb
+...
+Bus 003 Device 010: ID 046d:c52b Logitech, Inc. Unifying Receiver
+...
+$ lsusb -t
+/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
+    |__ Port 5: Dev 2, If 0, Class=Hub, Driver=hub/4p, 5000M
+/:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/15p, 480M
+    |__ Port 2: Dev 10, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+    |__ Port 2: Dev 10, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+    |__ Port 2: Dev 10, If 2, Class=Human Interface Device, Driver=usbhid, 12M
+    |__ Port 9: Dev 3, If 0, Class=Hub, Driver=hub/4p, 480M
+/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+    |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/8p, 480M
+/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+    |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/6p, 480M
+
+Note the bus and port of the HID device. Change permissions:
+$ sudo chmod a+rw /dev/bus/usb/003/*
+
+Now use USB passthrough to make the dongle visible to the virtual machine:
+
+$ runqemu nographic ovmf slirp kvm wic intel-corei7-64 refkit-image-common serial qemuparams="-device usb-host,bus=usb-bus.0,hostbus=3,hostport=2"
+...
+*********************************************
+*** This is a development image!          ***
+*** Do not use in production.             ***
+*********************************************
+[    3.763880] nf_conntrack version 0.5.0 (2048 buckets, 8192 max)
+[    3.785329] hid-generic 0003:046D:C52B.0002: input,hidraw1: USB HID v1.11 Keyboard [Logitech USB Receiver] on usb-0000:00:01.2-2.1/input0
+[    3.790470] input: Logitech USB Receiver as /devices/pci0000:00/0000:00:01.2/usb1/1-2/1-2.1/1-2.1:1.1/0003:046D:C52B.0003/input/input6
+root@intel-corei7-64:~# [    3.843350] hid-generic 0003:046D:C52B.0003: input,hiddev0,hidraw2: USB HID v1.11 Mouse [Logitech USB Receiver] on usb-0000:00:01.2-2.1/input1
+[    3.855213] hid-generic 0003:046D:C52B.0004: hiddev0,hidraw3: USB HID v1.11 Device [Logitech USB Receiver] on usb-0000:00:01.2-2.1/input2
+[   91.428093] random: crng init done
+
+Insufficient device permissions sometimes trigger a qemu error, but
+not always. The virtual machine then boots without the receiver.
+
+In qemu:
+
+root@intel-corei7-64:~# lsusb
+Bus 001 Device 002: ID 0627:0001 Adomax Technology Co., Ltd 
+Bus 001 Device 004: ID 046d:c52b Logitech, Inc. Unifying Receiver
+Bus 001 Device 003: ID 0409:55aa NEC Corp. Hub
+Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+root@intel-corei7-64:~# fwupdmgr  get-devices
+Unifying Receiver
+  DeviceID:             /sys/devices/pci0000:00/0000:00:01.2/usb1/1-2/1-2.1
+  Guid:                 77d843f7-682c-57e8-8e29-584f5b4f52a1
+  Guid:                 9d131a0c-a606-580f-8eda-80587250b8d6
+  Description:          <p>A Unifying receiver allows you to connect multiple compatible keyboards and mice to a laptop or desktop computer with a single USB receiver. Updating the
+ firmware on your Unifying receiver improves performance, adds new features and fixes security issues.</p>
+  Plugin:               unifying
+  Flags:                updatable|supported|registered
+  DeviceVendor:         Logitech
+  DeviceVendorId:       USB:0x046D
+  Version:              RQR12.03_B0025
+  VersionBootloader:    BOT01.02_B0015
+  Created:              2017-09-15
+
+Unknown Device
+  DeviceID:             ro__sys_devices_pci0000_00_0000_00_02_0
+  Guid:                 69a0461c-e442-5ef5-928f-595380c74cbf
+  Plugin:               udev
+  Flags:                internal|registered
+  DeviceVendorId:       PCI:0x1234
+  Created:              2017-09-15
+
+Virtio network device
+  DeviceID:             ro__sys_devices_pci0000_00_0000_00_03_0
+  Guid:                 9ba6f0ab-7605-5b49-afa7-a7302cab48ac
+  Plugin:               udev
+  Flags:                internal|registered
+  DeviceVendor:         Red Hat, Inc
+  DeviceVendorId:       PCI:0x1AF4
+  Created:              2017-09-15
+
+root@intel-corei7-64:~# fwupdmgr get-updates
+Unifying Receiver has firmware updates:
+ID:                      com.logitech.Unifying.RQR12.firmware
+GUID:                    77d843f7-682c-57e8-8e29-584f5b4f52a1
+GUID:                    9d131a0c-a606-580f-8eda-80587250b8d6
+Update Version:          RQR12.07_B0029
+Update Remote ID:        demo
+Update Checksum:         SHA1(c269c3e266755dce08602b7a7eb5e1b0ec1df24e)
+Update Location:         firmware/938fec082652c603a1cdafde7cd25d76baadc70d-Logitech-Unifying-RQR12.07_B0029.cab
+Update Description:      RQR12.05_B0028:
+                         
+                         This release addresses an force pairing issue, an unencrypted keystroke injection issue and fake mouse issue known as Bastille security issues #1, #2 and #3. The vulnerabilities are complex to replicate and would require a hacker to be physically close to a target.
+                         
+                         RQR12.07_B0029:
+                         
+                         This release addresses an unencrypted keystroke injection issue known as Bastille security issue #11. The vulnerability is complex to replicate and would require a hacker to be physically close to a target.
+root@intel-corei7-64:~# fwupdmgr update
+Decompressing?         [-                                       ]
+[   37.688114] usb 1-2.1: USB disconnect, device number 4
+request timed out
+
+This is expected to fail as shown above. The reason is that updating
+the receiver causes it to disconnect from USB and reconnect as a
+different device (unifying receiver in boot loader mode). qemu then
+doesn't reconnect that new device and therefore flashing fails in the
+virtual machine.
+
+To reset the receiver, unplug and replug it.
+
+To debug, run "/usr/libexec/fwupd/fwupd -v" manually.
+
+Alternatively, it is possible to add "fwupd-lvfs" to an image and then
+use fwupd as documented elsewhere ("fwupdmgr refresh && fwupdmgr
+update") for arbitrary devices supported by the Linux Vender Firmware
+Service: https://fwupd.org/
+
+On real hardware it should be possible to update and downgrade (via
+"fwupdmgr downgrade") and it might even be possible to automate a QA
+check for this. However, this hasn't been tried.

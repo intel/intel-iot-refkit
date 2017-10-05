@@ -13,10 +13,8 @@ RDEPENDS_${PN} += "initramfs-framework-base"
 
 require refkit-boot-settings.inc
 
-python () {
-    if not oe.types.boolean(d.getVar('HAVE_CRYPTSETUP') or '0'):
-        raise bb.parse.SkipRecipe('keyutils dependency not available')
-}
+inherit check-available
+CHECK_AVAILABLE[keyutils] = "${HAVE_CRYPTSETUP}"
 
 refkit_luks[shellcheck] = "sh"
 refkit_luks () {

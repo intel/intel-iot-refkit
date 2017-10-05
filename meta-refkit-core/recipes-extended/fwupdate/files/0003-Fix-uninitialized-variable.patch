@@ -1,0 +1,42 @@
+From 2fe9e690e019d2e25db3be22b57623c0618148d7 Mon Sep 17 00:00:00 2001
+From: Mirco Tischler <mt-ml@gmx.de>
+Date: Mon, 6 Mar 2017 23:45:46 +0100
+Subject: [PATCH 1/1] Fix uninitialized variable.
+
+If boot_order_size is 0, i was never set. On gcc-6.3.1, this broke the
+build if compiled with -O2 (-Werror=maybe_uninitialized). This is the
+error:
+
+libfwup.c: In function 'set_up_boot_next':
+libfwup.c:818:16: error: 'i' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  new_boot_order[i] = boot_entry;
+                ^
+libfwup.c:780:15: note: 'i' was declared here
+  unsigned int i;
+               ^
+cc1: all warnings being treated as errors
+
+Upstream-Status: Backport [2fe9e690e019d2e25db3be22b57623c0618148d7]
+
+Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+
+---
+ linux/libfwup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/linux/libfwup.c b/linux/libfwup.c
+index 232eb77..30cf56a 100644
+--- a/linux/libfwup.c
++++ b/linux/libfwup.c
+@@ -790,7 +790,7 @@ add_to_boot_order(uint16_t boot_entry)
+ 			EFI_VARIABLE_BOOTSERVICE_ACCESS |
+ 			EFI_VARIABLE_RUNTIME_ACCESS;
+ 	int rc;
+-	unsigned int i;
++	unsigned int i = 0;
+ 
+ 	rc = efi_get_variable_size(efi_guid_global, "BootOrder",
+ 				   &boot_order_size);
+-- 
+2.11.0
+
