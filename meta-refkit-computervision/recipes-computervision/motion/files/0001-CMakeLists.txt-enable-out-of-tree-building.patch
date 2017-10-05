@@ -1,0 +1,37 @@
+From 7d8f5bbbcf7f1c40b5e80dec31e2f8f2c2c821b0 Mon Sep 17 00:00:00 2001
+From: Ismo Puustinen <ismo.puustinen@intel.com>
+Date: Fri, 4 Aug 2017 15:40:23 +0300
+Subject: [PATCH] CMakeLists.txt: enable out-of-tree building.
+
+Previously the code couldn't be compiled in a separate build tree using
+CMake. This can be tested with:
+
+        mkdir b && cd b && cmake .. && make && make install
+
+Signed-off-by: Ismo Puustinen <ismo.puustinen@intel.com>
+
+Upstream-status: Submitted [https://github.com/Motion-Project/motion/pull/453]
+
+---
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3b6e351..5fcb088 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -133,9 +133,9 @@ add_executable(motion ${SRC_FILES})
+ target_link_libraries(motion ${LINK_LIBRARIES})
+ 
+ install(TARGETS motion DESTINATION "bin" COMPONENT binaries)
+-install(FILES motion-dist.conf camera1-dist.conf camera2-dist.conf camera3-dist.conf camera4-dist.conf
++install(FILES ${PROJECT_BINARY_DIR}/motion-dist.conf ${PROJECT_BINARY_DIR}/camera1-dist.conf ${PROJECT_BINARY_DIR}/camera2-dist.conf ${PROJECT_BINARY_DIR}/camera3-dist.conf ${PROJECT_BINARY_DIR}/camera4-dist.conf
+         DESTINATION ${sysconfdir} COMPONENT configuration)
+-install(FILES motion.service motion.spec motion.init-Debian motion.init-FreeBSD.sh
++install(FILES ${PROJECT_BINARY_DIR}/motion.service ${PROJECT_BINARY_DIR}/motion.spec ${PROJECT_BINARY_DIR}/motion.init-Debian ${PROJECT_BINARY_DIR}/motion.init-FreeBSD.sh
+         DESTINATION "lib/${PROJECT_NAME}/examples" COMPONENT examples)
+ install(FILES CHANGELOG COPYING CREDITS README.md motion_guide.html mask1.png normal.jpg outputmotion1.jpg outputnormal1.jpg
+         DESTINATION "lib/${PROJECT_NAME}/doc" COMPONENT doc)
+-- 
+2.13.3
+
