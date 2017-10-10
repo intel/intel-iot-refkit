@@ -40,7 +40,7 @@ class SystemUpdateModify(object):
     ETC_FILES = [
         ( 'nsswitch.conf', 'edit' ),
         ( 'ssl/openssl.cnf', 'symlink' ),
-        ( 'ssh/sshd_config', None ),
+        ( 'udev/udev.conf', None ),
     ]
 
     def modify_kernel(self, testname, is_update, rootfs):
