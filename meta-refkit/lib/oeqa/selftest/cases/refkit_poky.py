@@ -59,7 +59,7 @@ class RefkitPokyMeta(type):
                 """
                 Test Yocto Compatible 2.0 status of each refkit layer.
                 This covers also:
-                - proper declaration of dependencies (because 'yocto-compat-layer.py --dependency' adds those)
+                - proper declaration of dependencies (because 'yocto-check-layer --dependency' adds those)
                 - parse and dependencies ('bitbake -S none world' must work)
                 """
                 def add_layers(layers):
@@ -67,7 +67,7 @@ class RefkitPokyMeta(type):
                         f.write('BBLAYERS += "%s"\n' %
                                 ' '.join([os.path.normpath(self.layers[layer]) for layer in layers]))
 
-                # Workaround for yocto-compat-layer.py not evaluating
+                # Workaround for yocto-check-layer not evaluating
                 # LAYERDEPENDS_security += "${@bb.utils.contains("DISTRO_FEATURES", "x11", "gnome-layer xfce-layer", "", d)}"
                 # in meta-security: add the layer and its dependencies ourselves.
                 # Only meta-refkit needs this because only it has a hard dependency on meta-security.
@@ -84,7 +84,7 @@ class RefkitPokyMeta(type):
                                 layer not in self.poky_layers and \
                                 layer != 'meta-iotqa'])
 
-                cmd = "yocto-compat-layer.py --dependency %s -- %s" % (
+                cmd = "yocto-check-layer --dependency %s -- %s" % (
                     ' '.join(self.layers.values()),
                     self.layers[refkit_layer])
                 # "world" does not include images. We need to enable them explicitly, otherwise
@@ -109,7 +109,7 @@ REFKIT_IMAGE_MODE = "development"
 
                 result = runCmd(cmd)
 
-                # yocto-compat-layer.py does not return error codes (YOCTO #11482), so we have to guess.
+                # yocto-check-layer does not return error codes (YOCTO #11482), so we have to guess.
                 if 'INFO: FAILED' in result.output:
                     self.fail(result.output)
                 self.logger.info('%s:\n%s' % (cmd, result.output))
@@ -162,10 +162,10 @@ include selftest.inc
         for var, value in re.findall(r'^(\S+)="(.*?)"$', result.output, re.MULTILINE):
             cls.buildvars[var] = value
 
-        # We expect compatlayer in the lib dir of the directory holding yocto-compat-layer.py.
-        yocto_compat_layer = shutil.which('yocto-compat-layer.py')
-        scripts_path = os.path.dirname(os.path.realpath(yocto_compat_layer))
-        cls.yocto_compat_lib_path = scripts_path + '/lib'
+        # We expect checklayer in the lib dir of the directory holding yocto-check-layer.
+        yocto_check_layer = shutil.which('yocto-check-layer')
+        scripts_path = os.path.dirname(os.path.realpath(yocto_check_layer))
+        cls.yocto_check_lib_path = scripts_path + '/lib'
 
     def setUpLocal(self):
         """Creates a clean build directory with a Poky configuration."""
@@ -243,17 +243,17 @@ class TestRefkitPokySignatures(TestRefkitPokyBase, metaclass=RefkitPokyMeta):
         """Ensure that including the refkit config does not change the signature of other layers."""
         old_path = sys.path
         try:
-            sys.path = [self.yocto_compat_lib_path] + sys.path
-            import compatlayer
+            sys.path = [self.yocto_check_lib_path] + sys.path
+            import checklayer
 
             self.add_refkit_layers()
 
             # Ignore world build errors, some of the non-refkit layers might be broken.
-            old_sigs, _ = compatlayer.get_signatures(self.poky_dir, failsafe=True)
+            old_sigs, _ = checklayer.get_signatures(self.poky_dir, failsafe=True)
             # Now add refkit-conf.inc, without changing the DISTRO_FEATURES.
             self.append_config('require conf/distro/include/refkit-config.inc')
-            curr_sigs, _ = compatlayer.get_signatures(self.poky_dir, failsafe=True)
-            msg = compatlayer.compare_signatures(old_sigs, curr_sigs)
+            curr_sigs, _ = checklayer.get_signatures(self.poky_dir, failsafe=True)
+            msg = checklayer.compare_signatures(old_sigs, curr_sigs)
             if msg is not None:
                 self.fail('Including refkit-config.inc changed signatures.\n%s' % msg)
         finally:
