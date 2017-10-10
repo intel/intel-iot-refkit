@@ -84,12 +84,15 @@ class HTTPUpdate(SystemUpdateBase):
         # because then we can use SimpleHTTPRequestHandler.
         old_cwd = os.getcwd()
         server = None
+        self.http_log = []
+        http_log = self.http_log
         try:
             os.chdir(self.REPO_DIR)
             class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 def log_message(s, format, *args):
                     msg = format % args
                     self.logger.info(msg)
+                    self.http_log.append(msg)
 
             handler = HTTPRequestHandler
 
