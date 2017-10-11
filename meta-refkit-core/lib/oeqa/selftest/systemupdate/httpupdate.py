@@ -80,19 +80,34 @@ class HTTPUpdate(SystemUpdateBase):
 
     def update_image(self, qemu):
         # We need to bring up some simple HTTP server for the
-        # update repo. For the sake of simplicity we change into that directory
-        # because then we can use SimpleHTTPRequestHandler.
-        old_cwd = os.getcwd()
+        # update repo.
         server = None
         self.http_log = []
         http_log = self.http_log
         try:
-            os.chdir(self.REPO_DIR)
             class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-                def log_message(s, format, *args):
+                parent = self
+                def log_message(self, format, *args):
                     msg = format % args
-                    self.logger.info(msg)
-                    self.http_log.append(msg)
+                    self.parent.logger.info(msg)
+                    self.parent.http_log.append(msg)
+
+                def translate_path(self, path):
+                    """
+                    Return absolute path based on document root instead of current directory.
+                    """
+
+                    # The original implementation returns an absolute path rooted in the
+                    # current directory. We need to serve a different
+                    # directory without being able to chdir(), because
+                    # doing that would cause commands like bitbake to
+                    # run there, which is undesirable because for
+                    # example bitbake creates a bitbake-cookerdaemon.log
+                    # in the current directory.
+                    path = super().translate_path(path)
+                    relpath = os.path.relpath(path)
+                    path = os.path.join(self.parent.REPO_DIR, relpath)
+                    return path
 
             handler = HTTPRequestHandler
 
@@ -126,7 +141,6 @@ exec %s 2>/tmp/httpd.log -D -v -d -d -d -d STDIO TCP:localhost:%d
             return self.update_image_via_http(qemu)
 
         finally:
-            os.chdir(old_cwd)
             if server:
                 server.shutdown()
                 server.server_close()
