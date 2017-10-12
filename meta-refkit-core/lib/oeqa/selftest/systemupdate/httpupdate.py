@@ -23,14 +23,25 @@ class HTTPUpdate(SystemUpdateBase):
 
     # Global variables are the same for all recipes,
     # but RECIPE_SYSROOT_NATIVE is specific to socat-native.
-    BB_VARS = get_bb_vars([
-        'DEPLOY_DIR',
-        'MACHINE',
-        'RECIPE_SYSROOT_NATIVE',
-        ],
-                          'socat-native')
+    # We store that in the class because then it can be shared by
+    # multiple derived instances.
+    class DelayedGetVars:
+        def __init__(self):
+            self._cache = None
 
-    # To be set by derived class.
+        def __getitem__(self, key):
+            if self._cache is None:
+                self._cache = get_bb_vars([
+                    'DEPLOY_DIR',
+                    'MACHINE',
+                    'RECIPE_SYSROOT_NATIVE',
+                    ],
+                    'socat-native')
+            return self._cache[key]
+
+    BB_VARS = DelayedGetVars()
+
+    # To be set by derived class or instance.
     REPO_DIR = None
 
     def track_for_cleanup(self, name):

@@ -14,9 +14,11 @@ class RefkitOSTreeUpdateBase(HTTPUpdate):
     IMAGE_BBAPPEND = IMAGE_PN + '.bbappend'
     IMAGE_BBAPPEND_UPDATE = IMAGE_BBAPPEND
 
-    # We cannot get the actual OSTREE_REPO for the
-    # image here, so we just assume that it is in the usual place.
-    REPO_DIR = os.path.join(HTTPUpdate.BB_VARS['DEPLOY_DIR'], 'ostree-repo')
+    def setUp(self):
+        # We cannot get the actual OSTREE_REPO for the
+        # image here, so we just assume that it is in the usual place.
+        self.REPO_DIR = os.path.join(HTTPUpdate.BB_VARS['DEPLOY_DIR'], 'ostree-repo')
+        super().setUp()
 
     def stop_update_service(self, qemu):
         cmd = '''systemctl stop refkit-update.service'''
