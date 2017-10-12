@@ -10,6 +10,7 @@ import base64
 import fnmatch
 import pathlib
 import pickle
+import random
 import shutil
 import subprocess
 
@@ -43,6 +44,12 @@ class SystemUpdateModify(object):
         ( 'udev/udev.conf', None ),
     ]
 
+    # A large file with printable content that does not compress well.
+    LARGE_FILE_SIZE = 8 * 1024 * 1024
+    random.seed(1)
+    LARGE_FILE_CONTENT = ''.join([ random.choice('!"#$%&()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{|}~') for x in range(0, LARGE_FILE_SIZE) ])
+    LARGE_FILE_CONTENT_APPEND = 'hello'
+
     def modify_kernel(self, testname, is_update, rootfs):
         """
         Patch the kernel in an existing rootfs. Called during rootfs construction,
@@ -66,14 +73,29 @@ class SystemUpdateModify(object):
         """
         Simulate simple adding, removing and modifying of files under /usr/bin.
         """
-        testdir = os.path.join(rootfs, 'usr', 'bin')
+        testdir = pathlib.Path(rootfs) / 'usr' / 'bin'
+        remove_me = testdir / 'modify_files_remove_me'
+        update_me = testdir / 'modify_files_update_me'
+        was_added = testdir / 'modify_files_was_added'
+        large = testdir / 'modify_files_large'
+
+        # Add/remove file cases.
         if not is_update:
-            pathlib.Path(os.path.join(testdir, 'modify_files_remove_me')).touch()
-            pathlib.Path(os.path.join(testdir, 'modify_files_update_me')).touch()
+            remove_me.touch()
         else:
-            with open(os.path.join(testdir, 'modify_files_update_me'), 'w') as f:
+            was_added.touch()
+
+        # This is case where the full new file is smaller than a delta.
+        with update_me.open('w') as f:
+            if is_update:
                 f.write('updated\n')
-            pathlib.Path(os.path.join(testdir, 'modify_files_was_added')).touch()
+
+        # Whereas for a large file, a binary delta is more efficient.
+        with large.open('w') as f:
+            f.write(self.LARGE_FILE_CONTENT)
+            if is_update:
+                f.write(self.LARGE_FILE_CONTENT_APPEND)
+            f.write('\n')
 
     def verify_files(self, testname, is_update, qemu, test):
         """
@@ -83,13 +105,24 @@ class SystemUpdateModify(object):
         status, output = qemu.run_serial(cmd)
         test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
         if not is_update:
-            test.assertEqual(output, '/usr/bin/modify_files_remove_me\r\n/usr/bin/modify_files_update_me')
+            test.assertEqual(output, '/usr/bin/modify_files_large\r\n/usr/bin/modify_files_remove_me\r\n/usr/bin/modify_files_update_me')
         else:
-            test.assertEqual(output, '/usr/bin/modify_files_update_me\r\n/usr/bin/modify_files_was_added')
+            test.assertEqual(output, '/usr/bin/modify_files_large\r\n/usr/bin/modify_files_update_me\r\n/usr/bin/modify_files_was_added')
             cmd = 'cat /usr/bin/modify_files_update_me'
             status, output = qemu.run_serial(cmd)
             test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
             test.assertEqual(output, 'updated')
+
+        cmd = 'head -c 20 /usr/bin/modify_files_large && tail -c 20 /usr/bin/modify_files_large'
+        status, output = qemu.run_serial(cmd)
+        test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
+        expected = self.LARGE_FILE_CONTENT
+        if is_update:
+            expected += self.LARGE_FILE_CONTENT_APPEND
+        # There's a trailing newline in the large file that we loose
+        # when capturing the output, hence the 19 instead of 20 bytes.
+        expected = expected[:20] + expected[-19:]
+        test.assertEqual(expected, output)
 
     def modify_etc(self, testname, is_update, rootfs):
         """
