@@ -27,6 +27,7 @@ python-pyalsaaudio@meta-python
 python-pygobject@openembedded-layer
 python-setuptools@core
 robot-state-publisher@ros-layer
+rps-demo@refkit-extra
 snappy@refkit-extra
 std-srvs@ros-layer
 tf2-kdl@ros-layer
