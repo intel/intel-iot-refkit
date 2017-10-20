@@ -87,6 +87,7 @@ class HTTPUpdate(SystemUpdateBase):
         try:
             class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 parent = self
+                request_counter = 0
                 def log_message(self, format, *args):
                     msg = format % args
                     self.parent.logger.info(msg)
@@ -108,6 +109,18 @@ class HTTPUpdate(SystemUpdateBase):
                     relpath = os.path.relpath(path)
                     path = os.path.join(self.parent.REPO_DIR, relpath)
                     return path
+
+                def do_GET(self):
+                    """
+                    Inject errors.
+                    """
+                    counter = HTTPRequestHandler.request_counter
+                    HTTPRequestHandler.request_counter += 1
+                    stop_at = getattr(self.parent, 'stop_serving_http_at', None)
+                    if stop_at is not None and counter >= stop_at:
+                        self.send_error(500, 'test server is intentionally down')
+                    else:
+                        super().do_GET()
 
             handler = HTTPRequestHandler
 
