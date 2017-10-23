@@ -7,6 +7,7 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars, runqem
 import oe.path
 
 import base64
+import contextlib
 import fnmatch
 import pathlib
 import pickle
@@ -219,13 +220,20 @@ class SystemUpdateBase(OESelftestTestCase):
     # Expected to be replaced by derived class.
     IMAGE_MODIFY = SystemUpdateModify()
 
-    def boot_image(self, overrides):
+    def boot_image(self, overrides = {}, **kwargs):
         """
         Calls runqemu() such that commands can be started via run_serial().
         Derived classes need to replace with something that adds whatever
         other parameters are needed or useful.
         """
-        return runqemu(self.IMAGE_PN, discard_writes=False, overrides=overrides)
+        # Change DEPLOY_DIR_IMAGE so that we use our copy of the
+        # images from before the update. Further customizations for booting can
+        # be done by rewriting self.image_dir_test/IMAGE_PN-MACHINE.qemuboot.conf
+        # (read, close, write, not just appending as that would also change
+        # the file copy under image_dir).
+        overrides = overrides.copy()
+        overrides['DEPLOY_DIR_IMAGE'] = self.image_dir_test
+        return runqemu(self.IMAGE_PN, discard_writes=False, overrides=overrides, **kwargs)
 
     def update_image(self, qemu):
         """
@@ -250,28 +258,18 @@ class SystemUpdateBase(OESelftestTestCase):
             bbappend.append('APPEND_append = " modify_kernel_test=%s"' % ('updated' if is_update else 'original'))
         return '\n'.join(bbappend)
 
-    def do_update(self, testname, updates):
+    def create_image_bbappend(self, testname, updates, is_update):
         """
-        Builds the image, makes a copy of the result, rebuilds to produce
-        an update with configurable changes, boots the original image, updates it,
-        reboots and then checks the updated image.
-
-        'update' is a list of modify_* function names which make the actual changes
-        (adding, removing, modifying files or kernel) that are part of the tests.
+        Creates an IMAGE_BBAPPEND which contains the pickled modification code.
+        A .bbappend is used because it can contain code and is guaranteed to be
+        applied also to image variants.
         """
 
-        def create_image_bbappend(is_update):
-            """
-            Creates an IMAGE_BBAPPEND which contains the pickled modification code.
-            A .bbappend is used because it can contain code and is guaranteed to be
-            applied also to image variants.
-            """
-
-            bbappend = self.IMAGE_BBAPPEND_UPDATE if is_update else self.IMAGE_BBAPPEND
-            self.append_config('BBFILES_append = " %s"' % os.path.abspath(bbappend))
-            self.track_for_cleanup(bbappend)
-            with open(bbappend, 'w') as f:
-                f.write('''
+        bbappend = self.IMAGE_BBAPPEND_UPDATE if is_update else self.IMAGE_BBAPPEND
+        self.append_config('BBFILES_append = " %s"' % os.path.abspath(bbappend))
+        self.track_for_cleanup(bbappend)
+        with open(bbappend, 'w') as f:
+            f.write('''
 python system_update_test_modify () {
     import base64
     import pickle
@@ -292,9 +290,14 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
        self.IMAGE_CONFIG,
        self.modify_image_build(testname, updates, is_update)))
 
+    def prepare_image(self, testname, updates):
+        """
+        Builds the initial image and prepares it for booting.
+        """
+
         # Creating a .bbappend for the image will trigger a rebuild.
         # To avoid this, use separate image recipes.
-        create_image_bbappend(False)
+        self.create_image_bbappend(testname, updates, False)
         self.logger.info('Building base image')
         result = bitbake(self.IMAGE_PN, output_log=self.logger)
 
@@ -312,28 +315,44 @@ ROOTFS_POSTPROCESS_COMMAND += "system_update_test_modify;"
         # when the image recipes are different.
         self.clone_files(self.image_dir, ('ovmf*', vars['IMAGE_LINK_NAME'] + '*'))
 
-        # Change DEPLOY_DIR_IMAGE so that we use our copy of the
-        # images from before the update. Further customizations for booting can
-        # be done by rewriting self.image_dir_test/IMAGE_PN-MACHINE.qemuboot.conf
-        # (read, close, write, not just appending as that would also change
-        # the file copy under image_dir).
-        overrides = { 'DEPLOY_DIR_IMAGE': self.image_dir_test }
-
+    @contextlib.contextmanager
+    def boot_and_verify_image(self, testname, updates):
+        """
+        Boots the initial image and verifies its content.
+        To be used as:
+        with boot_initial_image() as qemu:
+             ... run additional checks in qemu ...
+        """
         # Boot image, verify before and after update.
-        with self.boot_image(overrides) as qemu:
+        with self.boot_image() as qemu:
             self.verify_image(testname, False, qemu, updates)
+            yield qemu
 
-            # Now we change our .bbappend so that the updated state is generated
-            # during the next rebuild.
-            create_image_bbappend(True)
-            self.logger.info('Building updated image')
-            bitbake(self.IMAGE_PN_UPDATE, output_log=self.logger)
+    def prepare_update(self, testname, updates):
+        """
+        Build the update image.
+        """
+        self.create_image_bbappend(testname, updates, True)
+        self.logger.info('Building updated image')
+        bitbake(self.IMAGE_PN_UPDATE, output_log=self.logger)
 
+    def do_update(self, testname, updates):
+        """
+        Builds the image, makes a copy of the result, rebuilds to produce
+        an update with configurable changes, boots the original image, updates it,
+        reboots and then checks the updated image.
+
+        'update' is a list of modify_* function names which make the actual changes
+        (adding, removing, modifying files or kernel) that are part of the tests.
+        """
+        self.prepare_image(testname, updates)
+        with self.boot_and_verify_image(testname, updates) as qemu:
+            self.prepare_update(testname, updates)
             reboot = self.update_image(qemu)
             if not reboot:
                 self.verify_image(testname, True, qemu, updates)
         if reboot:
-            with self.boot_image(overrides) as qemu:
+            with self.boot_image() as qemu:
                 self.verify_image(testname, True, qemu, updates)
 
     def clone_files(self, dirname, file_patterns):
