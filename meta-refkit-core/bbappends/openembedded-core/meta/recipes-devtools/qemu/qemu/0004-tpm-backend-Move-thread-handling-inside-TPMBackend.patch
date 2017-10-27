@@ -1,7 +1,10 @@
-From 1504562008f80e5b3acf19222046e123114c5055 Mon Sep 17 00:00:00 2001
+From 5767322022d54ceb5a2ed6c650f667a4d24aa150 Mon Sep 17 00:00:00 2001
 From: Amarnath Valluri <amarnath.valluri@intel.com>
-Date: Fri, 7 Apr 2017 17:30:24 +0300
-Subject: [PATCH 2/9] tpm-backend: Move thread handling inside TPMBackend
+Date: Thu, 30 Mar 2017 16:20:25 +0300
+Subject: [PATCH 04/12] tpm-backend: Move thread handling inside TPMBackend
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 Move thread handling inside TPMBackend, this way backend implementations need
 not to maintain their own thread life cycle, instead they needs to implement
@@ -10,18 +13,20 @@ not to maintain their own thread life cycle, instead they needs to implement
 This change made tpm_backend_int.h kind of useless, hence removed it.
 
 Signed-off-by: Amarnath Valluri <amarnath.valluri@intel.com>
-Upstream-Status: Submitted [http://lists.nongnu.org/archive/html/qemu-devel/2017-04/msg01278.html]
-Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+Reviewed-by: Marc-André Lureau <marcandre.lureau@redhat.com>
+Reviewed-by: Stefan Berger <stefanb@linux.vnet.ibm.com>
+
+Upstream-Status: Backport [b19a5eea5a26e9bd83a48c742172d2a6aa8c4180]
 ---
- backends/tpm.c                   | 63 +++++++++++++++++++++++++---------------
- hw/tpm/tpm_passthrough.c         | 58 +++++-------------------------------
- include/sysemu/tpm_backend.h     | 32 ++++++++++++--------
+ backends/tpm.c                   | 62 +++++++++++++++++++++++++---------------
+ hw/tpm/tpm_passthrough.c         | 58 ++++++-------------------------------
+ include/sysemu/tpm_backend.h     | 32 +++++++++++++--------
  include/sysemu/tpm_backend_int.h | 41 --------------------------
- 4 files changed, 68 insertions(+), 126 deletions(-)
+ 4 files changed, 67 insertions(+), 126 deletions(-)
  delete mode 100644 include/sysemu/tpm_backend_int.h
 
 diff --git a/backends/tpm.c b/backends/tpm.c
-index 536f262b..0ec0c672 100644
+index 536f262bb7..ce56c3b74d 100644
 --- a/backends/tpm.c
 +++ b/backends/tpm.c
 @@ -18,7 +18,24 @@
@@ -35,7 +40,7 @@ index 536f262b..0ec0c672 100644
 +    TPMBackend *s = TPM_BACKEND(user_data);
 +    TPMBackendClass *k  = TPM_BACKEND_GET_CLASS(s);
 +
-+    assert (k->handle_request != NULL);
++    assert(k->handle_request != NULL);
 +    k->handle_request(s, (TPMBackendCmd)data);
 +}
 +
@@ -105,7 +110,7 @@ index 536f262b..0ec0c672 100644
  }
  
  void tpm_backend_cancel_cmd(TPMBackend *s)
-@@ -156,29 +186,15 @@ static void tpm_backend_instance_init(Object *obj)
+@@ -156,29 +186,14 @@ static void tpm_backend_instance_init(Object *obj)
                               tpm_backend_prop_get_opened,
                               tpm_backend_prop_set_opened,
                               NULL);
@@ -134,12 +139,11 @@ index 536f262b..0ec0c672 100644
 -        g_thread_pool_free(tbt->pool, FALSE, TRUE);
 -        tbt->pool = NULL;
 -    }
-+    g_free(s->id);
 +    tpm_backend_thread_end(s);
  }
  
  static const TypeInfo tpm_backend_info = {
-@@ -186,6 +202,7 @@ static const TypeInfo tpm_backend_info = {
+@@ -186,6 +201,7 @@ static const TypeInfo tpm_backend_info = {
      .parent = TYPE_OBJECT,
      .instance_size = sizeof(TPMBackend),
      .instance_init = tpm_backend_instance_init,
@@ -148,7 +152,7 @@ index 536f262b..0ec0c672 100644
      .abstract = true,
  };
 diff --git a/hw/tpm/tpm_passthrough.c b/hw/tpm/tpm_passthrough.c
-index a0baf5f0..f50d9cff 100644
+index a0baf5f080..f50d9cffd7 100644
 --- a/hw/tpm/tpm_passthrough.c
 +++ b/hw/tpm/tpm_passthrough.c
 @@ -30,7 +30,6 @@
@@ -290,7 +294,7 @@ index a0baf5f0..f50d9cff 100644
  
  static const TypeInfo tpm_passthrough_info = {
 diff --git a/include/sysemu/tpm_backend.h b/include/sysemu/tpm_backend.h
-index e7f590db..a538a7f9 100644
+index 3708413035..58308b3687 100644
 --- a/include/sysemu/tpm_backend.h
 +++ b/include/sysemu/tpm_backend.h
 @@ -29,22 +29,24 @@
@@ -363,7 +367,7 @@ index e7f590db..a538a7f9 100644
      void (*cancel_cmd)(TPMBackend *t);
 diff --git a/include/sysemu/tpm_backend_int.h b/include/sysemu/tpm_backend_int.h
 deleted file mode 100644
-index 00639dd7..00000000
+index 00639dd7de..0000000000
 --- a/include/sysemu/tpm_backend_int.h
 +++ /dev/null
 @@ -1,41 +0,0 @@

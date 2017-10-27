@@ -1,8 +1,11 @@
-From d7b3a351f47517ee04d218789d2ce3a929fb52a9 Mon Sep 17 00:00:00 2001
+From cac845f55b8f27e5c90e0f2e3dcbeea7013df67c Mon Sep 17 00:00:00 2001
 From: Amarnath Valluri <amarnath.valluri@intel.com>
-Date: Fri, 7 Apr 2017 17:30:23 +0300
-Subject: [PATCH 1/9] tpm-backend: Remove unneeded member variable from backend
- class
+Date: Thu, 30 Mar 2017 15:55:17 +0300
+Subject: [PATCH 03/12] tpm-backend: Remove unneeded member variable from
+ backend class
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 TPMDriverOps inside TPMBackend is not required, as it is supposed to be a class
 member. The only possible reason for keeping in TPMBackend was, to get the
@@ -10,8 +13,10 @@ backend type in tpm.c where dedicated backend api, tpm_backend_get_type() is
 present.
 
 Signed-off-by: Amarnath Valluri <amarnath.valluri@intel.com>
-Upstream-Status: Submitted [http://lists.nongnu.org/archive/html/qemu-devel/2017-04/msg01278.html]
-Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+Reviewed-by: Marc-André Lureau <marcandre.lureau@redhat.com>
+Reviewed-by: Stefan Berger <stefanb@linux.vnet.ibm.com>
+
+Upstream-Status: Backport [fb4b0c6765471dad2363875989e7661ca5f9a608]
 ---
  hw/tpm/tpm_passthrough.c     | 4 ----
  include/sysemu/tpm_backend.h | 1 -
@@ -19,7 +24,7 @@ Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
  3 files changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/hw/tpm/tpm_passthrough.c b/hw/tpm/tpm_passthrough.c
-index 9234eb34..a0baf5f0 100644
+index 9234eb3459..a0baf5f080 100644
 --- a/hw/tpm/tpm_passthrough.c
 +++ b/hw/tpm/tpm_passthrough.c
 @@ -46,8 +46,6 @@
@@ -41,7 +46,7 @@ index 9234eb34..a0baf5f0 100644
          goto err_exit;
      }
 diff --git a/include/sysemu/tpm_backend.h b/include/sysemu/tpm_backend.h
-index b58f52d3..e7f590db 100644
+index b0a9731aee..3708413035 100644
 --- a/include/sysemu/tpm_backend.h
 +++ b/include/sysemu/tpm_backend.h
 @@ -50,7 +50,6 @@ struct TPMBackend {
@@ -53,10 +58,10 @@ index b58f52d3..e7f590db 100644
      QLIST_ENTRY(TPMBackend) list;
  };
 diff --git a/tpm.c b/tpm.c
-index 9a7c7114..0ee021a3 100644
+index 2dbea70645..b7166ca200 100644
 --- a/tpm.c
 +++ b/tpm.c
-@@ -258,7 +258,7 @@ static TPMInfo *qmp_query_tpm_inst(TPMBackend *drv)
+@@ -212,7 +212,7 @@ static TPMInfo *qmp_query_tpm_inst(TPMBackend *drv)
      res->model = drv->fe_model;
      res->options = g_new0(TpmTypeOptions, 1);
  

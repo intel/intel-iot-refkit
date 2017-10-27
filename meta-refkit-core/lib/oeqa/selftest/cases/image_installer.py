@@ -95,8 +95,13 @@ class ImageInstaller(OESelftestTestCase):
             self.assertEqual(len(swtpm), 1, msg='Expected exactly one swtpm_setup_oe.sh: %s' % swtpm)
             cmd = '%s --tpm-state %s --createek' % (swtpm[0], self.resultdir)
             self.assertEqual(0, runCmd(cmd).status)
-            qemuparams_tpm = " -tpmdev emulator,id=tpm0,spawn=on,tpmstatedir=%s,logfile=%s/swtpm.log,path=%s -device tpm-tis,tpmdev=tpm0" % \
-                             (self.resultdir, self.resultdir, os.path.join(os.path.dirname(swtpm[0]), 'swtpm_oe.sh'))
+            # Comma is the parameter separator in qemu. Double-comma can be used to embed a comma in a parameter,
+            # which we need here for the cmd's --ctrl value.
+            # --terminate is a workaround for swtpm not doing that automatically when it looses the
+            # connection and doesn't have a listenting socket (as in this case here).
+            qemuparams_tpm = " -chardev 'socket,id=chrtpm0,cmd=exec %s socket --terminate --ctrl type=unixio,,clientfd=0 --tpmstate dir=%s --log file=%s/swtpm.log%s'" % \
+                             (os.path.join(os.path.dirname(swtpm[0]), 'swtpm_oe.sh'), self.resultdir, self.resultdir, tpmmode)
+            qemuparams_tpm += " -tpmdev emulator,id=tpm0,chardev=chrtpm0 -device tpm-tis,tpmdev=tpm0 "
         else:
             qemuparams_tpm = ""
 
