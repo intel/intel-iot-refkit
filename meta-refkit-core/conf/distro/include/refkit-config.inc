@@ -165,5 +165,9 @@ PACKAGECONFIG_append_pn-connman_df-refkit-config = " nftables"
 PACKAGECONFIG_remove_pn-curl_df-refkit-config = "gnutls"
 PACKAGECONFIG_append_pn-curl_df-refkit-config = " ssl"
 
-#remove gtk dependency from opencv
+# Remove gtk dependency from opencv
 PACKAGECONFIG_remove_pn-opencv_df-refkit-config = "gtk"
+
+# Enable UPM/MRAA nodejs bindins
+BINDINGS_append_pn-mraa_df-refkit-gateway = " nodejs"
+BINDINGS_append_pn-upm_df-refkit-gateway = " nodejs"

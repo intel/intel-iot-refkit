@@ -333,7 +333,7 @@ moveit-ros-perception@ros-layer
 moveit-ros-planning@ros-layer
 mpfr@core
 mraa-test@iotqa
-mraa@refkit-core
+mraa@openembedded-layer
 mtdev@core
 multipath-tools@openembedded-layer
 ncurses@core
@@ -478,7 +478,7 @@ u-boot@core
 udp-smack-test@security-smack
 update-rc.d@core
 upm-test@iotqa
-upm@refkit-core
+upm@openembedded-layer
 urdf-parser-plugin@ros-layer
 urdf@ros-layer
 urdfdom-headers@ros-layer

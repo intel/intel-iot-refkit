@@ -156,6 +156,10 @@ FEATURE_PACKAGES_iotivity = "packagegroup-iotivity"
 
 FEATURE_PACKAGES_sensors = "packagegroup-sensors \
     ${@ bb.utils.contains('IMAGE_FEATURES', 'python-runtime', 'python-mraa python-upm', '', d)} \
+"
+
+# MRAA/UPM nodejs bindings currently enabled via refkit-gateway distro feature
+FEATURE_PACKAGES_sensors_append_df-refkit-gateway = " \
     ${@ bb.utils.contains('IMAGE_FEATURES', 'nodejs-runtime', 'node-mraa node-upm', '', d)} \
 "
 
