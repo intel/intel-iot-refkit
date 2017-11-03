@@ -1,0 +1,3 @@
+#this file contains tests which cant be run on Upsquared
+oeqa.runtime.sanity.comm_wifi_connect
+oeqa.runtime.sanity.comm_btcheck
