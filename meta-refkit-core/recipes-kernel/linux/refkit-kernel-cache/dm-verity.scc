@@ -1,0 +1,4 @@
+define KFEATURE_DESCRIPTION "Enable dm-verity (device-mapper block integrity checking target)"
+define KFEATURE_COMPATIBILITY all
+
+kconf non-hardware dm-verity.cfg
