@@ -73,7 +73,7 @@ refkit_luks () {
                         fi
                         ifdown lo
                     }
-                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) } &&
+                    if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) } &&
                        ls /dev/tpm* >/dev/null 2>&1; then
                         # Bring up IPv4 (needed by tcsd and tpm-tools) and tcsd itself.
                         ifup lo
@@ -156,5 +156,5 @@ python do_install () {
 FILES_${PN} = "/init.d"
 RDEPENDS_${PN} = " \
     cryptsetup \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'trousers tpm-tools libgcc strace netbase init-ifupdown', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'trousers tpm-tools libgcc strace netbase init-ifupdown', '', d) } \
 "

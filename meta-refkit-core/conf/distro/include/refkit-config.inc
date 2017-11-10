@@ -27,7 +27,7 @@ REFKIT_DEFAULT_DISTRO_FEATURES = " \
     pam \
     pulseaudio \
     systemd \
-    tpm1.2 \
+    tpm \
 "
 
 # ptests are useful for QA. Enabling them in the distro creates
@@ -102,7 +102,7 @@ REFKIT_IMAGE_MODE_VALID ??= "development production"
 # features.
 KERNEL_FEATURES_append_df-refkit-config = " \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' features/device-mapper/dm-verity.scc', '', d) } \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', ' features/tpm/tpm.scc', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', ' features/tpm/tpm.scc', '', d) } \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'refkit-firewall', ' features/nf_tables/nf_tables.scc', '', d) } \
 "
 

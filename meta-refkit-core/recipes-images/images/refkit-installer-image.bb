@@ -67,7 +67,7 @@ REFKIT_INSTALLER_UEFI_COMBO () {
             # The default is "true" if there is a /dev/tpm* device.
             TPM12=${TPM12:-$(ls /dev/tpm* >/dev/null 2>&1 && echo yes || echo no)}
 
-            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'true', 'false', d) } &&
+            if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'true', 'false', d) } &&
                istrue TPM12; then
                 # This uses the well-known (all zero) owner and SRK secrets,
                 # thus granting any process running on the device access to the
@@ -252,7 +252,7 @@ INSTALLER_RDEPENDS_append = " \
     kpartx \
     rsync \
     ${@ bb.utils.contains('DISTRO_FEATURES', 'luks', 'cryptsetup', '', d) } \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', 'trousers tpm-tools', '', d) } \
+    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm', 'trousers tpm-tools', '', d) } \
 "
 
 
