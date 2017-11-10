@@ -97,7 +97,6 @@ refkit_luks () {
                             fatal "Error reading NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}"
                         fi
                         keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
-                        od "$keyfile"
                         if [ "$(head -c "$keyfile_offset" "$keyfile")" != "${REFKIT_DISK_ENCRYPTION_NVRAM_ID}" ]; then
                             luks_cleanup
                             fatal "Unexpected content in NVRAM area"
