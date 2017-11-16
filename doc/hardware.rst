@@ -36,34 +36,6 @@ Following on-board devices/interfaces have not been tested.
 
 There are currently no known non-functional devices/interfaces.
 
-Intel 570x
-----------
-
-Supported BIOS version is 163. Following on-board devices/interfaces have been
-tested to work.
-
- - Serial console
- - USB 3.0 Type-A
- - GPU with HDMI output
- - Audio output over HDMI
- - WiFi/BT adapter
- - eMMC
- - microSD
- - GPIO
-
-Following on-board devices/interfaces have not been tested.
-
- - I2C
- - SPI
- - I2S
- - PWM
- - MIPI DSI
- - MIPI CSI
-
-Following on-board devices/interfaces are known not to work.
-
- - USB 3.1 Type-C
-
 Peripherals
 ===========
 
