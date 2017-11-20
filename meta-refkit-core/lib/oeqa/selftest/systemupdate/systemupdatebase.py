@@ -77,6 +77,7 @@ class SystemUpdateModify(object):
         remove_me = testdir / 'modify_files_remove_me'
         update_me = testdir / 'modify_files_update_me'
         was_added = testdir / 'modify_files_was_added'
+        was_added_dir = testdir / 'modify_files_new_dir'
         large = testdir / 'modify_files_large'
 
         # Add/remove file cases.
@@ -84,6 +85,7 @@ class SystemUpdateModify(object):
             remove_me.touch()
         else:
             was_added.touch()
+            was_added_dir.mkdir()
 
         # This is case where the full new file is smaller than a delta.
         with update_me.open('w') as f:
@@ -101,14 +103,14 @@ class SystemUpdateModify(object):
         """
         Sanity check files before and after update.
         """
-        cmd = 'ls -1 /usr/bin/modify_files_*'
+        cmd = 'ls -1 -d /usr/bin/modify_files_*'
         status, output = qemu.run_serial(cmd)
         test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
         if not is_update:
             test.assertEqual(output, '/usr/bin/modify_files_large\r\n/usr/bin/modify_files_remove_me\r\n/usr/bin/modify_files_update_me')
         else:
-            test.assertEqual(output, '/usr/bin/modify_files_large\r\n/usr/bin/modify_files_update_me\r\n/usr/bin/modify_files_was_added')
-            cmd = 'cat /usr/bin/modify_files_update_me'
+            test.assertEqual(output, '/usr/bin/modify_files_large\r\n/usr/bin/modify_files_new_dir\r\n/usr/bin/modify_files_update_me\r\n/usr/bin/modify_files_was_added')
+            cmd = 'test -d /usr/bin/modify_files_new_dir && cat /usr/bin/modify_files_update_me'
             status, output = qemu.run_serial(cmd)
             test.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
             test.assertEqual(output, 'updated')
