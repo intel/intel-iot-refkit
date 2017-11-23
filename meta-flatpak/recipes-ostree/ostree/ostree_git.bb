@@ -9,9 +9,9 @@ SRC_URI = " \
     file://0001-autogen.sh-fall-back-to-no-gtkdocize-if-it-is-there-.patch \
 "
 
-SRCREV = "5a5e465492aca13937dab7a2df39f25da94e6e36"
+SRCREV = "ae61321046ad7f4148a5884c8c6c8b2594ff840e"
 
-PV = "2017.8+git${SRCPV}"
+PV = "2017.13+git${SRCPV}"
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig requires-systemd gobject-introspection
@@ -45,12 +45,20 @@ EXTRA_OECONF_class-native += " \
 "
 
 # package content
-PACKAGES += "${PN}-systemd-generator"
+PACKAGES += " \
+    ${PN}-systemd-generator \
+    ${PN}-bash-completion \
+"
 
-FILES_${PN} += "${libdir}/girepository-1.0 ${datadir}/gir-1.0"
+FILES_${PN} += " \
+    ${libdir}/girepository-1.0 ${datadir}/gir-1.0 \
+    ${libdir}/tmpfiles.d/ostree*.conf \
+"
 SYSTEMD_SERVICE_${PN} = "ostree-prepare-root.service ostree-remount.service"
 
 FILES_${PN}-systemd-generator = "${libdir}/systemd/system-generators"
+FILES_${PN}-bash-completion = "${datadir}/bash-completion/completions/ostree"
+
 
 do_configure_prepend() {
     cd ${S}
