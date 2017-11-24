@@ -378,6 +378,10 @@ DEPENDS += "${@ 'attr-native' if '${REFKIT_IMAGE_STRIP_SMACK}' else '' }"
 # made due to filesystem metadata time stamps being in future.
 APPEND_append = " fsck.mode=skip"
 
+# Do not mount read/write in the initramfs when the goal is to have a read-only
+# rootfs. Not sure why OE-core does not do that itself.
+APPEND_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'read-only-rootfs', ' ro', '', d)} "
+
 # Ensure that images preserve Smack labels and IMA/EVM.
 inherit ${@bb.utils.contains_any('IMAGE_FEATURES', ['ima','smack'], 'xattr-images', '', d)}
 
