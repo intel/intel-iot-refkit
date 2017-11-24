@@ -63,14 +63,14 @@ class HTTPServer(object):
             handler = HTTPRequestHandler
 
             def create_httpd():
-                for port in range(9999, 10000):
+                for port in range(9999, 11000):
                     try:
                         server = http.server.HTTPServer(('localhost', port), handler)
                         return server
                     except OSError as ex:
                         if ex.errno != errno.EADDRINUSE:
                             raise
-                self.fail('no port available for HTTP server')
+                raise RuntimeError('no port available for HTTP server')
 
             self.server = create_httpd()
             self.port = self.server.server_port
