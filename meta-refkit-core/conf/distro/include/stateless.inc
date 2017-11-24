@@ -46,9 +46,12 @@ STATELESS_RM_pn-systemd += " \
 # systemd/src/core/machine-id-setup.c).
 STATELESS_ETC_WHITELIST += "machine-id"
 
-# These files must be ignored by swupd.
+# These files must be ignored by swupd, unless the root file system
+# is read-only, in which case they do not actually get modified in the
+# partition. Using swupd in such a setup only works when doing A/B
+# partitioning.
 STATEFUL_FILES += "/etc/machine-id"
-SWUPD_FILE_BLACKLIST_append = " ${STATEFUL_FILES}"
+SWUPD_FILE_BLACKLIST_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'read-only-rootfs', '', ' ' + d.getVar('STATEFUL_FILES'), d) }"
 
 # Depend on the installed components and thus has to be computed on
 # the device. Handled by systemd during booting or updates.
