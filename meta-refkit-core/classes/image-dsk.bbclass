@@ -70,3 +70,7 @@ do_uefiapp_deploy_append () {
 }
 
 do_uefiapp_deploy[depends] += "rmc-db:do_deploy"
+
+# temporary fix, should be in meta-intel/classes/uefi-comboapp.bbclass
+# Patch submitted: [meta-intel][PATCH] uefi-comboapp.bbclass: install files under pseudo
+do_uefiapp_deploy[fakeroot] = "1"

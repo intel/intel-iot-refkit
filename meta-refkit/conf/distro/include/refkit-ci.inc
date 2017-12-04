@@ -50,7 +50,7 @@ REFKIT_VM_IMAGE_TYPES ?= "wic.xz wic.bmap"
 #
 # pre/post-build oe-selftests started by CI builder, whitespace-separated.
 #
-REFKIT_CI_PREBUILD_SELFTESTS="iotsstatetests.SStateTests.test_sstate_samesigs"
+REFKIT_CI_PREBUILD_SELFTESTS="refkit_swupd.RefkitSwupdUpdateTestAll refkit_swupd.RefkitSwupdUpdateTestIncremental refkit_swupd.RefkitSwupdPartitionTest"
 # https://bugzilla.yoctoproject.org/show_bug.cgi?id=11756 currently causes
 # oe-selftest to ignore the order.
 REFKIT_CI_POSTBUILD_SELFTESTS="refkit_secureboot refkit_poky refkit_license_check refkit_ostree.RefkitOSTreeUpdateTestAll image_installer"

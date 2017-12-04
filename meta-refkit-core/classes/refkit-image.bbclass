@@ -190,6 +190,11 @@ FEATURE_PACKAGES_tools-debug_append = " valgrind"
 FEATURE_PACKAGES_computervision = "packagegroup-computervision"
 FEATURE_PACKAGES_computervision-test = "packagegroup-computervision-test"
 
+# If we use the UEFI combo app and do swupd-based image updates, then
+# we also need to hook into the post-update systemd hook to update
+# the combo app in the EFI partition.
+FEATURE_PACKAGES_swupd = "${@ 'efi-combo-trigger' if oe.types.boolean(d.getVar('REFKIT_USE_DSK_IMAGES') or '0') else '' }"
+
 LICENSE = "MIT"
 
 # See local.conf.sample for explanations.
@@ -377,6 +382,10 @@ DEPENDS += "${@ 'attr-native' if '${REFKIT_IMAGE_STRIP_SMACK}' else '' }"
 # stage due to lack of RTC backup battery. This causes unnecessary fixes being
 # made due to filesystem metadata time stamps being in future.
 APPEND_append = " fsck.mode=skip"
+
+# Do not mount read/write in the initramfs when the goal is to have a read-only
+# rootfs. Not sure why OE-core does not do that itself.
+APPEND_append = "${@ bb.utils.contains('IMAGE_FEATURES', 'read-only-rootfs', ' ro', '', d)} "
 
 # Ensure that images preserve Smack labels and IMA/EVM.
 inherit ${@bb.utils.contains_any('IMAGE_FEATURES', ['ima','smack'], 'xattr-images', '', d)}

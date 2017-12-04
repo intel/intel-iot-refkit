@@ -80,4 +80,4 @@ ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'systemd'
 # available in OE-core. However, that code is still not suitable
 # (https://bugzilla.yoctoproject.org/show_bug.cgi?id=9789) and thus we
 # have to use our own version.
-ROOTFS_POSTPROCESS_COMMAND_remove = "systemd_create_users"
+ROOTFS_POSTPROCESS_COMMAND_remove = "systemd_create_users systemd_create_users;"

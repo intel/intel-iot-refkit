@@ -4,4 +4,4 @@ SUMMARY = "test image for RefkitOSTreeUpdateTest: refkit-image-common + OSTree +
 # refkit-image-update-ostree-modified when running the test multiple
 # times.
 require refkit-image-update-ostree.bb
-# OSTREE_BRANCHNAME = "${DISTRO}/${MACHINE}/refkit-image-update-ostree"
+OSTREE_BRANCHNAME = "${DISTRO}/${MACHINE}/refkit-image-update-ostree"
