@@ -66,7 +66,7 @@ refkit_luks () {
                     keyfile_offset=
                     tcsd_pid=
                     luks_cleanup () {
-                        dd if=/dev/zero of="$keyfile" count=1 bs="$(stat -c '%s' "$keyfile")"
+                        dd if=/dev/zero of="$keyfile" count="$(stat -c '%s' "$keyfile")" bs=1 >/dev/null
                         rm "$keyfile"
                         if [ "$tcsd_pid" ]; then
                             kill "$tcsd_pid"
@@ -107,10 +107,14 @@ refkit_luks () {
                             fatal "Error locking NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX}"
                         fi
                     fi
-                    if [ ! -s "$keyfile" ] &&
-                       [ "${REFKIT_DISK_ENCRYPTION_PASSWORD}" ]; then
-                        printf "%s" "${REFKIT_DISK_ENCRYPTION_PASSWORD}" >"$keyfile"
-                        keyfile_offset=0
+                    if [ ! -s "$keyfile" ]; then
+                        if [ "${REFKIT_DISK_ENCRYPTION_PASSWORD}" ]; then
+                            printf "%s" "${REFKIT_DISK_ENCRYPTION_PASSWORD}" >"$keyfile"
+                            keyfile_offset=0
+                        else
+                            # Empty keyfile is almost certainly not right. Warn about it, but then proceed just in case.
+                            msg "Empty LUKS key! Retrieving it from TPM was disabled or impossible and no fixed password was set either. 'cryptsetup open' is probably going to fail now, but will try anyway."
+                        fi
                     fi
                     if cryptsetup open --type luks "$bootparam_root" "${REFKIT_DEVICE_MAPPER_ROOTFS_NAME}" --key-file "$keyfile" --keyfile-offset "$keyfile_offset"; then
                         bootparam_root="/dev/mapper/${REFKIT_DEVICE_MAPPER_ROOTFS_NAME}"
@@ -118,6 +122,9 @@ refkit_luks () {
                         return
                     fi
                     luks_cleanup
+                    # We allow booting to continue instead of aborting. Perhaps the error was temporary
+                    # and the next loop iteration will succeed. If not, we'll return eventually and
+                    # then the normal "no rootfs" handling takes over.
                     ;;
                   1) # not a LUKS volume, which might be a problem (attacker replaced encrypted rootfs with modified unencrypted one)
                     if [ "$bootparam_use_encryption" ] ; then
