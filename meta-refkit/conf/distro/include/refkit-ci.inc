@@ -67,7 +67,7 @@ REFKIT_CI_BUILD_TARGETS=" \
   refkit-image-gateway \
   refkit-image-industrial \
   refkit-installer-image \
-  swtpm-wrappers-native \
+  swtpm2-wrappers-native \
   ovmf \
   fwupd \
 "

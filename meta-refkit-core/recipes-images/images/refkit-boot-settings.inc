@@ -35,6 +35,7 @@ SECURE_BOOT_SIGNING_CERT ??= "${@ '${META_REFKIT_CORE_BASE}/files/secureboot/ref
 # Index of the TPM NVRAM area used for random the per-machine disk encryption key.
 # The area contains a short ID + version, followed by the key.
 REFKIT_DISK_ENCRYPTION_NVRAM_INDEX ??= "1"
+REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2 ??= "0x1500001"
 REFKIT_DISK_ENCRYPTION_NVRAM_ID ??= "REFKIT_0"
 REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN = "${@ len('${REFKIT_DISK_ENCRYPTION_NVRAM_ID}') }"
 

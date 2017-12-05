@@ -68,7 +68,7 @@ class ImageInstaller(OESelftestTestCase):
             # The tests depend on images done in "development" mode, so set that here
             # temporarily in a way that it overrides some other IMAGE_MODE setting in local.conf.
             self.append_config('IMAGE_MODE_forcevariable = "development"')
-            targets = 'refkit-installer-image ovmf swtpm-wrappers-native'
+            targets = 'refkit-installer-image ovmf swtpm2-wrappers-native'
             result = bitbake(targets, output_log=self.logger)
             ImageInstaller.image_is_ready = True
 
@@ -91,12 +91,22 @@ class ImageInstaller(OESelftestTestCase):
         self.create_internal_disk()
 
         if tpm:
-            swtpm = glob('%s/work/*/swtpm-wrappers-native/1.0-r0/swtpm_setup_oe.sh' % self.installer_test_vars['TMPDIR'])
+            swtpm = glob('%s/work/*/swtpm2-wrappers-native/1.0-r0/swtpm_setup_oe.sh' % self.installer_test_vars['TMPDIR'])
             self.assertEqual(len(swtpm), 1, msg='Expected exactly one swtpm_setup_oe.sh: %s' % swtpm)
-            cmd = '%s --tpm-state %s --createek' % (swtpm[0], self.resultdir)
+            if tpm == '2.0':
+                tpmmode = ' --tpm2'
+            else:
+                tpmmode = ''
+            cmd = '%s %s --tpm-state %s --createek' % (swtpm[0], tpmmode, self.resultdir)
             self.assertEqual(0, runCmd(cmd).status)
-            qemuparams_tpm = " -tpmdev emulator,id=tpm0,spawn=on,tpmstatedir=%s,logfile=%s/swtpm.log,path=%s -device tpm-tis,tpmdev=tpm0" % \
-                             (self.resultdir, self.resultdir, os.path.join(os.path.dirname(swtpm[0]), 'swtpm_oe.sh'))
+            # Comma is the parameter separator in qemu. Double-comma can be used to embed a comma in a parameter,
+            # which we need here for the cmd's --ctrl value.
+            # --terminate is a workaround for swtpm not doing that automatically when it looses the
+            # connection and doesn't have a listenting socket (as in this case here).
+            swtpm_log = os.path.join(self.resultdir, 'swtpm.log')
+            qemuparams_tpm = " -chardev 'socket,id=chrtpm0,cmd=exec %s socket --terminate --ctrl type=unixio,,clientfd=0 --tpmstate dir=%s --log level=10,,file=%s%s'" % \
+                             (os.path.join(os.path.dirname(swtpm[0]), 'swtpm_oe.sh'), self.resultdir, swtpm_log, tpmmode)
+            qemuparams_tpm += " -tpmdev emulator,id=tpm0,chardev=chrtpm0 -device tpm-tis,tpmdev=tpm0 "
         else:
             qemuparams_tpm = ""
 
@@ -114,17 +124,24 @@ class ImageInstaller(OESelftestTestCase):
                 self.assertEqual('/dev/mapper/rootfs', output)
             else:
                 self.assertIn('vda', output)
+
             # Now install, non-interactively. Driving the script
             # interactively would be also a worthwhile test...
             cmd = "CHOSEN_INPUT=refkit-image-common-%s.wic CHOSEN_OUTPUT=vdb FORCE=yes %s%simage-installer" % \
                   (self.image_arch,
                    ("FIXED_PASSWORD=%s " % fixed_password) if fixed_password else "",
-                   "TPM12=yes " if tpm else "",
+                   "TPM=%s " % tpm if tpm else "",
                    )
             status, output = qemu.run_serial(cmd, timeout=300)
             self.assertEqual(1, status, 'Failed to run command "%s":\n%s' % (cmd, output))
-            self.logger.info('Installed successfully:\n%s' % output)
+            self.logger.info('Installed successfully:\n%s\n%s' % (cmd, output))
             self.assertTrue(output.endswith('Installed refkit-image-common-%s.wic on vdb successfully.' % self.image_arch))
+            if tpm:
+                self.assertIn('cryptsetup', output)
+                if tpm == '2.0':
+                    self.assertIn('tpm2_nvdefine', output)
+                else:
+                    self.assertIn('tpm_nvdefine', output)
 
         # Test installation by replacing the normal image with our internal one.
         overrides = {
@@ -163,6 +180,10 @@ class ImageInstaller(OESelftestTestCase):
         # (see refkit-boot-settings.inc).
         self.do_install(fixed_password="refkit")
 
-    def test_install_tpm(self):
-        """Test image installation under qemu without virtual TPM, using a fixed password"""
-        self.do_install(tpm=True)
+    def test_install_tpm12(self):
+        """Test image installation under qemu with virtual TPM 1.2, using a fixed password"""
+        self.do_install(tpm='1.2')
+
+    def test_install_tpm20(self):
+        """Test image installation under qemu with virtual TPM 2.0, using a fixed password"""
+        self.do_install(tpm='2.0')

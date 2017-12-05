@@ -27,7 +27,8 @@ REFKIT_DEFAULT_DISTRO_FEATURES = " \
     pam \
     pulseaudio \
     systemd \
-    tpm1.2 \
+    tpm \
+    tpm2 \
 "
 
 # ptests are useful for QA. Enabling them in the distro creates
@@ -97,14 +98,9 @@ DISTRO_FEATURES_OVERRIDES += " \
 REFKIT_IMAGE_MODE ??= ""
 REFKIT_IMAGE_MODE_VALID ??= "development production"
 
-# Depending on the distro features we need certain kernel features. The assumption
-# here is that all kernels we use support KERNEL_FEATURES *and* have these
-# features.
-KERNEL_FEATURES_append_df-refkit-config = " \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' features/device-mapper/dm-verity.scc', '', d) } \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm1.2', ' features/tpm/tpm.scc', '', d) } \
-    ${@ bb.utils.contains('DISTRO_FEATURES', 'refkit-firewall', ' features/nf_tables/nf_tables.scc', '', d) } \
-"
+# The kernel also gets reconfigured in
+# meta-refkit-core/recipes-kernel/linux/linux-%.bbappend.
+# See that file for details.
 
 # Use UEFI-based "dsk" image format for machines supporting UEFI.
 # Defined here because it influences several different recipes.
