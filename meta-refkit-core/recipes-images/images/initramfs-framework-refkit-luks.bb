@@ -76,7 +76,8 @@ refkit_luks () {
                     }
                     if ${@ bb.utils.contains('DISTRO_FEATURES', 'tpm2', 'true', 'false', d) } &&
                        [ -e /dev/tpm0 ] &&
-                       TPM2TOOLS_TCTI_NAME=device tpm2_dump_capability -c commands >/dev/null 2>/dev/null; then
+                       ((tpm2_nvread -v | grep -q "version 2.1" && TPM2TOOLS_TCTI_NAME=device tpm2_dump_capabilities -c commands >/dev/null 2>/dev/null) ||
+                        TPM2TOOLS_TCTI_NAME=device tpm2_getcap -c commands >/dev/null 2>/dev/null); then
                        TPM2TOOLS_TCTI_NAME=device
                        TPM2TOOLS_DEVICE_FILE=/dev/tpm0
                        export TPM2TOOLS_TCTI_NAME TPM2TOOLS_DEVICE_FILE
@@ -95,7 +96,7 @@ refkit_luks () {
                            for c in $(echo "$out" | grep -v 'The size of data'); do printf "\\x$c"; done >"$keyfile"
                         else
                            # tpm2.0-tools 3.x can write into a file.
-                           if ! tpm2_nvread -x '${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}' -a 0x40000001 -s $size -o 0 "$keyfile"; then
+                           if ! tpm2_nvread -x '${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}' -a 0x40000001 -s $size -o 0 -f "$keyfile"; then
                                 luks_cleanup
                                 fatal "Error reading NVRAM area with index ${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}"
                            fi
