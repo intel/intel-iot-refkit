@@ -2,18 +2,16 @@ DESCRIPTION = "OpenBLAS is an optimized BLAS library based on GotoBLAS2 1.13 BSD
 SUMMARY = "OpenBLAS : An optimized BLAS library"
 AUTHOR = "Alexander Leiva <norxander@gmail.com>"
 HOMEPAGE = "http://www.openblas.net/"
-PRIORITY= "optional"
 SECTION = "libs"
-LICENSE = "BSD"
-PR = "r0"
+LICENSE = "BSD-3-Clause"
 
 DEPENDS = "make"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=5adf4792c949a00013ce25d476a2abc0"
 
 SRC_URI = "https://github.com/xianyi/OpenBLAS/archive/v${PV}.tar.gz"
-SRC_URI[md5sum] = "28c998054fd377279741c6f0b9ea7941"
-SRC_URI[sha256sum] = "9c40b5e4970f27c5f6911cb0a28aa26b6c83f17418b69f8e5a116bb983ca8557"
+SRC_URI[md5sum] = "48637eb29f5b492b91459175dcc574b1"
+SRC_URI[sha256sum] = "5ef38b15d9c652985774869efd548b8e3e972e1e99475c673b25537ed7bcf394"
 
 S = "${WORKDIR}/OpenBLAS-${PV}"
 
@@ -36,6 +34,8 @@ def map_bits(a, d):
 do_compile () {
         oe_runmake HOSTCC="${BUILD_CC}"                                         \
                                 CC="${TARGET_PREFIX}gcc ${TOOLCHAIN_OPTIONS}" \
+                                PREFIX=${exec_prefix} \
+                                CROSS_SUFFIX=${HOST_PREFIX} \
                                 ONLY_CBLAS=1 BINARY='${@map_bits(d.getVar('TARGET_ARCH', True), d)}' \
                                 TARGET='${@map_arch(d.getVar('TARGET_ARCH', True), d)}'
 }
@@ -43,16 +43,15 @@ do_compile () {
 do_install() {
         oe_runmake HOSTCC="${BUILD_CC}"                                         \
                                 CC="${TARGET_PREFIX}gcc ${TOOLCHAIN_OPTIONS}" \
+                                PREFIX=${exec_prefix} \
+                                CROSS_SUFFIX=${HOST_PREFIX} \
                                 ONLY_CBLAS=1 BINARY='${@map_bits(d.getVar('TARGET_ARCH', True), d)}' \
                                 TARGET='${@map_arch(d.getVar('TARGET_ARCH', True), d)}' \
-                                PREFIX=${D}/usr install
-}
-
-do_install_append() {
-        rm -rf ${D}/usr/bin
-        rm -rf ${D}/usr/lib/cmake
+                                DESTDIR=${D} \
+                                install
+        rm -rf ${D}${bindir}
+        rm -rf ${D}${libdir}/cmake
 }
 
 FILES_${PN}     = "${libdir}/*"
 FILES_${PN}-dev = "${includedir} ${libdir}/lib${PN}.so"
-
