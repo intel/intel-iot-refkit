@@ -110,12 +110,13 @@ testimg() {
     cp $HOME/.config.ini.wlan ${_WLANCONF}
     chmod 644 ${_WLANCONF}
 
-    daft ${DEVICE} ${FILENAME} --record
+    _daft_args="${DEVICE} ${FILENAME} --record --testplan iot_qatest"
+    daft $_daft_args
     TEST_EXIT_CODE=$?
     if [ "$TEST_EXIT_CODE" = 1 ]; then
       echo "WARNING: daft=1 would lead to UNSTABLE: wipe results, retry daft"
       rm -f *.log *.log.raw *.xml
-      daft ${DEVICE} ${FILENAME} --record
+      daft $_daft_args
       TEST_EXIT_CODE=$?
     fi
   fi
