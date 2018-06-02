@@ -4,3 +4,4 @@ oeqa.runtime.core.iotivity.client
 oeqa.runtime.multimedia.audio.pulseaudio
 oeqa.runtime.sanity.flatpak
 oeqa.runtime.sanity.flatpak-session
+oeqa.runtime.sanity.flatpak-commandline
