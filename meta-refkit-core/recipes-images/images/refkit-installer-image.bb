@@ -99,7 +99,9 @@ REFKIT_INSTALLER_UEFI_COMBO () {
                         fatal "key creation failed"
                     fi
                     keyfile_offset="${REFKIT_DISK_ENCRYPTION_NVRAM_ID_LEN}"
-                    if ! execute tpm2_nvwrite -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -a 0x40000001 -f "$keyfile"; then
+                    # -f is only used by the older release
+                    if (tpm2_nvwrite -v | grep -q "version 2.1" && ! execute tpm2_nvwrite -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -a 0x40000001 -f "$keyfile" ) ||
+                       ! execute tpm2_nvwrite -x "${REFKIT_DISK_ENCRYPTION_NVRAM_INDEX_TPM2}" -a 0x40000001 "$keyfile"; then
                         fatal "storing key in NVRAM failed"
                     fi
                     # Lock access until reboot.
